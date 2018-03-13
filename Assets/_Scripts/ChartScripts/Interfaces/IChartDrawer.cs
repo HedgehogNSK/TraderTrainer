@@ -6,7 +6,7 @@ namespace Chart
 {
     public interface IChartDrawer
     {
-        void DrawGizmos();
+        void DrawGrid();
     }
 }
 

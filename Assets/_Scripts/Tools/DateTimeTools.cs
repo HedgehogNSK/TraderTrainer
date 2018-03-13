@@ -7,7 +7,7 @@ namespace Hedge
 {
     namespace Tools
     {
-       static public class DateTimeTools
+        static public class DateTimeTools
         {
             static public double TicksPerFloat = DateTime.MaxValue.Ticks / float.MaxValue;
             static public double FloatsPerTick = float.MaxValue / DateTime.MaxValue.Ticks;
@@ -85,18 +85,19 @@ namespace Hedge
                     default:
                         {
                             Debug.Log("Задано не верное значение tFrame.period");
-                        
-                        } break;
+
+                        }
+                        break;
 
                 }
             }
-           
+
             static public int CountFramesInPeriod(TimeFrame tframe, double periodBeginTimestamp, double periodEndTimestamp)
             {
                 int count;
                 double frames_count;
                 double periodLength = periodEndTimestamp - periodBeginTimestamp;
-                
+
                 switch (tframe.period)
                 {
                     case Period.Minute:
@@ -107,26 +108,30 @@ namespace Hedge
                     case Period.Hour:
                         {
                             frames_count = (periodLength / (tframe.count * 3600));
-                        } break;
+                        }
+                        break;
                     case Period.Day:
                         {
                             frames_count = (periodLength / (tframe.count * 86400));
-                        } break;
+                        }
+                        break;
                     case Period.Week:
                         {
                             frames_count = (periodLength / (tframe.count * 604800));
-                        } break;
+                        }
+                        break;
                     case Period.Month:
                         {
                             DateTimeOffset dtBegin = new DateTimeOffset(TimestampToDate(periodBeginTimestamp));
                             DateTimeOffset dtEnd = new DateTimeOffset(TimestampToDate(periodEndTimestamp));
-                            frames_count = (double)(dtEnd.Month - dtBegin.Month + 12* (dtEnd.Year -dtBegin.Year))/tframe.count;
-                        } break;
+                            frames_count = (double)(dtEnd.Month - dtBegin.Month + 12 * (dtEnd.Year - dtBegin.Year)) / tframe.count;
+                        }
+                        break;
                     case Period.Year:
                         {
                             DateTimeOffset dtBegin = new DateTimeOffset(TimestampToDate(periodBeginTimestamp));
                             DateTimeOffset dtEnd = new DateTimeOffset(TimestampToDate(periodEndTimestamp));
-                            frames_count = (double)(dtEnd.Year - dtBegin.Year)/tframe.count;
+                            frames_count = (double)(dtEnd.Year - dtBegin.Year) / tframe.count;
                         }
                         break;
 
@@ -134,7 +139,7 @@ namespace Hedge
                         {
                             Debug.Log("Указан не тип периода, который не реализован");
                             return -1;
-                        } 
+                        }
                 }
 
                 count = (int)frames_count;
@@ -169,7 +174,7 @@ namespace Hedge
                     case Period.Week:
                         {
                             frames_amount = (double)periodLength / new TimeSpan(7 * tframe.count, 0, 0, 0).Ticks;
-                           
+
 
                         }
                         break;
@@ -232,20 +237,20 @@ namespace Hedge
 
             static public DateTime FloorToWeeks(this DateTime dt, int weeks_amount)
             {
-                TimeSpan interval = new TimeSpan(7*weeks_amount, 0, 0, 0, 0);
+                TimeSpan interval = new TimeSpan(7 * weeks_amount, 0, 0, 0, 0);
 
                 long roundedTicks = (dt.Ticks / interval.Ticks) * interval.Ticks;
                 dt = new DateTime(roundedTicks);
                 return dt.AddDays(-((int)dt.DayOfWeek - 1));
-                
+
             }
             static public DateTime FloorToMonths(this DateTime dt, int monthes_amount)
             {
-                return new DateTime(0, monthes_amount*(int)((double)dt.Year * 12 + dt.Month) / monthes_amount,1);
+                return new DateTime(0, monthes_amount * (int)((double)dt.Year * 12 + dt.Month) / monthes_amount, 1);
             }
             static public DateTime FloorToYears(this DateTime dt, int years_amount)
             {
-                return new DateTime(years_amount * (dt.Year / years_amount),0, 1);
+                return new DateTime(years_amount * (dt.Year / years_amount), 0, 1);
             }
 
             static public DateTime FloorToTimeFrame(this DateTime dt, TimeFrame timeFrame)
@@ -305,7 +310,7 @@ namespace Hedge
             }
             static public DateTime UpToYears(this DateTime dt, int years_amount)
             {
-                return new DateTime(years_amount * (dt.Year / years_amount)+ years_amount, 0, 1);
+                return new DateTime(years_amount * (dt.Year / years_amount) + years_amount, 0, 1);
             }
             static public DateTime UpToNextFrame(this DateTime dt, TimeFrame timeFrame)
             {
@@ -349,14 +354,47 @@ namespace Hedge
             public int count;
             public Period period;
 
-            public TimeFrame(int count, Period period)
+            public TimeFrame(Period period, int count = 1)
             {
                 if (count <= 0) count = 1;
                 this.count = count;
                 this.period = period;
             }
+            public static TimeFrame operator *(TimeFrame tFrame, int multiplicator)
+            {
 
-            
+                return multiplicator * tFrame;
+            }
+
+            public static TimeFrame operator *(int multiplicator, TimeFrame tFrame)
+            {
+                tFrame.count *= multiplicator;
+                return tFrame;
+            }
+            public static DateTime operator +(DateTime dateTime, TimeFrame tFrame)
+            {
+                switch (tFrame.period)
+                {
+                    case Period.Minute: { return dateTime.AddMinutes(tFrame.count); } break;
+                    case Period.Hour: { return dateTime.AddHours(tFrame.count); } break;
+                    case Period.Day: { return dateTime.AddDays(tFrame.count); } break;
+                    case Period.Week: { return dateTime.AddDays(7 * tFrame.count); } break;
+                    case Period.Month: { return dateTime.AddMonths(tFrame.count); } break;
+                    case Period.Year: { return dateTime.AddYears(tFrame.count); } break;
+                    default:
+                        {
+                            throw new System.ArgumentOutOfRangeException("Снала реализуй алгоритм сложения");
+                        }
+                        break;
+                }
+
+
+            }
+
+            public static DateTime operator +(TimeFrame tFrame, DateTime dateTime)
+            {
+                return dateTime + tFrame;
+            }
         }
     }
 }

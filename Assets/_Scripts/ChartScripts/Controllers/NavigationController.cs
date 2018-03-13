@@ -10,7 +10,18 @@ namespace Chart
         [RequireComponent(typeof(UnityEngine.UI.Image))]
         public class NavigationController : MonoBehaviour, IDragHandler, IScrollHandler
         {
+            static NavigationController _instance;
+            public static NavigationController Instance
+            {
+                get { if(!_instance)
+                    {
+                        _instance = FindObjectOfType<NavigationController>();
+                    }
+                    return _instance;
+                }
+            }
             Camera camera;
+            public Camera objCamera;
             Transform cameraTransform;
             float xBounds = 0.0f;
             float yBounds =0.8f;
@@ -33,6 +44,7 @@ namespace Chart
             {
                 camera.orthographicSize -= eventData.scrollDelta.y;
                 if (camera.orthographicSize > 100) camera.orthographicSize = 100;
+                objCamera.orthographicSize = camera.orthographicSize;
             }
 
         }

@@ -13,18 +13,19 @@ namespace Chart
             double close;
             double low;
             double high;
-            double periodBeginTimestamp;
-            DateTime periodDateBegin;
+            //double periodBeginTimestamp;
+            DateTime periodBegin;
             double volume;
 
-            public double PeriodBegin { get { return periodBeginTimestamp; } }
-            public DateTime PeriodDateBegin { get { return periodDateBegin; } }
+            //public double PeriodBegin { get { return periodBeginTimestamp; } }
+            public DateTime PeriodBegin { get { return periodBegin; } }
             public double Open { get { return open; } }
             public double Close { get { return close; } }
             public double Low { get { return low; } }
             public double High { get { return high; } }
             public double Volume { get { return volume; } }
-            public PriceFluctuation(double periodBeginTimestamp, double volume, double close, double open = 0, double low = 0, double high = 0)
+
+            /*public PriceFluctuation(double periodBeginTimestamp, double volume, double close, double open = 0, double low = 0, double high = 0)
             {
                 this.periodBeginTimestamp = periodBeginTimestamp;
                 this.volume = volume;
@@ -33,10 +34,11 @@ namespace Chart
                 this.low = low;
                 this.high = high;
 
-            }
+            }*/
+
             public PriceFluctuation(DateTime periodBegin, double volume, double open, double close=0,  double low = 0, double high = 0)
             {
-                this.periodDateBegin = periodBegin;
+                this.periodBegin = periodBegin;
                 this.volume = volume;
                 this.open = open;
                 this.close = close;
@@ -47,9 +49,9 @@ namespace Chart
 
             public override string ToString()
             {
-                return "Начало периода " + PeriodDateBegin.Year
-                    + "-" + PeriodDateBegin.Month + "-" + PeriodDateBegin.Day + " "
-                    + PeriodDateBegin.Hour +":"+ PeriodDateBegin.Minute+ ":" + PeriodDateBegin.Second
+                return "Начало периода " + PeriodBegin.Year
+                    + "-" + PeriodBegin.Month + "-" + PeriodBegin.Day + " "
+                    + PeriodBegin.Hour +":"+ PeriodBegin.Minute+ ":" + PeriodBegin.Second
                      + "\n Цена открытия: " + Open
                      + "\n Цена закрытия: " + Close
                      + "\n Минимальная цена: " + Low

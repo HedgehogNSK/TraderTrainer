@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Hedge.Tools;
+using System;
 
 namespace Chart
 {
@@ -26,7 +27,7 @@ namespace Chart
             public Color BorderDownColor { get; set; }
             public Color BorderUpColor { get; set; }
 
-            public float PeriodBegin { get; set; }
+            public DateTime PeriodBegin { get; set; }
 
             public bool Set(int position, PriceFluctuation fluctuation)
             {
@@ -49,7 +50,7 @@ namespace Chart
 
                 transform.position = new Vector2(position, bodySize / 2 + (float)fluctuation.Open);
                 shadow.transform.position = new Vector2(position, shadowSize / 2 + (float)fluctuation.Low);
-                PeriodBegin = (float)fluctuation.PeriodBegin;
+                PeriodBegin = fluctuation.PeriodBegin;
                 return true;
             }
 

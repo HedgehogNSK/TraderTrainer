@@ -51,9 +51,9 @@ namespace ChartGame
             {
 
                 chartDrawer.chartViewer = new SimpleChartViewer(1000);
-                chartDrawer.chartViewer.TFrame = new TimeFrame(2, Period.Minute);
+                chartDrawer.chartViewer.TFrame = new TimeFrame(Period.Minute,2);
                 chartDrawer.DrawChart();
-                sqlDB = new SQLChartViewer(new TimeFrame(2,Period.Hour));
+                sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 DateTime dt = sqlDB.GetPrice(0);
                 Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());
                 Debug.Log(sqlDB.TyrToSetPairByAcronym("Test", "Test2"));

@@ -304,6 +304,7 @@
     <Compile Include="Assets\_Scripts\ChartScripts\DataManager\SimpleChartViewer.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\DataManager\SQLChartViewer.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Candle.cs" />
+    <Compile Include="Assets\_Scripts\ChartScripts\Entities\CoordinateGrid.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\ExtraData.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Price.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Trade.cs" />

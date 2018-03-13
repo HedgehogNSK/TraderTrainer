@@ -9,11 +9,19 @@ namespace Hedge
     {
         public static class DrawTools
         {
-            static public float thickness = 0.001f;
+            static public float thickness = 0.002f;
             static public float gap = 0.08f;
             static public float dashLength = 0.05f;
             static Material lineMaterial = new Material(Shader.Find("Unlit/Color"));
-            static public Color color;
+            static public Color LineColor
+            {
+                get { return lineMaterial.color; }
+                set
+                {
+                    lineMaterial.color = value;
+                    lineMaterial.hideFlags = HideFlags.HideAndDontSave;
+                }
+            }
             static Vector3 zeroVector = Vector3.zero;
             static public void SetProperties(Color color)
             {
@@ -54,7 +62,7 @@ namespace Hedge
                 var diffx = Mathf.Abs((begin.x - end.x));
                 var diffy = Mathf.Abs((begin.y - end.y));
 
-                if (diffx > diffy)
+                /*if (diffx > diffy)
                 {
                     if (begin.x <= end.x)
                     {
@@ -79,7 +87,10 @@ namespace Hedge
                         startPoint = end;
                         endPoint = begin;
                     }
-                }
+                }*/
+
+                startPoint = begin;
+                endPoint = end;
 
                 var angleToX = Mathf.Atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
                 var angleToY = Mathf.Atan2(endPoint.x - startPoint.x, -(endPoint.y - startPoint.y));
@@ -103,7 +114,7 @@ namespace Hedge
                     var stepByY = current_gap * sinToXaxis;
                     //var stepByY = ratio * gap * sinToXaxis;
                     Vector2 step = new Vector2(stepByX, stepByY);
-                    Vector2 currentDashStartPoint = startPoint;
+                    Vector2 currentDashStartPoint = new Vector2(startPoint.x + current_dashLength/2 * cosToXaxis, startPoint.y + current_dashLength/2 * sinToXaxis) ;
                     for (int n =0; n<=totalDashes; n++)
                     {
 
