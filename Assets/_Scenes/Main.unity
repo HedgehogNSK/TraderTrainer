@@ -273,7 +273,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.6691177, g: 0.6613814, b: 0.38867864, a: 1}
+  m_BackGroundColor: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 1}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -325,8 +325,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a6026fa43518014aa31fbb32139f37d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseColor: {r: 0.58823526, g: 0.58823526, b: 0.58823526, a: 0.359}
-  crossColor: {r: 0.38930908, g: 0.36332178, b: 0.7058823, a: 0.709}
+  baseColor: {r: 0.35294116, g: 0.35294116, b: 0.35294116, a: 1}
+  crossColor: {r: 0.14509805, g: 0.4509804, b: 0.7921569, a: 0.99215686}
   candleDummy: {fileID: 114299864865166204, guid: f6d0fcf9f662fc84e83513d382706eb1,
     type: 2}
   candlesParent: {fileID: 2145623622}
@@ -688,7 +688,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1348674467
 RectTransform:
   m_ObjectHideFlags: 0
@@ -977,6 +977,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1918094440}
   - component: {fileID: 1918094443}
+  - component: {fileID: 1918094441}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -997,6 +998,17 @@ Transform:
   m_Father: {fileID: 691660903}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1918094441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1918094439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b25c0c4a3a294b44a171717eea20f79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!20 &1918094443
 Camera:
   m_ObjectHideFlags: 0
@@ -1146,6 +1158,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objCamera: {fileID: 1918094443}
+  scrollMaxLimit: 30
+  scrollMinLimit: 2
 --- !u!114 &2122859393
 MonoBehaviour:
   m_ObjectHideFlags: 0

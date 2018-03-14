@@ -21,12 +21,15 @@ namespace Chart
                 }
             }
             Camera camera;
-            public Camera objCamera;
+            [SerializeField] Camera objCamera;
+            [SerializeField] float scrollMaxLimit = 25;
+            [SerializeField] float scrollMinLimit = 2;
+
             Transform cameraTransform;
             float xBounds = 0.0f;
             float yBounds =0.8f;
             float speed = 5f;
-            float scrollLimit = 100;
+            
             Vector2 screen;
             private void Start()
             {
@@ -43,7 +46,8 @@ namespace Chart
             public void OnScroll(PointerEventData eventData)
             {
                 camera.orthographicSize -= eventData.scrollDelta.y;
-                if (camera.orthographicSize > 100) camera.orthographicSize = 100;
+                if (camera.orthographicSize > scrollMaxLimit) camera.orthographicSize = scrollMaxLimit;
+                else if (camera.orthographicSize < scrollMinLimit) camera.orthographicSize = scrollMinLimit;
                 objCamera.orthographicSize = camera.orthographicSize;
             }
 

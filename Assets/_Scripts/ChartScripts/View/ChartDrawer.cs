@@ -9,6 +9,18 @@ namespace Chart
 {
     public class ChartDrawer : MonoBehaviour, IChartDrawer {
 
+        static ChartDrawer _instance;
+        public static ChartDrawer Instnace
+        {
+            get
+            {
+                if(!_instance)
+                {
+                    _instance = FindObjectOfType<ChartDrawer>();
+                }
+                return _instance;
+            }
+        }
         public IChartViewer chartViewer;
         public Color baseColor;
         public Color crossColor;
@@ -47,7 +59,7 @@ namespace Chart
         void OnPostRender()
         {
             DrawGrid();
-            DrawCross();
+            //DrawCross();
         }
 
         private void OnDrawGizmos()
@@ -79,8 +91,8 @@ namespace Chart
             float yShift = yLenght / periodDevider;
 
             DrawTools.LineColor = baseColor;
-            DrawTools.dashLength = 0.06f;
-            DrawTools.gap = 0.09f;
+            DrawTools.dashLength = 0.02f;
+            DrawTools.gap = 0.03f;
             dateList.Clear();
             for (int i = 0; i != periodDevider + 1; i++)
             {
@@ -113,13 +125,24 @@ namespace Chart
             Vector2 pointerScreenPosition;
             Vector3 pointerWolrdPosition;
             GetWorldPointerPosition(out pointerScreenPosition, out pointerWolrdPosition);
-
+            
             DrawTools.LineColor = crossColor;
             DrawTools.dashLength = 0.03f;
             DrawTools.gap = 0.05f;
 
-            DrawTools.DrawLine(pointerWolrdPosition,cam.ScreenToWorldPoint(new Vector2(pointerScreenPosition.x, cam.pixelHeight)), cam.orthographicSize*1.1f, true);
-            DrawTools.DrawLine(pointerWolrdPosition,cam.ScreenToWorldPoint(new Vector2(pointerScreenPosition.x, 0)), cam.orthographicSize * 1.1f, true);
+            Vector2 camToWorldFromXToTop = cam.ScreenToWorldPoint(new Vector2(pointerScreenPosition.x, cam.pixelHeight));
+            Vector2 camToWorldFromXToBottom = cam.ScreenToWorldPoint(new Vector2(pointerScreenPosition.x, 0));
+
+            //Магнитизм к X. Необходимо будет переписать
+            if (true)
+            {
+                pointerWolrdPosition = new Vector2(Mathf.RoundToInt(pointerWolrdPosition.x), pointerWolrdPosition.y);
+                camToWorldFromXToTop = new Vector2(Mathf.RoundToInt(camToWorldFromXToTop.x), camToWorldFromXToTop.y);
+                camToWorldFromXToBottom = new Vector2(Mathf.RoundToInt(camToWorldFromXToBottom.x), camToWorldFromXToBottom.y);
+            }
+
+            DrawTools.DrawLine(pointerWolrdPosition, camToWorldFromXToTop, cam.orthographicSize*1.1f, true);
+            DrawTools.DrawLine(pointerWolrdPosition, camToWorldFromXToBottom, cam.orthographicSize * 1.1f, true);
             DrawTools.DrawLine(pointerWolrdPosition,cam.ScreenToWorldPoint(new Vector2(0, pointerScreenPosition.y)), cam.orthographicSize, true);
             DrawTools.DrawLine(pointerWolrdPosition,cam.ScreenToWorldPoint(new Vector2(cam.pixelWidth, pointerScreenPosition.y)), cam.orthographicSize, true);
         } 
@@ -138,7 +161,7 @@ namespace Chart
 
             foreach(var date in dateList)
             {
-                Debug.Log(cam.WorldToScreenPoint(new Vector3(date,0,0)).x);
+                //Debug.Log(cam.WorldToScreenPoint(new Vector3(date,0,0)).x);
                 GUILayout.BeginArea(new Rect(cam.WorldToScreenPoint(new Vector3(date, 0, 0)).x - 50,0, 200, 200));
                 GUILayout.Label(FromPositionToDate(date).ToShortDateString() +" "+ FromPositionToDate(date).Hour+":"+ FromPositionToDate(date).Minute);
                 //cam.WorldToScreenPoint(new Vector3(price, 0, 0)).
