@@ -13,7 +13,10 @@ namespace Chart
         static DateTime zeroPoint = DateTime.UtcNow;
         //соответствует 1 единице смещения по оси абцисс
         static TimeFrame step = new TimeFrame(Period.Hour);
-        
+
+        static public DateTime ZeroPoint
+            {set{zeroPoint = value;} }
+
         static public TimeFrame Step
         {
             get { return step; }
@@ -24,10 +27,6 @@ namespace Chart
         }
 
         static public Action Updated;
-
-        //Возвращает 
-        static float periodXWidth;
-        static public float PeriodXWidth { get { return periodXWidth; } }
 
         static public DateTime FromXAxisToDate(int x)
         {
@@ -45,7 +44,7 @@ namespace Chart
                 case Period.Month: { return (dateTime.Month - zeroPoint.Month) / step.count; } 
                 case Period.Year: { return (dateTime.Year - zeroPoint.Year) / step.count; } 
                 default: {
-                        throw new System.ArgumentOutOfRangeException("Для периода " + step.period.ToString() + "не описано действие");
+                        throw new ArgumentOutOfRangeException("Для периода " + step.period.ToString() + "не описано действие");
                     }
             }
         }
@@ -53,7 +52,7 @@ namespace Chart
         static public float FromXAxisToScreen(int x)
         {
 
-            return 0;
+            throw new NotImplementedException();
         }
     }
 }

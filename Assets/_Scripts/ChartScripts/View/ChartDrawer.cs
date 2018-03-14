@@ -10,7 +10,7 @@ namespace Chart
     public class ChartDrawer : MonoBehaviour, IChartDrawer {
 
         static ChartDrawer _instance;
-        public static ChartDrawer Instnace
+        public static ChartDrawer Instance
         {
             get
             {
@@ -21,7 +21,17 @@ namespace Chart
                 return _instance;
             }
         }
-        public IChartViewer chartViewer;
+        IChartDataManager chartDataManager;
+        public IChartDataManager ChartDataManager
+        {
+            get { return chartDataManager; }
+            set
+            {
+                chartDataManager = value;
+                CoordinateGrid.ZeroPoint = chartDataManager.ChartBeginTime;
+                CoordinateGrid.Step = chartDataManager.TFrame;
+            }
+        }
         public Color baseColor;
         public Color crossColor;
         [SerializeField] Candle candleDummy;
@@ -46,13 +56,13 @@ namespace Chart
         void Awake()
         {
             cam = GetComponent<Camera>();
-            if (cam == null || chartViewer == null)
+            if (cam == null || ChartDataManager == null)
                 Debug.Log("Повесь скрипт на камеру и задайте все параметры");
 
         }
         // Use this for initialization
         void Start()
-        {
+        {           
         }
 
         // Update is called once per frame
@@ -70,7 +80,7 @@ namespace Chart
 
         public bool IsSettingsSet {
             get {
-                if (chartViewer != null && candleDummy != null && candlesParent != null)
+                if (ChartDataManager != null && candleDummy != null && candlesParent != null)
                     return true;
                 else
                 {
@@ -110,7 +120,7 @@ namespace Chart
         public void DrawChart()
         {
             int id = 0;
-            foreach (var priceFluctuation in chartViewer.GetPriceFluctuationsByTimeFrame(chartViewer.ChartBeginTime, chartViewer.ChartEndTime))
+            foreach (var priceFluctuation in ChartDataManager.GetPriceFluctuationsByTimeFrame(ChartDataManager.ChartBeginTime, ChartDataManager.ChartEndTime))
             {
                 Candle newCandle = Instantiate(candleDummy, candlesParent);
                 newCandle.Set(FromDateToPosition(priceFluctuation.PeriodBegin), priceFluctuation);
@@ -183,7 +193,7 @@ namespace Chart
 
         int FromDateToPosition(DateTime dt)
         {
-            TimeFrame tFrame = chartViewer.TFrame;
+            TimeFrame tFrame = ChartDataManager.TFrame;
             if (startingPoint == DateTime.MinValue)
             {
                 startingPoint = dt.FloorToTimeFrame(tFrame);
@@ -195,7 +205,7 @@ namespace Chart
 
         DateTime FromPositionToDate(float dt)
         {
-            TimeFrame tFrame = chartViewer.TFrame;
+            TimeFrame tFrame = ChartDataManager.TFrame;
             if(candles[0])
             {
                 Candle candle = candles[0];
@@ -204,6 +214,15 @@ namespace Chart
             }
 
             throw new ArgumentNullException("На графике нет свечей");
+        }
+
+        public bool IsPointToFar(Vector3 point)
+        {
+            float x0 = CoordinateGrid.FromDateToXAxis(ChartDataManager.ChartBeginTime);
+            float x1 = CoordinateGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);
+            //Debug.Log("BeginTime:" + x0 + " EndTime:" + x1);
+            if (point.x < x0 || point.x > x1) return true;
+            return false;
         }
     }
 }

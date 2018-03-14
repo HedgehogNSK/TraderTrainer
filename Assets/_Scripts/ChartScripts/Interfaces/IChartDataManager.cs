@@ -13,7 +13,7 @@ namespace Chart
     }
 
     //Интерфейс предназначен для управления данными изменения цены со временем
-    public interface IChartViewer
+    public interface IChartDataManager
     {
         //Задаёт тайм-фрейм на котором интерфейс должен оперировать в текущий момент
         TimeFrame TFrame { get; set; }

@@ -39,7 +39,7 @@ namespace ChartGame
             [SerializeField]ChartDrawer chartDrawer;
             SimpleChartViewer db;
             SQLChartViewer sqlDB;
-            IChartViewer chartViewer;
+            IChartDataManager chartDataManager;
             List<Candle> candles = new List<Candle>();
             // Use this for initialization
             private void Awake()
@@ -50,8 +50,7 @@ namespace ChartGame
             void Start()
             {
 
-                chartDrawer.chartViewer = new SimpleChartViewer(1000);
-                chartDrawer.chartViewer.TFrame = new TimeFrame(Period.Minute,2);
+                chartDrawer.ChartDataManager = new SimpleChartViewer(1000, new TimeFrame(Period.Minute, 2));
                 chartDrawer.DrawChart();
                 sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 DateTime dt = sqlDB.GetPrice(0);

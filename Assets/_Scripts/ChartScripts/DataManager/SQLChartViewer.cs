@@ -10,7 +10,7 @@ using Chart.Entity;
 using UnityNpgsql;
 using UnityNpgsqlTypes;
 using Microsoft;
-public class SQLChartViewer : IChartViewer
+public class SQLChartViewer : IChartDataManager
 {
 
     NpgsqlConnection dbcon;

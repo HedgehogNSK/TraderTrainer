@@ -15,7 +15,7 @@ namespace Chart
 
         private void OnPostRender()
         {
-            ChartDrawer.Instnace.DrawCross();
+            ChartDrawer.Instance.DrawCross();
         }
     }
 }

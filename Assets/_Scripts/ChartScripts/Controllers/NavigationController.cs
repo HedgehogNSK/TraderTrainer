@@ -39,8 +39,17 @@ namespace Chart
             }
             public void OnDrag(PointerEventData eventData)
             {
-                Vector3 shift = new Vector2(eventData.delta.x / Screen.width, eventData.delta.y / Screen.height);
-                cameraTransform.position -= shift* speed * camera.orthographicSize;
+                //Это сработает только для камеры параллельной оси Х
+                
+                Vector3 shift = new Vector2(eventData.delta.x / Screen.width, eventData.delta.y / Screen.height) * speed * camera.orthographicSize;
+                if (ChartDrawer.Instance.IsPointToFar(cameraTransform.position - shift))
+                {
+                    //if (ChartDrawer.Instance.IsPointToFar(cameraTransform.position))
+                    
+                    return;
+                }
+                    cameraTransform.position -= shift;
+                
             }
 
             public void OnScroll(PointerEventData eventData)

@@ -7,7 +7,7 @@ using Chart.Entity;
 using UnityEngine;
 using System.Linq;
 
-public class SimpleChartViewer : IChartViewer
+public class SimpleChartViewer : IChartDataManager
 {
     Trade[] points;
     int current = 0;
@@ -41,13 +41,15 @@ public class SimpleChartViewer : IChartViewer
         }
     }
 
-    public SimpleChartViewer(int size)
+    public SimpleChartViewer(int size, TimeFrame timeFrame)
     {
         points = new Trade[size];
         for(int id = 0; id!=size; id++)
         {
             points[id] = new Trade(Mathf.Sin(id)+ id/100 , new DateTime(10,1,1).AddMinutes(id), 1);
         }
+
+        TFrame = timeFrame;
     }
 
     public Trade GetCurrentPoint()
