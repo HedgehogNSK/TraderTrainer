@@ -210,7 +210,7 @@ namespace Hedge
             }
 
             //Округление до начала текущего периода для разных временных рамок
-            static public DateTime FloorToMinutes(this DateTime dt, int minutes_amount)
+            public static DateTime FloorToMinutes(this DateTime dt, int minutes_amount=1)
             {
                 TimeSpan interval = new TimeSpan(0, 0, minutes_amount, 0, 0);
 
@@ -218,7 +218,7 @@ namespace Hedge
 
                 return new DateTime(roundedTicks);
             }
-            static public DateTime FloorToHours(this DateTime dt, int hours_amount)
+            public static DateTime FloorToHours(this DateTime dt, int hours_amount =1)
             {
                 TimeSpan interval = new TimeSpan(0, hours_amount, 0, 0, 0);
 
@@ -226,7 +226,7 @@ namespace Hedge
 
                 return new DateTime(roundedTicks);
             }
-            static public DateTime FloorToDays(this DateTime dt, int days_amount)
+            public static DateTime FloorToDays(this DateTime dt, int days_amount =1)
             {
                 TimeSpan interval = new TimeSpan(days_amount, 0, 0, 0, 0);
 
@@ -235,7 +235,7 @@ namespace Hedge
                 return new DateTime(roundedTicks);
             }
 
-            static public DateTime FloorToWeeks(this DateTime dt, int weeks_amount)
+            public static DateTime FloorToWeeks(this DateTime dt, int weeks_amount)
             {
                 TimeSpan interval = new TimeSpan(7 * weeks_amount, 0, 0, 0, 0);
 
@@ -244,16 +244,16 @@ namespace Hedge
                 return dt.AddDays(-((int)dt.DayOfWeek - 1));
 
             }
-            static public DateTime FloorToMonths(this DateTime dt, int monthes_amount)
+            public static DateTime FloorToMonths(this DateTime dt, int monthes_amount =1)
             {
                 return new DateTime(0, monthes_amount * (int)((double)dt.Year * 12 + dt.Month) / monthes_amount, 1);
             }
-            static public DateTime FloorToYears(this DateTime dt, int years_amount)
+            public static DateTime FloorToYears(this DateTime dt, int years_amount)
             {
                 return new DateTime(years_amount * (dt.Year / years_amount), 0, 1);
             }
 
-            static public DateTime FloorToTimeFrame(this DateTime dt, TimeFrame timeFrame)
+            public static DateTime FloorToTimeFrame(this DateTime dt, TimeFrame timeFrame)
             {
                 switch (timeFrame.period)
                 {
@@ -335,6 +335,43 @@ namespace Hedge
             static public DateTime GetPositionByTimeFrame(this float xCord)
             {
                 return new DateTime((long)(xCord / FloatsPerTick));
+            }
+
+            static public string ChartStringFormat(this DateTime dt)
+            {
+                string output;
+                if (dt.Minute == 0)
+                {
+                    if (dt.Hour == 0)
+                    {
+                        if (dt.Day == 1)
+                        {
+                            if (dt.Month == 1)
+                            {
+                                output = String.Format("{0:yyyy}", dt);
+                            }
+                            else
+                            {
+                                output = String.Format("{0:MMM}", dt).ToUpper();
+                            }
+                        }
+                        else
+                        {
+                            output = String.Format("{0:dd}", dt).ToUpper();
+                        }
+                    }
+                    else
+                    {
+                        output = String.Format("{0:HH:mm}", dt);
+                    }
+
+                }
+                else
+                {
+                    output = String.Format("{0:HH:mm}", dt);
+                }
+
+                return output;
             }
         }
 

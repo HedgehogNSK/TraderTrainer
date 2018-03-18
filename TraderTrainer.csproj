@@ -308,9 +308,12 @@
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\ExtraData.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Price.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Trade.cs" />
+    <Compile Include="Assets\_Scripts\ChartScripts\FrontCameraDraw.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Interfaces\IChartDataManager.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Interfaces\IChartDrawer.cs" />
+    <Compile Include="Assets\_Scripts\ChartScripts\Interfaces\IGrid.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\View\ChartDrawer.cs" />
+    <Compile Include="Assets\_Scripts\ChartScripts\View\TextPoolManager.cs" />
     <Compile Include="Assets\_Scripts\ExampleClass.cs" />
     <Compile Include="Assets\_Scripts\FlowLines.cs" />
     <Compile Include="Assets\_Scripts\GameManager.cs" />
@@ -326,7 +329,6 @@
     <Compile Include="Assets\DataDiagram\Script\DD_LineButtonsContent.cs" />
     <Compile Include="Assets\DataDiagram\Script\DD_Lines.cs" />
     <Compile Include="Assets\DataDiagram\Script\DD_ZoomButton.cs" />
-    <Compile Include="Assets\FrontCameraDraw.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

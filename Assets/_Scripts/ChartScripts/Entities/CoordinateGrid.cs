@@ -7,17 +7,22 @@ using Hedge.Tools;
 
 namespace Chart
 {
-    public static class CoordinateGrid
+    public class CoordinateGrid : IGrid
     {
         //Соответствует 0 на оси абцисс
-        static DateTime zeroPoint = DateTime.UtcNow;
+        DateTime zeroPoint = DateTime.UtcNow;
         //соответствует 1 единице смещения по оси абцисс
-        static TimeFrame step = new TimeFrame(Period.Hour);
+        TimeFrame step = new TimeFrame(Period.Hour);
 
-        static public DateTime ZeroPoint
-            {set{zeroPoint = value;} }
+        public DateTime ZeroPoint
+            {
+            get
+            {
+                return zeroPoint;
+            }
+            set {zeroPoint = value;} }
 
-        static public TimeFrame Step
+        public TimeFrame Step
         {
             get { return step; }
             set
@@ -26,14 +31,14 @@ namespace Chart
             }
         }
 
-        static public Action Updated;
+        public Action Updated;
 
-        static public DateTime FromXAxisToDate(int x)
+        public DateTime FromXAxisToDate(int x)
         {
             return zeroPoint + x * step;
         }
 
-        static public int FromDateToXAxis(DateTime dateTime)
+        public int FromDateToXAxis(DateTime dateTime)
         {
             switch (step.period)
             {
@@ -49,9 +54,13 @@ namespace Chart
             }
         }
 
-        static public float FromXAxisToScreen(int x)
+        public float FromYAxisToPrice(float y)
         {
+            return y;
+        }
 
+        public float FromPriceToYAxis(float price)
+        {
             throw new NotImplementedException();
         }
     }

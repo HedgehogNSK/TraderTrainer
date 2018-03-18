@@ -46,7 +46,7 @@ public class SimpleChartViewer : IChartDataManager
         points = new Trade[size];
         for(int id = 0; id!=size; id++)
         {
-            points[id] = new Trade(Mathf.Sin(id)+ id/100 , new DateTime(10,1,1).AddMinutes(id), 1);
+            points[id] = new Trade(Mathf.Sin(id)+ id/100 , new DateTime(10,1,1).AddHours(id), 1);
         }
 
         TFrame = timeFrame;
@@ -74,12 +74,12 @@ public class SimpleChartViewer : IChartDataManager
     {
         if (!IsSettingsSet()) return null;
 
-        int id = ArrayTools.BinarySearch(points, timestamp);
-        if (id < 0)
-        {
-            Debug.Log("Элемент не найден");
-            return null;
-        }
+       // int id = ArrayTools.BinarySearch(points, timestamp);
+       //if (id < 0)
+       // {
+       //     Debug.Log("Элемент не найден");
+       //     return null;
+       // }
         
         DateTime periodBegin = timestamp.FloorToTimeFrame(tFrame);
         DateTime periodEnd = timestamp.UpToNextFrame(tFrame);

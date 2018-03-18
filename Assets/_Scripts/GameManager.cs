@@ -50,7 +50,7 @@ namespace ChartGame
             void Start()
             {
 
-                chartDrawer.ChartDataManager = new SimpleChartViewer(1000, new TimeFrame(Period.Minute, 2));
+                chartDrawer.ChartDataManager = new SimpleChartViewer(1000, new TimeFrame(Period.Hour, 2));
                 chartDrawer.DrawChart();
                 sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 DateTime dt = sqlDB.GetPrice(0);

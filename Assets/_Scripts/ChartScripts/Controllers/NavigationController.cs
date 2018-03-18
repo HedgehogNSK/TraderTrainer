@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System;
+using System.Linq;
+
 namespace Chart
 {
     namespace Controllers
@@ -24,6 +27,7 @@ namespace Chart
             [SerializeField] Camera objCamera;
             [SerializeField] float scrollMaxLimit = 25;
             [SerializeField] float scrollMinLimit = 2;
+            [SerializeField] float defaultOrthoSize = 10;
 
             Transform cameraTransform;
             float xBounds = 0.0f;
@@ -36,6 +40,7 @@ namespace Chart
                 camera = Camera.main;
                 cameraTransform = camera.transform;
                 screen = new Vector2(Screen.width, Screen.height);
+                Initialize();
             }
             public void OnDrag(PointerEventData eventData)
             {
@@ -58,6 +63,21 @@ namespace Chart
                 if (camera.orthographicSize > scrollMaxLimit) camera.orthographicSize = scrollMaxLimit;
                 else if (camera.orthographicSize < scrollMinLimit) camera.orthographicSize = scrollMinLimit;
                 objCamera.orthographicSize = camera.orthographicSize;
+            }
+
+            public void GoToLastPoint()
+            {
+                cameraTransform.position = (Vector3)ChartDrawer.Instance.GetLastPoint()  + Vector3.forward*cameraTransform.position.z;
+
+                //Смещение на удобный обзор
+                cameraTransform.position -= Vector3.right *camera.orthographicSize * camera.aspect * 0.4f;
+            }
+
+            public void Initialize()
+            {             
+                camera.orthographicSize = defaultOrthoSize;
+                objCamera.orthographicSize = defaultOrthoSize;
+                GoToLastPoint();
             }
 
         }
