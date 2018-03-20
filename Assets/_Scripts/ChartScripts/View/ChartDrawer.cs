@@ -426,20 +426,33 @@ namespace Chart
             DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
 
             List<DateTime> keyPoints = new List<DateTime>();
-            int textFieldsLeft = dateTextPool.FieldsAmount;
-
+            int textFieldsAvailable = dateTextPool.FieldsAmount;
+            int textFieldsLeft = textFieldsAvailable;
             DateTime dt;
 
             float diff = dt1.Year - dt0.Year;
-            float step = diff / textFieldsLeft;
-            if (step < 1) step = 1;
 
-            for (float year = dt0.Year+1; year <= dt1.Year; year+=step)
+            float step = 1;
+            float startYear = dt0.Year;
+            if (textFieldsLeft < diff)
             {
-                keyPoints.Add(new DateTime((int)year, 1, 1));
-                textFieldsLeft--;
+                step = diff/ textFieldsLeft ;
+                startYear = (int)(dt0.Year / step) * step + step;
             }
+            for (float year = startYear; year <= dt1.Year; year += step)
+                {
+                    keyPoints.Add(new DateTime((int)year, 1, 1));
+                    textFieldsLeft--;
+                }
+           
 
+            diff = diff * 12 + dt1.Month - dt0.Month;
+            if(textFieldsLeft<diff)
+            {
+                step = diff / textFieldsLeft;
+                int yearFields = textFieldsAvailable - textFieldsLeft;
+                //yearFields надо сравнить с количеством отрисовываемых месяцев
+            }
             return keyPoints;
         }
     }
