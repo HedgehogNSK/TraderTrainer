@@ -428,31 +428,60 @@ namespace Chart
             List<DateTime> keyPoints = new List<DateTime>();
             int textFieldsAvailable = dateTextPool.FieldsAmount;
             int textFieldsLeft = textFieldsAvailable;
-            DateTime dt;
+            DateTime dt_current;
 
+            //diff разница в годах
             float diff = dt1.Year - dt0.Year;
-
             float step = 1;
-            float startYear = dt0.Year;
+            float startYear = dt0.Year+1;
+
             if (textFieldsLeft < diff)
             {
                 step = diff/ textFieldsLeft ;
                 startYear = (int)(dt0.Year / step) * step + step;
             }
+
             for (float year = startYear; year <= dt1.Year; year += step)
                 {
                     keyPoints.Add(new DateTime((int)year, 1, 1));
                     textFieldsLeft--;
                 }
+
+            //diff разница в месяцах
+            diff = diff * 12 + dt1.Month - dt0.Month;
+            if (diff > 0)
+            {
+                step = diff / textFieldsAvailable;
+                int[] possibleSteps = new int[] { 2, 3, 4, 6 };
+               
+                int monthesPerStep =1;
+                var steps = possibleSteps.Where(x => x <= step);
+                if (steps != null)
+                {
+                    monthesPerStep = steps.Max();
+                }
+
+                TimeFrame monthes = new TimeFrame(Period.Month, monthesPerStep);
+                dt_current = dt0.UpToNextFrame(monthes);
+
+                if (DateTimeTools.CountFramesInPeriod(monthes, dt_current, dt1, TimeSpan.Zero) - (dt1.Year-dt0.Year)  < textFieldsLeft)
+                {
+                   while (dt_current <= dt1)
+                    {
+
+                        if (dt_current.Month != 1)
+                        {
+                            keyPoints.Add(dt_current);
+                            textFieldsLeft--;
+                        }
+                        dt_current += monthes;
+                    }
+                }
+            }
            
 
-            diff = diff * 12 + dt1.Month - dt0.Month;
-            if(textFieldsLeft<diff)
-            {
-                step = diff / textFieldsLeft;
-                int yearFields = textFieldsAvailable - textFieldsLeft;
-                //yearFields надо сравнить с количеством отрисовываемых месяцев
-            }
+
+        
             return keyPoints;
         }
     }
