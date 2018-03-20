@@ -306,7 +306,7 @@ namespace Hedge
             }
             static public DateTime UpToMonths(this DateTime dt, int monthes_amount)
             {
-                return new DateTime().AddMonths(monthes_amount * ((dt.Year * 12 + dt.Month) / monthes_amount + 1));
+                return new DateTime().AddMonths(monthes_amount * (((dt.Year-1) * 12 + dt.Month-1) / monthes_amount) + 1);
             }
             static public DateTime UpToYears(this DateTime dt, int years_amount)
             {

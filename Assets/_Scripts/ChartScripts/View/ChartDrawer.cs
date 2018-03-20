@@ -156,7 +156,7 @@ namespace Chart
                DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
             }
 
-            var dateList =  GetKeyDataPoints();
+            var dateList =  GetKeyDataPoints1();
             dateTextPool.CleanPool();
             foreach (var date in dateList)
             {
@@ -431,9 +431,9 @@ namespace Chart
             DateTime dt_current;
 
             //diff разница в годах
-            float diff = dt1.Year - dt0.Year;
-            float step = 1;
-            float startYear = dt0.Year+1;
+            double diff = dt1.Year - dt0.Year;
+            double step = 1;
+            double startYear = dt0.Year+1;
 
             if (textFieldsLeft < diff)
             {
@@ -441,10 +441,11 @@ namespace Chart
                 startYear = (int)(dt0.Year / step) * step + step;
             }
 
-            for (float year = startYear; year <= dt1.Year; year += step)
+            while (startYear <= dt1.Year)
                 {
-                    keyPoints.Add(new DateTime((int)year, 1, 1));
+                    keyPoints.Add(new DateTime((int)startYear, 1, 1));
                     textFieldsLeft--;
+                    startYear += step;
                 }
 
             //diff разница в месяцах
@@ -453,16 +454,12 @@ namespace Chart
             {
                 step = diff / textFieldsAvailable;
                 int[] possibleSteps = new int[] { 2, 3, 4, 6 };
-               
-                int monthesPerStep =1;
-                var steps = possibleSteps.Where(x => x <= step);
-                if (steps != null)
-                {
-                    monthesPerStep = steps.Max();
-                }
+
+                int steps = possibleSteps.Where(x => x <= step).DefaultIfEmpty(0).Max();
+                int monthesPerStep = steps > 0 ? steps : 1;
 
                 TimeFrame monthes = new TimeFrame(Period.Month, monthesPerStep);
-                dt_current = dt0.UpToNextFrame(monthes);
+                dt_current = dt0.UpToMonths(monthesPerStep);
 
                 if (DateTimeTools.CountFramesInPeriod(monthes, dt_current, dt1, TimeSpan.Zero) - (dt1.Year-dt0.Year)  < textFieldsLeft)
                 {
@@ -478,10 +475,20 @@ namespace Chart
                     }
                 }
             }
-           
+
+            //diff разница в днях
+            diff = (dt1 - dt0).TotalDays;
+            if (diff > 0)
+            {
+                step = diff / textFieldsAvailable;
+                int daysPerStep;
+                dt_current = dt0.UpToDays(1);
+            }
 
 
-        
+
+
+
             return keyPoints;
         }
     }
