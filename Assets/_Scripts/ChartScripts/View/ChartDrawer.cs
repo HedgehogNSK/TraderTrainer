@@ -156,7 +156,7 @@ namespace Chart
                DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
             }
 
-            var dateList =  GetKeyDataPoints1();
+            var dateList =  GetKeyDataPoints2(5, chartDataManager.TFrame);
             dateTextPool.CleanPool();
             foreach (var date in dateList)
             {
@@ -435,7 +435,7 @@ namespace Chart
             double step = 1;
             double startYear = dt0.Year+1;
 
-            if (textFieldsLeft < diff)
+            if (textFieldsLeft < diff && textFieldsLeft != 0)
             {
                 step = diff/ textFieldsLeft ;
                 startYear = (int)(dt0.Year / step) * step + step;
@@ -450,13 +450,13 @@ namespace Chart
 
             //diff разница в месяцах
             diff = diff * 12 + dt1.Month - dt0.Month;
-            if (diff > 0)
+            if (diff > 0 && textFieldsLeft != 0)
             {
                 step = diff / textFieldsAvailable;
                 int[] possibleSteps = new int[] { 2, 3, 4, 6 };
 
-                int steps = possibleSteps.Where(x => x <= step).DefaultIfEmpty(0).Max();
-                int monthesPerStep = steps > 0 ? steps : 1;
+                int monthesPerStep = possibleSteps.Where(x => x <= step).DefaultIfEmpty(0).Max();
+                monthesPerStep = monthesPerStep > 0 ? monthesPerStep : 1;
 
                 TimeFrame monthes = new TimeFrame(Period.Month, monthesPerStep);
                 dt_current = dt0.UpToMonths(monthesPerStep);
@@ -477,28 +477,17 @@ namespace Chart
             }
 
             //diff разница в днях
-            diff = (dt1 - dt0).TotalDays;
-            if (diff > 0)
+            diff = Math.Round((dt1 - dt0).TotalDays);
+            if (diff > 0 && textFieldsLeft!= 0 && textFieldsLeft > textFieldsAvailable / 2 - 1)
             {
-                step = diff / textFieldsLeft;
+                step =diff / textFieldsLeft;
                 int daysPerStep = step <=1 ? 1: (int) step+1;
                 TimeFrame days = new TimeFrame(Period.Day, daysPerStep);
 
-                dt_current = dt0.UpToDays(1);
-                int keyDaysAmount = 0;
                 int month;
-                while(dt_current<=dt1)
-                {
-                    if (dt_current.Day != 1) keyDaysAmount++;
-                    month = dt_current.Month;
-                    dt_current += days;
-                    if (month < dt_current.Month) dt_current.FloorToMonths();
-                }
+                dt_current = dt0.FloorToTimeFrame(days).UpToNextFrame(days);
 
-                dt_current = dt0.UpToDays(1);
-                if (keyDaysAmount <= textFieldsLeft)
-                {
-                    while (dt_current <= dt1)
+                    while (dt_current <= dt1 && textFieldsLeft!=0)
                     {
                         if (dt_current.Day != 1)
                         {
@@ -509,15 +498,70 @@ namespace Chart
                         dt_current += days;
                         if (month < dt_current.Month) dt_current.FloorToMonths();
                     }
-                }
                 
+                
+            }
+
+            // diff разница в часах
+             diff = Math.Round((dt1 - dt0).TotalHours);
+
+             if (step ==1 && diff > 0 && textFieldsLeft != 0 && textFieldsLeft > textFieldsAvailable/2-1)
+            {
+                step = diff / textFieldsLeft;
+                int[] possibleSteps = new int[] { 1, 2, 3, 4, 6, 12 };
+                
+                int hoursPerStep = possibleSteps.Where(x => x <= step).DefaultIfEmpty(0).Max();
+                hoursPerStep = hoursPerStep > 0 ? hoursPerStep : 1;
+                TimeFrame hours = new TimeFrame(Period.Hour, hoursPerStep);
+
+                int hour;
+                dt_current = dt0.FloorToTimeFrame(hours).UpToNextFrame(hours).UpToNextFrame(hours);
+
+                while (dt_current <= dt1 && textFieldsLeft != 0)
+                {
+                    if (dt_current.Hour != 0)
+                    {
+                        keyPoints.Add(dt_current);
+                        textFieldsLeft--;
+                    }
+                    hour = dt_current.Day;
+                    dt_current += hours;
+                    if (hour < dt_current.Day) dt_current.FloorToMonths();
+                }
+                if(textFieldsLeft != 0)
+                {
+                    keyPoints.Add(dt0.FloorToTimeFrame(hours).UpToNextFrame(hours));
+                    textFieldsLeft--;
+                }
             }
 
 
 
+             return keyPoints;
+        }
 
+        public IEnumerable<DateTime> GetKeyDataPoints2(int size, TimeFrame timeFrame)
+        {
+            DateTime dt0 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
+            DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
+            List<DateTime> keyPoints = new List<DateTime>();
+            int textFieldsLeft = size;
 
+            TimeSpan dateDiff = dt1 - dt0;
+
+            long dateDiffInTicks = dateDiff.Ticks;
+            long step = dateDiffInTicks / size;
+
+            DateTime current_date = dt0.FloorToTimeFrame(timeFrame).UpToNextFrame(timeFrame);
+            textFieldsLeft--;
+            keyPoints.Add(current_date);
+            while (dt0<= dt1 && textFieldsLeft != 0)
+            {
+                current_date = current_date.AddTicks(step).FloorToTimeFrame(timeFrame);
+                keyPoints.Add(current_date);
+                textFieldsLeft--;
+            }
             return keyPoints;
         }
+        }
     }
-}

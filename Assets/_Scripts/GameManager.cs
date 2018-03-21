@@ -52,10 +52,10 @@ namespace ChartGame
 
                 chartDrawer.ChartDataManager = new SimpleChartViewer(1000, new TimeFrame(Period.Hour, 2));
                 chartDrawer.DrawChart();
-                sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
-                DateTime dt = sqlDB.GetPrice(0);
-                Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());
-                Debug.Log(sqlDB.TyrToSetPairByAcronym("Test", "Test2"));
+                //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
+                //DateTime dt = sqlDB.GetPrice(0);
+                //Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());
+                //Debug.Log(sqlDB.TyrToSetPairByAcronym("Test", "Test2"));
                 //Debug.Log(sqlDB.ChartBeginTime);
                 //Debug.Log(sqlDB.ChartEndTime);
 
