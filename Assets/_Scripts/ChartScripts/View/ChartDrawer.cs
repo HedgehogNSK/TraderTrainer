@@ -480,9 +480,37 @@ namespace Chart
             diff = (dt1 - dt0).TotalDays;
             if (diff > 0)
             {
-                step = diff / textFieldsAvailable;
-                int daysPerStep;
+                step = diff / textFieldsLeft;
+                int daysPerStep = step <=1 ? 1: (int) step+1;
+                TimeFrame days = new TimeFrame(Period.Day, daysPerStep);
+
                 dt_current = dt0.UpToDays(1);
+                int keyDaysAmount = 0;
+                int month;
+                while(dt_current<=dt1)
+                {
+                    if (dt_current.Day != 1) keyDaysAmount++;
+                    month = dt_current.Month;
+                    dt_current += days;
+                    if (month < dt_current.Month) dt_current.FloorToMonths();
+                }
+
+                dt_current = dt0.UpToDays(1);
+                if (keyDaysAmount <= textFieldsLeft)
+                {
+                    while (dt_current <= dt1)
+                    {
+                        if (dt_current.Day != 1)
+                        {
+                            keyPoints.Add(dt_current);
+                            textFieldsLeft--;
+                        }
+                        month = dt_current.Month;
+                        dt_current += days;
+                        if (month < dt_current.Month) dt_current.FloorToMonths();
+                    }
+                }
+                
             }
 
 

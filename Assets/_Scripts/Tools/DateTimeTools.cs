@@ -246,7 +246,7 @@ namespace Hedge
             }
             public static DateTime FloorToMonths(this DateTime dt, int monthes_amount =1)
             {
-                return new DateTime(0, monthes_amount * (int)((double)dt.Year * 12 + dt.Month) / monthes_amount, 1);
+                return new DateTime(0, monthes_amount * (int)((double)dt.Year * 12 + dt.Month-1) / monthes_amount, 1);
             }
             public static DateTime FloorToYears(this DateTime dt, int years_amount)
             {
