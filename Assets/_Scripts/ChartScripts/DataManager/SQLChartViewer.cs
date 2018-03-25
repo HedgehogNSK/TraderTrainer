@@ -203,9 +203,7 @@ public class SQLChartViewer : IChartDataManager
 
     public DateTime GetPrice(double timestamp)
     {
-        UnityNpgsqlTypes.NpgsqlTimeStamp stamp;
         DateTime date;
-        DateTimeOffset dateOffset;
         using (NpgsqlCommand cmd = new NpgsqlCommand("SELECT date " +
              "FROM trades " +
              "LIMIT 1;", dbcon))
@@ -222,8 +220,6 @@ public class SQLChartViewer : IChartDataManager
     public PriceFluctuation GetFluctuation(DateTime timestamp)
     { 
         DateTime periodEnd;
-        List<double> prices = new List<double>();
-        double volume =0;
         periodEnd = timestamp.UpToNextFrame(TFrame);
 
         using (NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT price, date, volume

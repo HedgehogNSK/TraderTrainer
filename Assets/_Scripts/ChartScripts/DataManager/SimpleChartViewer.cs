@@ -9,7 +9,7 @@ using System.Linq;
 
 public class SimpleChartViewer : IChartDataManager
 {
-    Trade[] points;
+    Trade[] trades;
     int current = 0;
     int tFrameCount;
 
@@ -19,7 +19,7 @@ public class SimpleChartViewer : IChartDataManager
     {
         get
         {
-            return points[0].DTime;
+            return trades[0].DTime;
         }
     }
 
@@ -27,7 +27,7 @@ public class SimpleChartViewer : IChartDataManager
     {
         get
         {
-            return points[points.Length-1].DTime;
+            return trades[trades.Length-1].DTime;
         }
     }
 
@@ -37,16 +37,16 @@ public class SimpleChartViewer : IChartDataManager
         set
         {
             tFrame = value;
-            tFrameCount = DateTimeTools.CountFramesInPeriod(TFrame, points[0].DTime, points[points.Length-1].DTime, TimeSpan.Zero);
+            tFrameCount = DateTimeTools.CountFramesInPeriod(TFrame, trades[0].DTime, trades[trades.Length-1].DTime, TimeSpan.Zero);
         }
     }
 
     public SimpleChartViewer(int size, TimeFrame timeFrame)
     {
-        points = new Trade[size];
+        trades = new Trade[size];
         for(int id = 0; id!=size; id++)
         {
-            points[id] = new Trade(Mathf.Sin(id)+ id/100 , new DateTime(10,1,1).AddHours(id), 1);
+            trades[id] = new Trade(Mathf.Sin(id)+ id/100 , new DateTime(2011,1,1).AddHours(id), 1);
         }
 
         TFrame = timeFrame;
@@ -54,20 +54,20 @@ public class SimpleChartViewer : IChartDataManager
 
     public Trade GetCurrentPoint()
     {
-        if (points != null)
-            return points[current];
+        if (trades != null)
+            return trades[current];
         else
             return null;
     }
     public double GetPrice(double timestamp)
     {
-        int id = ArrayTools.BinarySearch(points, timestamp);
+        int id = ArrayTools.BinarySearch(trades, timestamp);
         if (id < 0)
         {
             Debug.Log("Элемент не найден");
             return -1;
         }
-        return points[id].Price;
+        return trades[id].Price;
     }
 
     public PriceFluctuation GetFluctuation(DateTime timestamp)
@@ -92,7 +92,7 @@ public class SimpleChartViewer : IChartDataManager
         double high, low, open, close;
         double volume = 0;
         //Поиск свечки через Linq
-        var pointsQuery = points.Where(point => point.DTime >= periodBegin && point.DTime < periodEnd);
+        var pointsQuery = trades.Where(point => point.DTime >= periodBegin && point.DTime < periodEnd);
 
         high = pointsQuery.Max(x => x.Price);
         low = pointsQuery.Min(x => x.Price);
@@ -117,10 +117,10 @@ public class SimpleChartViewer : IChartDataManager
 
     public bool IsSettingsSet()
     {
-        if (TFrame.count == 0 || points == null || tFrameCount <=0)
+        if (TFrame.count == 0 || trades == null || tFrameCount <=0)
         {
             string errMsg = TFrame.count == 0 ? "Нет данных о тайм-фрейме" : 
-                points == null? "Нет данных о цене и стоимости": 
+                trades == null? "Нет данных о цене и стоимости": 
                 "Не верное количество фреймов";
             Debug.LogError(errMsg);
             return false;
@@ -143,17 +143,17 @@ public class SimpleChartViewer : IChartDataManager
         int jd = 0;
         for (int id = 0; id != candles.Length; id++)
         {
-            periodBegin = points[jd].DTime.FloorToTimeFrame(TFrame);
-            periodEnd = points[jd].DTime.UpToNextFrame(TFrame);
-            high = low = open = close = points[jd].Price;
-            volume = points[jd].Volume;
-            for (jd = jd + 1; jd < points.Length && points[jd].DTime < periodEnd; jd++)
+            periodBegin = trades[jd].DTime.FloorToTimeFrame(TFrame);
+            periodEnd = trades[jd].DTime.UpToNextFrame(TFrame);
+            high = low = open = close = trades[jd].Price;
+            volume = trades[jd].Volume;
+            for (jd = jd + 1; jd < trades.Length && trades[jd].DTime < periodEnd; jd++)
             {
 
-                if (points[jd].Price > high) high = points[jd].Price;
-                if (points[jd].Price < low) low = points[jd].Price;
-                close = points[jd].Price;
-                volume += points[jd].Volume;
+                if (trades[jd].Price > high) high = trades[jd].Price;
+                if (trades[jd].Price < low) low = trades[jd].Price;
+                close = trades[jd].Price;
+                volume += trades[jd].Volume;
 
             }
             candles[id] = new PriceFluctuation(periodBegin, volume, close, open, low, high);
@@ -168,26 +168,26 @@ public class SimpleChartViewer : IChartDataManager
 
         PriceFluctuation[] candles = new PriceFluctuation[framesCount];
         double high, low, open, close;
-        DateTime periodBegin, periodEnd;
+        DateTime periodBegin; //periodEnd;
         double volume;
 
-        int jd = points.Length - 1;
+        int jd = trades.Length - 1;
 
         for (int id = candles.Length - 1; id != -1; id--)
         {
-            periodBegin = points[jd].DTime.FloorToTimeFrame(TFrame);
-            periodEnd = points[jd].DTime.UpToNextFrame(TFrame);
+            periodBegin = trades[jd].DTime.FloorToTimeFrame(TFrame);
+            //periodEnd = trades[jd].DTime.UpToNextFrame(TFrame);
 
-            high = low = open = close = points[jd].Price;
-            volume = points[jd].Volume;
+            high = low = open = close = trades[jd].Price;
+            volume = trades[jd].Volume;
 
-            for (jd = jd - 1; jd != -1 && points[jd].DTime > periodBegin; jd--)
+            for (jd = jd - 1; jd != -1 && trades[jd].DTime > periodBegin; jd--)
             {
 
-                if (points[jd].Price > high) high = points[id].Price;
-                if (points[jd].Price < low) low = points[id].Price;
-                open = points[jd].Price;
-                volume += points[jd].Volume;
+                if (trades[jd].Price > high) high = trades[id].Price;
+                if (trades[jd].Price < low) low = trades[id].Price;
+                open = trades[jd].Price;
+                volume += trades[jd].Volume;
 
             }
             candles[id] = new PriceFluctuation(periodBegin, volume, close, open, low, high);
@@ -220,7 +220,7 @@ public class SimpleChartViewer : IChartDataManager
             default: {
                     Debug.LogError("Не описано действие для этого положения");
                     return null;
-                } break;
+                }
         }
         return candles;
     }
@@ -246,7 +246,7 @@ public class SimpleChartViewer : IChartDataManager
         for (DateTime current_period_begin = (firstDate <= secondDate ? firstDate : secondDate); current_period_begin <= (firstDate > secondDate ? firstDate : secondDate); current_period_begin = next_period_begin)
         {
             next_period_begin = current_period_begin.UpToNextFrame(TFrame);
-            var request = points.Where(point => point.DTime >= current_period_begin && point.DTime < next_period_begin).OrderBy(point => point.DTime);
+            var request = trades.Where(point => point.DTime >= current_period_begin && point.DTime < next_period_begin).OrderBy(point => point.DTime);
             if (request != null)
             {
                 open = request.FirstOrDefault().Price;

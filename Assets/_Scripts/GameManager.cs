@@ -40,7 +40,6 @@ namespace ChartGame
             SimpleChartViewer db;
             SQLChartViewer sqlDB;
             IChartDataManager chartDataManager;
-            List<Candle> candles = new List<Candle>();
             // Use this for initialization
             private void Awake()
             {

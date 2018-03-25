@@ -59,8 +59,8 @@ namespace Hedge
                 Vector2 startPoint;
                 Vector2 endPoint;
 
-                var diffx = Mathf.Abs((begin.x - end.x));
-                var diffy = Mathf.Abs((begin.y - end.y));
+                //var diffx = Mathf.Abs((begin.x - end.x));
+                //var diffy = Mathf.Abs((begin.y - end.y));
 
                 /*if (diffx > diffy)
                 {
@@ -122,7 +122,7 @@ namespace Hedge
                 if (dashed)
                 {
                     
-                    float stepLenght = gap * Mathf.Sqrt(cosToXaxis* cosToXaxis + ratio* sinToXaxis* sinToXaxis);
+                    //float stepLenght = gap * Mathf.Sqrt(cosToXaxis* cosToXaxis + ratio* sinToXaxis* sinToXaxis);
                     float totalDashes = distance / current_gap;
                     float stepByX = current_gap * cosToXaxis;
                     //var stepByY = current_gap * sinToXaxis;

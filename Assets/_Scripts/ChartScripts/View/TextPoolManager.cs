@@ -46,7 +46,7 @@ namespace Chart
                 {
                     case ShiftBy.Horizontal: { if (pos > Screen.width) pos = Screen.width; } break;
                     case ShiftBy.Vertical: { if (pos > Screen.height) pos = Screen.height; } break;
-                    default: { throw new System.ArgumentOutOfRangeException("Действие для ShiftBy=" + shiftBy + " не описано"); } break;
+                    default: { throw new System.ArgumentOutOfRangeException("Действие для ShiftBy=" + shiftBy + " не описано"); }
                 }
                 
             }
@@ -71,7 +71,7 @@ namespace Chart
                 {
                     case ShiftBy.Horizontal: { textPool[current_id].rectTransform.position = new Vector2(ClampPosition(position,shiftBy), textPool[current_id].rectTransform.position.y); } break;
                     case ShiftBy.Vertical: { textPool[current_id].rectTransform.position = new Vector2(textPool[current_id].rectTransform.position.x, ClampPosition(position, shiftBy)); } break;
-                    default: { throw new System.ArgumentOutOfRangeException("Действие для ShiftBy=" + shiftBy + " не описано"); }; break;
+                    default: { throw new System.ArgumentOutOfRangeException("Действие для ShiftBy=" + shiftBy + " не описано"); }
                 }
                 current_id++;
             }

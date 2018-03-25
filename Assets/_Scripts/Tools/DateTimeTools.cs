@@ -200,7 +200,7 @@ namespace Hedge
                             Debug.Log("Указан тип периода, который не реализован");
                             return -1;
                         }
-                        break;
+                        
                 }
 
                 frames_amount = Math.Abs(frames_amount);
@@ -246,9 +246,9 @@ namespace Hedge
             }
             public static DateTime FloorToMonths(this DateTime dt, int monthes_amount =1)
             {
-                return new DateTime().AddMonths(monthes_amount * (int)((double)dt.Year * 12 + dt.Month-1) / monthes_amount);
+                return new DateTime().AddMonths(monthes_amount * (int)((double)(dt.Year-1) * 12 + dt.Month-1) / monthes_amount);
             }
-            public static DateTime FloorToYears(this DateTime dt, int years_amount)
+            public static DateTime FloorToYears(this DateTime dt, int years_amount=1)
             {
                 return new DateTime(years_amount * (dt.Year / years_amount), 1, 1);
             }
@@ -257,12 +257,12 @@ namespace Hedge
             {
                 switch (timeFrame.period)
                 {
-                    case Period.Minute: { return dt.FloorToMinutes(timeFrame.count); } break;
-                    case Period.Hour: { return dt.FloorToHours(timeFrame.count); } break;
-                    case Period.Day: { return dt.FloorToDays(timeFrame.count); } break;
-                    case Period.Week: { return dt.FloorToWeeks(timeFrame.count); } break;
-                    case Period.Month: { return dt.FloorToMonths(timeFrame.count); } break;
-                    case Period.Year: { return dt.FloorToYears(timeFrame.count); } break;
+                    case Period.Minute: { return dt.FloorToMinutes(timeFrame.count); } 
+                    case Period.Hour: { return dt.FloorToHours(timeFrame.count); } 
+                    case Period.Day: { return dt.FloorToDays(timeFrame.count); } 
+                    case Period.Week: { return dt.FloorToWeeks(timeFrame.count); } 
+                    case Period.Month: { return dt.FloorToMonths(timeFrame.count); } 
+                    case Period.Year: { return dt.FloorToYears(timeFrame.count); } 
                     default: { Debug.LogError("Период не задан"); } break;
 
                 }
@@ -306,7 +306,7 @@ namespace Hedge
             }
             static public DateTime UpToMonths(this DateTime dt, int monthes_amount)
             {
-                return new DateTime().AddMonths(monthes_amount * (((dt.Year-1) * 12 + dt.Month-1) / monthes_amount) + 1);
+                return new DateTime().AddMonths(monthes_amount * (int)((double)(dt.Year-1) * 12 + dt.Month - 1) / monthes_amount + monthes_amount);
             }
             static public DateTime UpToYears(this DateTime dt, int years_amount)
             {
@@ -316,12 +316,12 @@ namespace Hedge
             {
                 switch (timeFrame.period)
                 {
-                    case Period.Minute: { return dt.UpToMinutes(timeFrame.count); } break;
-                    case Period.Hour: { return dt.UpToHours(timeFrame.count); } break;
-                    case Period.Day: { return dt.UpToDays(timeFrame.count); } break;
-                    case Period.Week: { return dt.UpToWeeks(timeFrame.count); } break;
-                    case Period.Month: { return dt.UpToMonths(timeFrame.count); } break;
-                    case Period.Year: { return dt.UpToYears(timeFrame.count); } break;
+                    case Period.Minute: { return dt.UpToMinutes(timeFrame.count); } 
+                    case Period.Hour: { return dt.UpToHours(timeFrame.count); } 
+                    case Period.Day: { return dt.UpToDays(timeFrame.count); } 
+                    case Period.Week: { return dt.UpToWeeks(timeFrame.count); } 
+                    case Period.Month: { return dt.UpToMonths(timeFrame.count); } 
+                    case Period.Year: { return dt.UpToYears(timeFrame.count); }
                     default: { Debug.LogError("Период не задан"); } break;
 
                 }
@@ -408,21 +408,32 @@ namespace Hedge
                 tFrame.count *= multiplicator;
                 return tFrame;
             }
+            public static TimeFrame operator *(TimeFrame tFrame, float multiplicator)
+            {
+
+                return multiplicator * tFrame;
+            }
+
+            public static TimeFrame operator *(float multiplicator, TimeFrame tFrame)
+            {
+                tFrame.count = (int)(tFrame.count *multiplicator);
+                return tFrame;
+            }
             public static DateTime operator +(DateTime dateTime, TimeFrame tFrame)
             {
                 switch (tFrame.period)
                 {
-                    case Period.Minute: { return dateTime.AddMinutes(tFrame.count); } break;
-                    case Period.Hour: { return dateTime.AddHours(tFrame.count); } break;
-                    case Period.Day: { return dateTime.AddDays(tFrame.count); } break;
-                    case Period.Week: { return dateTime.AddDays(7 * tFrame.count); } break;
-                    case Period.Month: { return dateTime.AddMonths(tFrame.count); } break;
-                    case Period.Year: { return dateTime.AddYears(tFrame.count); } break;
+                    case Period.Minute: { return dateTime.AddMinutes(tFrame.count); } 
+                    case Period.Hour: { return dateTime.AddHours(tFrame.count); } 
+                    case Period.Day: { return dateTime.AddDays(tFrame.count); } 
+                    case Period.Week: { return dateTime.AddDays(7 * tFrame.count); } 
+                    case Period.Month: { return dateTime.AddMonths(tFrame.count); } 
+                    case Period.Year: { return dateTime.AddYears(tFrame.count); }
                     default:
                         {
-                            throw new System.ArgumentOutOfRangeException("Снала реализуй алгоритм сложения");
+                            throw new System.ArgumentOutOfRangeException("Сначала реализуй алгоритм сложения");
                         }
-                        break;
+                        
                 }
 
 

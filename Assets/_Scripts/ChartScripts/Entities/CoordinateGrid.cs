@@ -33,7 +33,7 @@ namespace Chart
 
         public Action Updated;
 
-        public DateTime FromXAxisToDate(int x)
+        public DateTime FromXAxisToDate(float x)
         {
             return zeroPoint + x * step;
         }
