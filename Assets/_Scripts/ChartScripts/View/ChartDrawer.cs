@@ -726,5 +726,65 @@ namespace Chart
             }
             return keyPoints;
         }
+
+        int[] possibleMonthStep = new int[] { 1, 2, 3, 4, 6 };
+        int[] possibleHourStep = new int[] { 1,2,3,4,6,8,12};
+        int[] possibleMinuteStep = new int[] { 1,2,3,4,5,6,8,10,12,15,20,30};
+        public IEnumerable<DateTime> GetKeyDataPoints3(int maxDivison, TimeFrame chartTimeFrame)
+        {
+            DateTime dt0 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
+            DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
+
+            List<DateTime> keyPoints = new List<DateTime>();
+
+
+            TimeSpan periodLenth = dt1 - dt0;
+            long stepInTicks = periodLenth.Ticks / (maxDivison - 1);
+            TimeSpan step = new TimeSpan(stepInTicks);
+            double dateDifference = 1/ (maxDivison - 1);
+            TimeFrame frame = new TimeFrame();
+
+            if (dateDifference * dt1.Year - dt0.Year > 12/ possibleMonthStep.Last())
+            {
+                dateDifference *= dt1.Year - dt0.Year;
+                if (dateDifference != (int)dateDifference) dateDifference++;
+                frame.period = Period.Year;
+
+            }
+            else if (dateDifference * (dt1.Year - dt0.Year) * 12 + dt1.Month - dt0.Month < 0.5)
+            {
+                dateDifference *= (dt1.Year - dt0.Year) * 12 + dt1.Month - dt0.Month;
+                dateDifference /= maxDivison;
+                if (dateDifference != (int)dateDifference) dateDifference++;
+                
+                frame.period = Period.Month;
+            }
+            else if (step.TotalDays > 1)
+            {
+                dateDifference *= (dt1 - dt0).TotalDays;
+                if (dateDifference != (int)dateDifference) dateDifference++;
+                frame.period = Period.Day;
+            }
+            else if (step.TotalHours > 1)
+            {
+                dateDifference *= (dt1 - dt0).TotalHours;
+                if (dateDifference != (int)dateDifference) dateDifference++;
+                frame.period = Period.Hour;
+            }
+
+            else if (step.TotalMinutes > 1)
+            {
+                dateDifference = (dt1 - dt0).TotalMinutes;
+                frame.period = Period.Minute;
+            }
+            else
+            {
+                Debug.Log("Слишком маленький промежуток");
+                return null;
+            }
+
+            frame.count = (int)dateDifference;
+            return keyPoints;
+        }
         }
     }
