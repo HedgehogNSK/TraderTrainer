@@ -739,40 +739,53 @@ namespace Chart
 
 
             TimeSpan periodLenth = dt1 - dt0;
+            double dateDifference = maxDivison - 1;
+
+            double yearsStep = dt1.Year - dt0.Year;
+            double monthsStep = yearsStep * 12 + dt1.Month - dt0.Month;
+            double daysStep = periodLenth.Days;
+            double hourStep = periodLenth.Hours;
+            double minuteStep = periodLenth.Minutes;
+
+            yearsStep /= dateDifference;
+            monthsStep /= dateDifference;
+            daysStep /= dateDifference;
+            hourStep /= dateDifference;
+            minuteStep /= dateDifference;
+
             long stepInTicks = periodLenth.Ticks / (maxDivison - 1);
             TimeSpan step = new TimeSpan(stepInTicks);
-            double dateDifference = 1/ (maxDivison - 1);
+           
             TimeFrame frame = new TimeFrame();
 
-            if (dateDifference * dt1.Year - dt0.Year > 12/ possibleMonthStep.Last())
+            if (yearsStep > 0.5)
             {
-                dateDifference *= dt1.Year - dt0.Year;
-                if (dateDifference != (int)dateDifference) dateDifference++;
+                if (yearsStep != (int)yearsStep) yearsStep++;
+                yearsStep = (int)yearsStep;
                 frame.period = Period.Year;
 
             }
-            else if (dateDifference * (dt1.Year - dt0.Year) * 12 + dt1.Month - dt0.Month < 0.5)
+            else if (monthsStep > 0.5)
             {
-                dateDifference *= (dt1.Year - dt0.Year) * 12 + dt1.Month - dt0.Month;
-                dateDifference /= maxDivison;
-                if (dateDifference != (int)dateDifference) dateDifference++;
-                
+                if (monthsStep != (int)monthsStep) monthsStep++;
+                monthsStep = (int)monthsStep;
                 frame.period = Period.Month;
+                monthsStep = possibleMonthStep.Where(possibleStep => monthsStep <= possibleStep).DefaultIfEmpty(possibleMonthStep.Max()).Min();
             }
-            else if (step.TotalDays > 1)
+            else if (step.TotalDays > 0.5)
             {
                 dateDifference *= (dt1 - dt0).TotalDays;
                 if (dateDifference != (int)dateDifference) dateDifference++;
                 frame.period = Period.Day;
             }
-            else if (step.TotalHours > 1)
+            else if (step.TotalHours > 0.5)
             {
                 dateDifference *= (dt1 - dt0).TotalHours;
                 if (dateDifference != (int)dateDifference) dateDifference++;
                 frame.period = Period.Hour;
             }
 
-            else if (step.TotalMinutes > 1)
+            else if (step.TotalMinutes > 0.5)
             {
                 dateDifference = (dt1 - dt0).TotalMinutes;
                 frame.period = Period.Minute;
