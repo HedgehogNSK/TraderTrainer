@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-
+using System.Linq;
 namespace Hedge
 {
     namespace Tools
@@ -372,6 +372,136 @@ namespace Hedge
                 }
 
                 return output;
+            }
+
+            static int[] possibleMonthStep = new int[] { 1, 2, 3, 4, 6 };
+            static int[] possibleHourStep = new int[] { 1, 2, 3, 4, 6, 8, 12 };
+            static int[] possibleMinuteStep = new int[] { 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30 };
+            //DateTime dt0, dt1;
+            static public IEnumerable<DateTime> DividePeriodByKeyPoints(DateTime first, DateTime second, int divisorsMaxAmount)
+            {
+
+                List<DateTime> keyPoints = new List<DateTime>();
+
+
+                divisorsMaxAmount = divisorsMaxAmount - 1;
+
+                TimeSpan periodLenth = second - first;
+                double yearsStep = second.Year - first.Year;
+                double monthsStep = yearsStep * 12 + second.Month - first.Month;
+                double daysStep = periodLenth.TotalDays;
+                double hourStep = periodLenth.TotalHours;
+                double minuteStep = periodLenth.TotalMinutes;
+
+
+                yearsStep /= divisorsMaxAmount;
+                monthsStep /= divisorsMaxAmount;
+                daysStep /= divisorsMaxAmount;
+                hourStep /= divisorsMaxAmount;
+                minuteStep /= divisorsMaxAmount;
+
+                long stepInTicks = periodLenth.Ticks / (divisorsMaxAmount - 1);
+                int step;
+
+                //Debug.Log("Годовой шаг:" + yearsStep);
+                Debug.Log("Месячный шаг:" + monthsStep);
+                Debug.Log("Дневной шаг:" + daysStep);
+                //Debug.Log("Часовой шаг:" + hourStep);
+                //Debug.Log("Минутный шаг:" + minuteStep);
+                TimeFrame frame = new TimeFrame();
+
+                //Определение корректного шага для отображения
+                if (yearsStep > 0.5)
+                {
+                    frame.period = Period.Year;
+
+                    if (yearsStep != (int)yearsStep) yearsStep++;
+                    step = (int)yearsStep;
+
+                }
+                else if (daysStep >= 14)
+                {
+                    frame.period = Period.Month;
+
+                    step = possibleMonthStep.Where(possibleStep => monthsStep <= possibleStep).DefaultIfEmpty(possibleMonthStep.Max()).Min();
+
+                }
+                else if (daysStep >= 0.5)
+                {
+                    frame.period = Period.Day;
+
+                    if (daysStep != (int)daysStep) daysStep++;
+                    step = (int)daysStep;
+                }
+                else if (hourStep > 0.5)
+                {
+                    frame.period = Period.Hour;
+                    step = possibleHourStep.Where(possibleStep => hourStep <= possibleStep).DefaultIfEmpty(possibleHourStep.Max()).Min();
+                }
+                else if (minuteStep > 0.5)
+                {
+                    frame.period = Period.Minute;
+                    step = possibleMinuteStep.Where(possibleStep => minuteStep <= possibleStep).DefaultIfEmpty(possibleMinuteStep.Max()).Min();
+                }
+                else
+                {
+                    Debug.Log("Слишком маленький промежуток");
+                    return null;
+                }
+                frame.count = step;
+
+                DateTime current_time = first.UpToNextFrame(frame);
+
+               
+
+                if (frame.period != Period.Day)
+                {
+                    keyPoints.Add(current_time);
+                    while (current_time <= second)
+                    {
+                        current_time += frame;
+                        keyPoints.Add(current_time);
+                    }
+                }
+                else
+                {
+                    DateTime tmp;
+                    int month;
+                    month = current_time.Month;
+                    while (current_time <= second)
+                    {
+                       
+                        if (current_time.Month != month)
+                        {
+                            
+                            tmp = current_time.FloorToMonths();
+                            if (tmp - keyPoints.Last() < current_time - tmp)
+                            {            
+                                keyPoints[keyPoints.Count-1] = tmp;                               
+                                keyPoints.Add(current_time);
+                            }
+                            else
+                            {
+                                keyPoints[keyPoints.Count-1] = current_time;
+                                keyPoints.Add(tmp);
+                               
+                            }
+                            
+                            current_time = tmp + frame;
+
+                        }
+                        else
+                        {
+                            month = current_time.Month;
+                            keyPoints.Add(current_time);
+                            current_time += frame;
+                        }                     
+
+                    }
+                    keyPoints.Add(current_time);
+                }
+
+                return keyPoints;
             }
         }
 

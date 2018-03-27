@@ -125,20 +125,20 @@ namespace Chart
             DrawTools.dashLength = 0.025f;
             DrawTools.gap = 0.03f;
             //dateList.Clear();
-  
+
             priceTextPool.CleanPool();
 
             for (int i = 0; i != periodDevider + 1; i++)
             {
-               //int xPoint = (int)(leftDownCorner.x + i * xShift);
-               int yPoint = (int)(leftDownCorner.y + i * yShift);
+                //int xPoint = (int)(leftDownCorner.x + i * xShift);
+                int yPoint = (int)(leftDownCorner.y + i * yShift);
 
-               // dateList.Add(xPoint);
-               // dateTextPool.SetText(
-               //     coordGrid.FromXAxisToDate(xPoint).ToChartString(),
-               //     cam.WorldToScreenPoint(new Vector2(xPoint, 0)).x,
-               //     TextPoolManager.ShiftBy.Horizontal
-               //     );
+                // dateList.Add(xPoint);
+                // dateTextPool.SetText(
+                //     coordGrid.FromXAxisToDate(xPoint).ToChartString(),
+                //     cam.WorldToScreenPoint(new Vector2(xPoint, 0)).x,
+                //     TextPoolManager.ShiftBy.Horizontal
+                //     );
 
                 priceTextPool.SetText(
                     coordGrid.FromYAxisToPrice(yPoint).ToString(),
@@ -146,17 +146,23 @@ namespace Chart
                     TextPoolManager.ShiftBy.Vertical
                     );
 
-               // Vector2 datePoint1 = new Vector2(cam.WorldToViewportPoint(new Vector2(xPoint, 0)).x, 0);
-               //Vector2 datePoint2 = new Vector2(cam.WorldToViewportPoint(new Vector2(xPoint, 0)).x, 1);
-                Vector2 pricePoint1 = new Vector2(0,cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
-               Vector2 pricePoint2 = new Vector2(1,cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
-         
-               //DrawTools.DrawLine(datePoint1, datePoint2, cam.orthographicSize, true, cam.aspect);
-               DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
+                // Vector2 datePoint1 = new Vector2(cam.WorldToViewportPoint(new Vector2(xPoint, 0)).x, 0);
+                //Vector2 datePoint2 = new Vector2(cam.WorldToViewportPoint(new Vector2(xPoint, 0)).x, 1);
+                Vector2 pricePoint1 = new Vector2(0, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
+                Vector2 pricePoint2 = new Vector2(1, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
+
+                //DrawTools.DrawLine(datePoint1, datePoint2, cam.orthographicSize, true, cam.aspect);
+                DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
             }
 
-           // var dateList =  GetKeyDataPoints1(dateTextPool.FieldsAmount,chartDataManager.TFrame);
-            var dateList =  GetKeyDataPoints2(dateTextPool.FieldsAmount, chartDataManager.TFrame);
+            // var dateList =  GetKeyDataPoints1(dateTextPool.FieldsAmount,chartDataManager.TFrame);
+            //var dateList =  GetKeyDataPoints3(dateTextPool.FieldsAmount, chartDataManager.TFrame);
+            DateTime dt0 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
+            DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
+
+            DateCorrection(ref dt0, dt1);
+
+            var dateList = DateTimeTools.DividePeriodByKeyPoints(dt0, dt1, dateTextPool.FieldsAmount);
             dateTextPool.CleanPool();
             foreach (var date in dateList)
             {
@@ -263,30 +269,6 @@ namespace Chart
             pointerWolrdPosition =  cam.ScreenToWorldPoint(new Vector3(pointerScreenPosition.x, pointerScreenPosition.y, cam.nearClipPlane));
         }
 
-        //int FromDateToPosition(DateTime dt)
-        //{
-        //    TimeFrame tFrame = ChartDataManager.TFrame;
-        //    if (startingPoint == DateTime.MinValue)
-        //    {
-        //        startingPoint = dt.FloorToTimeFrame(tFrame);
-        //        return 0;
-        //    }
-
-        //    return DateTimeTools.CountFramesInPeriod(tFrame, startingPoint, dt, TimeSpan.Zero);
-        //}
-
-        //DateTime FromPositionToDate(float dt)
-        //{
-        //    TimeFrame tFrame = ChartDataManager.TFrame;
-        //    if(candles[0])
-        //    {
-        //        Candle candle = candles[0];
-        //        int shift = (int)(dt -candle.transform.position.x );
-        //        return candle.PeriodBegin + tFrame * shift;
-        //    }
-
-        //    throw new ArgumentNullException("На графике нет свечей");
-        //}
 
         public bool IsPointToFar(Vector3 point)
         {
@@ -730,74 +712,133 @@ namespace Chart
         int[] possibleMonthStep = new int[] { 1, 2, 3, 4, 6 };
         int[] possibleHourStep = new int[] { 1,2,3,4,6,8,12};
         int[] possibleMinuteStep = new int[] { 1,2,3,4,5,6,8,10,12,15,20,30};
-        public IEnumerable<DateTime> GetKeyDataPoints3(int maxDivison, TimeFrame chartTimeFrame)
+        //DateTime dt0, dt1;
+        public IEnumerable<DateTime> GetKeyDataPoints3(int divisorsAmount, TimeFrame chartTimeFrame)
         {
             DateTime dt0 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
             DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
 
             List<DateTime> keyPoints = new List<DateTime>();
-
+            
+   
+            divisorsAmount = divisorsAmount - 1;
 
             TimeSpan periodLenth = dt1 - dt0;
-            double dateDifference = maxDivison - 1;
-
             double yearsStep = dt1.Year - dt0.Year;
             double monthsStep = yearsStep * 12 + dt1.Month - dt0.Month;
-            double daysStep = periodLenth.Days;
-            double hourStep = periodLenth.Hours;
-            double minuteStep = periodLenth.Minutes;
+            double daysStep = periodLenth.TotalDays;
+            double hourStep = periodLenth.TotalHours;
+            double minuteStep = periodLenth.TotalMinutes;
 
-            yearsStep /= dateDifference;
-            monthsStep /= dateDifference;
-            daysStep /= dateDifference;
-            hourStep /= dateDifference;
-            minuteStep /= dateDifference;
 
-            long stepInTicks = periodLenth.Ticks / (maxDivison - 1);
-            TimeSpan step = new TimeSpan(stepInTicks);
-           
+            yearsStep /= divisorsAmount;
+            monthsStep /= divisorsAmount;
+            daysStep /= divisorsAmount;
+            hourStep /= divisorsAmount;
+            minuteStep /= divisorsAmount;
+
+            long stepInTicks = periodLenth.Ticks / (divisorsAmount - 1);
+            int step;
+            // TimeSpan step = new TimeSpan(stepInTicks);
+
+            Debug.Log("Годовой шаг:"+yearsStep);
+            Debug.Log("Месячный шаг:" + monthsStep);
+            Debug.Log("Дневной шаг:" + daysStep);
+            Debug.Log("Часовой шаг:" + hourStep);
+            Debug.Log("Минутный шаг:" + minuteStep);
             TimeFrame frame = new TimeFrame();
 
             if (yearsStep > 0.5)
             {
-                if (yearsStep != (int)yearsStep) yearsStep++;
-                yearsStep = (int)yearsStep;
                 frame.period = Period.Year;
+
+                if (yearsStep != (int)yearsStep) yearsStep++;
+                step = (int)yearsStep;
 
             }
             else if (monthsStep > 0.5)
             {
-                if (monthsStep != (int)monthsStep) monthsStep++;
-                monthsStep = (int)monthsStep;
                 frame.period = Period.Month;
-                monthsStep = possibleMonthStep.Where(possibleStep => monthsStep <= possibleStep).DefaultIfEmpty(possibleMonthStep.Max()).Min();
+                
+                step = possibleMonthStep.Where(possibleStep => monthsStep <= possibleStep).DefaultIfEmpty(possibleMonthStep.Max()).Min();
+
             }
-            else if (step.TotalDays > 0.5)
+            else if (daysStep > 0.5)
             {
-                dateDifference *= (dt1 - dt0).TotalDays;
-                if (dateDifference != (int)dateDifference) dateDifference++;
                 frame.period = Period.Day;
+
+                if (daysStep != (int)daysStep) daysStep++;
+                step = (int)daysStep;
             }
-            else if (step.TotalHours > 0.5)
-            {
-                dateDifference *= (dt1 - dt0).TotalHours;
-                if (dateDifference != (int)dateDifference) dateDifference++;
+            else if (hourStep > 0.5)
+            {                
                 frame.period = Period.Hour;
+                step = possibleHourStep.Where(possibleStep => hourStep <= possibleStep).DefaultIfEmpty(possibleHourStep.Max()).Min();
             }
 
-            else if (step.TotalMinutes > 0.5)
+            else if (minuteStep > 0.5)
             {
-                dateDifference = (dt1 - dt0).TotalMinutes;
                 frame.period = Period.Minute;
+                step = possibleMinuteStep.Where(possibleStep => minuteStep <= possibleStep).DefaultIfEmpty(possibleMinuteStep.Max()).Min();
             }
             else
             {
                 Debug.Log("Слишком маленький промежуток");
                 return null;
             }
+            frame.count = step;
 
-            frame.count = (int)dateDifference;
+            DateTime current_time = dt0.UpToNextFrame(frame);
+
+
+
+            if (frame.period != Period.Day)
+            {
+                keyPoints.Add(current_time.FloorToTimeFrame(chartTimeFrame));
+                while (current_time <= dt1)
+                {
+                    current_time += frame;
+                    keyPoints.Add(current_time.FloorToTimeFrame(chartTimeFrame));
+                }
+            }
+            else
+            {
+                
+                while (current_time <= dt1)
+                {
+                    if (current_time.Day == current_time.FloorToTimeFrame(chartTimeFrame).Month)
+                    {
+                        keyPoints.Add(current_time.FloorToTimeFrame(chartTimeFrame));
+                    }
+                    else
+                    {
+                        keyPoints.Add(current_time);
+                    }
+                    current_time += frame;
+                }
+                keyPoints.Add(current_time);
+            }
+
             return keyPoints;
         }
+        
+        //Костыльная функция для правки дат, которые пришли из GridCoords.
+        DateTime correct_dt0, correct_dt1;
+        private void DateCorrection(ref DateTime dt0, DateTime dt1)
+        {
+            if (correct_dt0 != correct_dt1)
+            {
+                long ticksDiff = (dt1 - dt0).Ticks - (correct_dt1 - correct_dt0).Ticks;
+                Debug.Log("Ticks DIfference:" + ticksDiff + " Div:" + Mathf.Abs((float)ticksDiff / (dt1 - dt0).Ticks));
+                if (ticksDiff!=0 && Mathf.Abs((float)ticksDiff / (dt1 - dt0).Ticks) <= 0.05)
+                {
+                    dt0 = dt0.AddTicks(ticksDiff);
+
+                }
+            }
+                correct_dt0 = dt0;
+                correct_dt1 = dt1;
+            
         }
+    }
     }
