@@ -3064,8 +3064,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objCamera: {fileID: 1918094443}
-  scrollMaxLimit: 30
-  scrollMinLimit: 2
+  scrollMaxLimit: 1000
+  scrollMinLimit: 0.2
   defaultOrthoSize: 10
 --- !u!114 &2122859393
 MonoBehaviour:

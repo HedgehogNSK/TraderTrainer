@@ -473,21 +473,33 @@ namespace Hedge
                        
                         if (current_time.Month != month)
                         {
-                            
+                            month = current_time.Month;
                             tmp = current_time.FloorToMonths();
                             if (tmp - keyPoints.Last() < current_time - tmp)
-                            {            
-                                keyPoints[keyPoints.Count-1] = tmp;                               
+                            {
+                                
+                                if (keyPoints.Count > 1)
+                                {
+                                    long ticks;
+                                    ticks = (keyPoints[keyPoints.Count - 2] - keyPoints[keyPoints.Count - 1]).Ticks/2+1;
+                                    keyPoints[keyPoints.Count - 2] = keyPoints[keyPoints.Count - 2].AddTicks(ticks).FloorToDays();
+
+
+                                }
+
+                                keyPoints[keyPoints.Count-1] = tmp;                       
                                 keyPoints.Add(current_time);
+                                current_time = current_time + frame;
                             }
                             else
                             {
                                 keyPoints[keyPoints.Count-1] = current_time;
                                 keyPoints.Add(tmp);
-                               
+                                current_time = tmp + frame;
+
                             }
                             
-                            current_time = tmp + frame;
+                            
 
                         }
                         else
