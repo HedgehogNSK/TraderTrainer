@@ -286,7 +286,7 @@ namespace Hedge
 
                 return new DateTime(roundedTicks);
             }
-            static public DateTime UpToDays(this DateTime dt, int days_amount)
+            static public DateTime UpToDays(this DateTime dt, int days_amount=1)
             {
                 TimeSpan interval = new TimeSpan(days_amount, 0, 0, 0, 0);
 
@@ -295,7 +295,7 @@ namespace Hedge
                 return new DateTime(roundedTicks);
             }
 
-            static public DateTime UpToWeeks(this DateTime dt, int weeks_amount)
+            static public DateTime UpToWeeks(this DateTime dt, int weeks_amount=1)
             {
                 TimeSpan interval = new TimeSpan(7 * weeks_amount, 0, 0, 0, 0);
 
@@ -304,13 +304,13 @@ namespace Hedge
                 return dt.AddDays(-((int)dt.DayOfWeek - 1));
 
             }
-            static public DateTime UpToMonths(this DateTime dt, int monthes_amount)
+            static public DateTime UpToMonths(this DateTime dt, int monthes_amount=1)
             {
-                return new DateTime().AddMonths(monthes_amount * (int)((double)(dt.Year-1) * 12 + dt.Month - 1) / monthes_amount + monthes_amount);
+                return new DateTime().AddMonths(monthes_amount * ((int)((double)(dt.Year-1) * 12 + dt.Month - 1) / monthes_amount + 1));
             }
-            static public DateTime UpToYears(this DateTime dt, int years_amount)
+            static public DateTime UpToYears(this DateTime dt, int years_amount=1)
             {
-                return new DateTime(years_amount * (dt.Year / years_amount) + years_amount, 0, 1);
+                return new DateTime(years_amount * (dt.Year / years_amount) + years_amount, 1, 1);
             }
             static public DateTime UpToNextFrame(this DateTime dt, TimeFrame timeFrame)
             {
@@ -374,9 +374,10 @@ namespace Hedge
                 return output;
             }
 
-            static int[] possibleMonthStep = new int[] { 1, 2, 3, 4, 6 };
-            static int[] possibleHourStep = new int[] { 1, 2, 3, 4, 6, 8, 12 };
-            static int[] possibleMinuteStep = new int[] { 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30 };
+            static public int[] possibleMonthStep = new int[] { 1, 2, 3, 4, 6 };
+            static public int[] possibleHourStep = new int[] { 1, 2, 3, 4, 6, 8, 12 };
+            static public int[] possibleDayStep = new int[] { 1, 2, 3, 4, 5, 6, 7, 9, 14 };
+            static public int[] possibleMinuteStep = new int[] { 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30 };
             //DateTime dt0, dt1;
             static public IEnumerable<DateTime> DividePeriodByKeyPoints(DateTime first, DateTime second, int divisorsMaxAmount)
             {
@@ -387,8 +388,8 @@ namespace Hedge
                 divisorsMaxAmount = divisorsMaxAmount - 1;
 
                 TimeSpan periodLenth = second - first;
-                double yearsStep = second.Year - first.Year;
-                double monthsStep = yearsStep * 12 + second.Month - first.Month;
+                double yearsStep = periodLenth.TotalDays / 365.25;
+                double monthsStep = periodLenth.TotalDays / 30.4375;
                 double daysStep = periodLenth.TotalDays;
                 double hourStep = periodLenth.TotalHours;
                 double minuteStep = periodLenth.TotalMinutes;
@@ -418,19 +419,17 @@ namespace Hedge
                     step = (int)yearsStep;
 
                 }
-                else if (daysStep >= 14)
+                else if (monthsStep > 0.5)
                 {
                     frame.period = Period.Month;
 
                     step = possibleMonthStep.Where(possibleStep => monthsStep <= possibleStep).DefaultIfEmpty(possibleMonthStep.Max()).Min();
-
                 }
-                else if (daysStep >= 0.5)
+                else if (daysStep > 0.5)
                 {
                     frame.period = Period.Day;
 
-                    if (daysStep != (int)daysStep) daysStep++;
-                    step = (int)daysStep;
+                    step = possibleDayStep.Where(possibleStep => daysStep <= possibleStep).DefaultIfEmpty(possibleDayStep.Max()).Min();
                 }
                 else if (hourStep > 0.5)
                 {
@@ -449,12 +448,11 @@ namespace Hedge
                 }
                 frame.count = step;
 
-                DateTime current_time = first.UpToNextFrame(frame);
-
-               
+                DateTime current_time;
 
                 if (frame.period != Period.Day)
                 {
+                    current_time = first.UpToNextFrame(frame);
                     keyPoints.Add(current_time);
                     while (current_time <= second)
                     {
@@ -465,57 +463,183 @@ namespace Hedge
                 else
                 {
                     DateTime tmp;
-                    int month;
-                    month = current_time.Month;
-                    while (current_time <= second)
+
+                    current_time = first.FloorToDays().AddDays(frame.count* ((first.Day-1) / frame.count + 1) - first.Day+1);
+                    tmp = first.UpToMonths();
+                    double tmp1 = (tmp - current_time).TotalDays / frame.count;                 
+                    if (current_time.Month != first.Month || tmp1 <0.5)
                     {
-                       
-                        if (current_time.Month != month)
+                        current_time = tmp;
+                    }
+                    keyPoints.Add(current_time);
+                    current_time += frame;
+
+                    while (current_time < second)
+                    {
+                        
+                        tmp1 = (tmp-current_time).TotalDays / frame.count;
+                        if (tmp1 < 0.5 || current_time.Month !=keyPoints.Last().Month)
                         {
-                            month = current_time.Month;
-                            tmp = current_time.FloorToMonths();
-                            if (tmp - keyPoints.Last() < current_time - tmp)
-                            {
+                            current_time = tmp;
+                        }
+                        keyPoints.Add(current_time);
+                        tmp = current_time.UpToMonths();
+                        current_time += frame;
 
-                                //if (keyPoints.Count > 1)
-                                //{
-                                //    long ticks;
-                                //    ticks = (keyPoints[keyPoints.Count - 2] - keyPoints[keyPoints.Count - 1]).Ticks/2+1;
-                                //    keyPoints[keyPoints.Count - 2] = keyPoints[keyPoints.Count - 2].AddTicks(ticks).FloorToDays();
+                    }
+                }
 
+                return keyPoints;
+            }
 
-                                //}
+            static double tmp = 0;
+            static public IEnumerable<DateTime> DividePeriodByKeyPointsAlternative(DateTime first, DateTime second, int divisorsMaxAmount, TimeFrame chartTimeFrame)
+            {
+                List<DateTime> keyPoints = new List<DateTime>();
 
-                                //keyPoints[keyPoints.Count-1] = tmp;
-                                keyPoints.Add(tmp);
-                                current_time = tmp + frame;
-                                keyPoints.Add(current_time);
-                                current_time += frame;
-                            }
-                            else
-                            {
-                                // keyPoints[keyPoints.Count-1] = current_time;
-                                current_time = tmp + frame;
-                                keyPoints.Add(current_time);
-                                keyPoints.Add(tmp);
-                                current_time+= frame;
+                TimeSpan dateDiff = second - first;
+                double dateDifference;
+                long dateDiffInTicks = dateDiff.Ticks;
+                long stepTicks = dateDiffInTicks / divisorsMaxAmount;
+                TimeSpan stepTS = new TimeSpan(stepTicks);
+                int step;
+                TimeFrame timeFrame;
+                Period period;
+                Debug.Log("Делителей: " + divisorsMaxAmount + "; Разница дат: " + dateDiff.ToString());
+                if (stepTS.TotalDays > 365)
+                {
+                    //1+ необходимо для увеличения размера шага, так как int округлит деление в меньшую сторону и делителей не хватит
+                    dateDifference = second.Year - first.Year;
+                    period = Period.Year;
+                }
+                else if (stepTS.TotalDays > 31)
+                {
+                    dateDifference = (second.Year - first.Year) * 12 + second.Month - first.Month;
+                    period = Period.Month;
+                }
+                else if (stepTS.TotalDays > 1)
+                {
+                    dateDifference = (second - first).TotalDays;
+                    period = Period.Day;
+                }
+                else if (stepTS.TotalHours > 1)
+                {
+                    dateDifference = (second - first).TotalHours;
+                    period = Period.Hour;
+                }
 
-                            }
-                            
-                            
+                else if (stepTS.TotalMinutes > 1)
+                {
+                    dateDifference = (second - first).TotalMinutes;
+                    period = Period.Minute;
+                }
+                else
+                {
+                    Debug.Log("Слишком маленький промежуток");
+                    return null;
+                }
 
+                if (Math.Abs(tmp / dateDifference - 1) >= 0.05)
+                {
+                    tmp = dateDifference;
+                }
+                //Debug.Log(dateDifference + " " + tmp);
+                step = (int)(1 + tmp / (divisorsMaxAmount - 2));
+                timeFrame = new TimeFrame(period, step);
+                DateTime next_date;
+                DateTime current_date;
+                DateTime floor_date;
+
+                //Debug.Log(dt0.ToShortTimeString() + " " + dt0.FloorToTimeFrame(timeFrame).ToShortTimeString() + " " + dt0.FloorToTimeFrame(timeFrame).ToShortTimeString());
+
+                current_date = first.UpToNextFrame(timeFrame);
+
+                next_date = current_date;
+                if (current_date.Year > first.Year)
+                {
+                    next_date = current_date.FloorToYears();
+                }
+                else if (current_date.Month != first.Month)
+                {
+                    next_date = current_date.FloorToMonths();
+                }
+                else if (current_date.Day != first.Day)
+                {
+                    next_date = current_date.FloorToDays();
+
+                }
+                else if (current_date.Hour != first.Hour)
+                {
+                    if (chartTimeFrame.period == Period.Hour)
+                    { next_date = next_date.FloorToTimeFrame(chartTimeFrame); }
+                    else
+                    { next_date = next_date.FloorToHours(); }
+                }
+
+                if (next_date > first)
+                {
+                    keyPoints.Add(next_date);
+                    Debug.Log(1);
+                }
+                else
+                {
+                    keyPoints.Add(current_date.FloorToTimeFrame(chartTimeFrame));
+                    Debug.Log(2);
+
+                }
+
+                while (current_date < second)
+                {
+                    next_date = current_date + timeFrame;
+
+                    if (next_date.Year > current_date.Year)
+                    {
+                        floor_date = next_date.FloorToYears();
+                    }
+                    else if (next_date.Month != current_date.Month)
+                    {
+
+                        floor_date = next_date.FloorToMonths();
+                    }
+                    else if (next_date.Day != current_date.Day)
+                    {
+                        if (chartTimeFrame.period == Period.Day)
+                        {
+                            floor_date = next_date.FloorToTimeFrame(chartTimeFrame);
                         }
                         else
                         {
-                            month = current_time.Month;
-                            keyPoints.Add(current_time);
-                            current_time += frame;
-                        }                     
+                            floor_date = next_date.FloorToDays();
+                        }
 
                     }
-                    keyPoints.Add(current_time);
-                }
+                    else if (next_date.Hour != current_date.Hour)
+                    {
+                        //int count = chartTimeFrame.period == Period.Hour ? chartTimeFrame.count : 1;
+                        if (chartTimeFrame.period == Period.Hour)
+                        { floor_date = next_date.FloorToTimeFrame(chartTimeFrame); }
+                        else
+                        { floor_date = next_date.FloorToHours(); }
+                    }
+                    else
+                    {
+                        floor_date = next_date;
+                        keyPoints.Add(current_date.FloorToTimeFrame(chartTimeFrame));
+                    }
 
+                    if (2 * floor_date.Ticks - current_date.Ticks > next_date.Ticks)
+                    {
+
+                        keyPoints.Add(floor_date);
+                    }
+                    else
+                    {
+                        if (keyPoints.Count != 0)
+                            keyPoints[keyPoints.Count - 1] = floor_date;
+                    }
+
+                    current_date = next_date;
+                }
                 return keyPoints;
             }
         }
@@ -587,6 +711,10 @@ namespace Hedge
             public static DateTime operator +(TimeFrame tFrame, DateTime dateTime)
             {
                 return dateTime + tFrame;
+            }
+            public static DateTime operator -(DateTime dateTime, TimeFrame tFrame)
+            {
+                return dateTime + (-1)*tFrame;
             }
         }
     }

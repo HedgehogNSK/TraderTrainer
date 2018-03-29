@@ -48,10 +48,8 @@ namespace Chart
                 
                 Vector3 shift = new Vector2(eventData.delta.x / Screen.width, eventData.delta.y / Screen.height) * speed * cam.orthographicSize;
                 if (ChartDrawer.Instance.IsPointToFar(cameraTransform.position - shift))
-                {
-                    //if (ChartDrawer.Instance.IsPointToFar(cameraTransform.position))
-                    
-                    return;
+                {  
+                   // return;
                 }
                     cameraTransform.position -= shift;
                 
