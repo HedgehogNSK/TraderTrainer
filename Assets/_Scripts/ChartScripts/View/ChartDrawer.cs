@@ -611,7 +611,6 @@ namespace Chart
             //Debug.Log(dateDifference + " " + tmp);
             step = (int)(1 + tmp / (maxDivison-2));
             timeFrame = new TimeFrame(period, step);
-            TimeFrame halfFrame = new TimeFrame(period, step);
             DateTime next_date;
             DateTime current_date;
             DateTime floor_date;
@@ -737,7 +736,6 @@ namespace Chart
             hourStep /= divisorsAmount;
             minuteStep /= divisorsAmount;
 
-            long stepInTicks = periodLenth.Ticks / (divisorsAmount - 1);
             int step;
             // TimeSpan step = new TimeSpan(stepInTicks);
 

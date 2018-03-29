@@ -396,11 +396,10 @@ namespace Hedge
 
                 yearsStep /= divisorsMaxAmount;
                 monthsStep /= divisorsMaxAmount;
-                daysStep /= divisorsMaxAmount;
+                daysStep /= (divisorsMaxAmount - (int)daysStep/28);
                 hourStep /= divisorsMaxAmount;
                 minuteStep /= divisorsMaxAmount;
-
-                long stepInTicks = periodLenth.Ticks / (divisorsMaxAmount - 1);
+                
                 int step;
 
                 //Debug.Log("Годовой шаг:" + yearsStep);
@@ -477,25 +476,29 @@ namespace Hedge
                             tmp = current_time.FloorToMonths();
                             if (tmp - keyPoints.Last() < current_time - tmp)
                             {
-                                
-                                if (keyPoints.Count > 1)
-                                {
-                                    long ticks;
-                                    ticks = (keyPoints[keyPoints.Count - 2] - keyPoints[keyPoints.Count - 1]).Ticks/2+1;
-                                    keyPoints[keyPoints.Count - 2] = keyPoints[keyPoints.Count - 2].AddTicks(ticks).FloorToDays();
+
+                                //if (keyPoints.Count > 1)
+                                //{
+                                //    long ticks;
+                                //    ticks = (keyPoints[keyPoints.Count - 2] - keyPoints[keyPoints.Count - 1]).Ticks/2+1;
+                                //    keyPoints[keyPoints.Count - 2] = keyPoints[keyPoints.Count - 2].AddTicks(ticks).FloorToDays();
 
 
-                                }
+                                //}
 
-                                keyPoints[keyPoints.Count-1] = tmp;                       
+                                //keyPoints[keyPoints.Count-1] = tmp;
+                                keyPoints.Add(tmp);
+                                current_time = tmp + frame;
                                 keyPoints.Add(current_time);
-                                current_time = current_time + frame;
+                                current_time += frame;
                             }
                             else
                             {
-                                keyPoints[keyPoints.Count-1] = current_time;
-                                keyPoints.Add(tmp);
+                                // keyPoints[keyPoints.Count-1] = current_time;
                                 current_time = tmp + frame;
+                                keyPoints.Add(current_time);
+                                keyPoints.Add(tmp);
+                                current_time+= frame;
 
                             }
                             

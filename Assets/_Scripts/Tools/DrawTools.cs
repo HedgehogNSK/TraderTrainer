@@ -22,7 +22,7 @@ namespace Hedge
                     lineMaterial.hideFlags = HideFlags.HideAndDontSave;
                 }
             }
-            static Vector3 zeroVector = Vector3.zero;
+
             static public void SetProperties(Color color)
             {
                 //Надо вытащить куда-то
