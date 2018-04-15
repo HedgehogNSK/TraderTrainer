@@ -112,56 +112,45 @@ namespace Chart
 
         public void DrawGrid()
         {
-            //Debug.Log(cam.ViewportToWorldPoint(cachedOne));
             leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
             rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
-            //float xLenght = rightUpCorner.x - leftDownCorner.x;
-            float yLenght = rightUpCorner.y - leftDownCorner.y;
 
-            //float xShift = xLenght / periodDevider;
-            float yShift = yLenght / periodDevider;
+
 
             DrawTools.LineColor = baseColor;
             DrawTools.dashLength = 0.025f;
             DrawTools.gap = 0.03f;
-            //dateList.Clear();
 
+
+            //Вывод цен на экран
+            decimal lowestPrice = (decimal)leftDownCorner.y;
+            decimal highestPrice = (decimal)rightUpCorner.y;
+            List<decimal> pricesList = Ariphmetic.DividePriceRangeByKeyPoints(lowestPrice, highestPrice, priceTextPool.FieldsAmount);
             priceTextPool.CleanPool();
 
-            for (int i = 0; i != periodDevider + 1; i++)
+            float yPoint;
+            foreach(var price in pricesList)
             {
-                //int xPoint = (int)(leftDownCorner.x + i * xShift);
-                int yPoint = (int)(leftDownCorner.y + i * yShift);
-
-                // dateList.Add(xPoint);
-                // dateTextPool.SetText(
-                //     coordGrid.FromXAxisToDate(xPoint).ToChartString(),
-                //     cam.WorldToScreenPoint(new Vector2(xPoint, 0)).x,
-                //     TextPoolManager.ShiftBy.Horizontal
-                //     );
-
+                yPoint = coordGrid.FromPriceToYAxis((float)price);
                 priceTextPool.SetText(
-                    coordGrid.FromYAxisToPrice(yPoint).ToString(),
+                    price.ToString("F8"),
                     cam.WorldToScreenPoint(new Vector2(0, yPoint)).y,
                     TextPoolManager.ShiftBy.Vertical
                     );
-
-                // Vector2 datePoint1 = new Vector2(cam.WorldToViewportPoint(new Vector2(xPoint, 0)).x, 0);
-                //Vector2 datePoint2 = new Vector2(cam.WorldToViewportPoint(new Vector2(xPoint, 0)).x, 1);
                 Vector2 pricePoint1 = new Vector2(0, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
                 Vector2 pricePoint2 = new Vector2(1, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
 
-                //DrawTools.DrawLine(datePoint1, datePoint2, cam.orthographicSize, true, cam.aspect);
                 DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
             }
 
-            // var dateList =  GetKeyDataPoints1(dateTextPool.FieldsAmount,chartDataManager.TFrame);
-            //var dateList =  GetKeyDataPoints3(dateTextPool.FieldsAmount, chartDataManager.TFrame);
+          
+
+            //Вычисляем точки на временной сетке и отрисовываем их
             DateTime dt0 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
             DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
 
             if(coordGrid is CoordinateGrid)
-            dt0 = (coordGrid as CoordinateGrid).DateCorrection(dt0, dt1);
+            dt0 = (coordGrid as CoordinateGrid).DateCorrection(dt0, dt1);       
 
             var dateList = DateTimeTools.DividePeriodByKeyPoints(dt0, dt1, dateTextPool.FieldsAmount);
             dateTextPool.CleanPool();

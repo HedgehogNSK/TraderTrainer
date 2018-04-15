@@ -61,18 +61,21 @@ namespace Chart
 
         public float FromPriceToYAxis(float price)
         {
-            throw new NotImplementedException();
+            return price;
         }
 
         //Костыльная функция для правки дат, которые пришли из GridCoords.
         DateTime correct_dt0, correct_dt1;
+        //Относительное отклонение текущей разницы дат, от дат на предыдущей итерации, которое считается в пределах нормы
+        const double deviation = 0.0625;
         public DateTime DateCorrection(DateTime dt0, DateTime dt1)
         {
             if (correct_dt0 != correct_dt1)
             {
                 long ticksDiff = (dt1 - dt0).Ticks - (correct_dt1 - correct_dt0).Ticks;
                 //Debug.Log("Ticks DIfference:" + ticksDiff + " Div:" + Mathf.Abs((float)ticksDiff / (dt1 - dt0).Ticks));
-                if (ticksDiff != 0 && Mathf.Abs((float)ticksDiff / (dt1 - dt0).Ticks) <= 0.05)
+                //Debug.Log(Mathf.Abs((float)ticksDiff / (dt1 - dt0).Ticks));
+                if (ticksDiff != 0 && Math.Abs((double)ticksDiff / (dt1 - dt0).Ticks) <= deviation)
                 {
                     dt0 = dt0.AddTicks(ticksDiff);
 
@@ -83,6 +86,8 @@ namespace Chart
             return dt0;
 
         }
+
+
     }
 }
 

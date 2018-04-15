@@ -234,7 +234,6 @@ namespace Hedge
 
                 return new DateTime(roundedTicks);
             }
-
             public static DateTime FloorToWeeks(this DateTime dt, int weeks_amount)
             {
                 TimeSpan interval = new TimeSpan(7 * weeks_amount, 0, 0, 0, 0);
@@ -404,8 +403,8 @@ namespace Hedge
                 int step;
 
                 //Debug.Log("Годовой шаг:" + yearsStep);
-                Debug.Log("Месячный шаг:" + monthsStep);
-                Debug.Log("Дневной шаг:" + daysStep);
+                //Debug.Log("Месячный шаг:" + monthsStep);
+                //Debug.Log("Дневной шаг:" + daysStep);
                 //Debug.Log("Часовой шаг:" + hourStep);
                 //Debug.Log("Минутный шаг:" + minuteStep);
                 TimeFrame frame = new TimeFrame();

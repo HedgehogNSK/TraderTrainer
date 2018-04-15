@@ -317,6 +317,7 @@
     <Compile Include="Assets\_Scripts\ExampleClass.cs" />
     <Compile Include="Assets\_Scripts\FlowLines.cs" />
     <Compile Include="Assets\_Scripts\GameManager.cs" />
+    <Compile Include="Assets\_Scripts\Tools\Ariphmetic.cs" />
     <Compile Include="Assets\_Scripts\Tools\ArrayTools.cs" />
     <Compile Include="Assets\_Scripts\Tools\DateTimeTools.cs" />
     <Compile Include="Assets\_Scripts\Tools\DrawTools.cs" />
