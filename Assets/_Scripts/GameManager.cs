@@ -50,7 +50,8 @@ namespace ChartGame
             {
 
                 chartDrawer.ChartDataManager = new SimpleChartViewer(1000, new TimeFrame(Period.Hour, 2));
-                chartDrawer.DrawChart();
+                Chart.Controllers.NavigationController.Instance.Initialize();
+               // chartDrawer.DrawChart();
                 //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 //DateTime dt = sqlDB.GetPrice(0);
                 //Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());

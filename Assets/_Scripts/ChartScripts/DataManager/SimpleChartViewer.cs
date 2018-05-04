@@ -247,7 +247,7 @@ public class SimpleChartViewer : IChartDataManager
         {
             next_period_begin = current_period_begin.UpToNextFrame(TFrame);
             var request = trades.Where(point => point.DTime >= current_period_begin && point.DTime < next_period_begin).OrderBy(point => point.DTime);
-            if (request != null)
+            if (request.NotNullOrEmpty())
             {
                 open = request.FirstOrDefault().Price;
                 close = request.LastOrDefault().Price;

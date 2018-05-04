@@ -33,12 +33,15 @@ namespace Chart
             //float xBounds = 0.0f;
             //float yBounds =0.8f;
             float speed = 5f;
-            
+
             //Vector2 screen;
-            private void Start()
+            private void Awake()
             {
                 cam = Camera.main;
                 cameraTransform = cam.transform;
+            }
+            private void Start()
+            {
                 //screen = new Vector2(Screen.width, Screen.height);
                 Initialize();
             }
@@ -47,9 +50,11 @@ namespace Chart
                 //Это сработает только для камеры параллельной оси Х
                 
                 Vector3 shift = new Vector2(eventData.delta.x / Screen.width, eventData.delta.y / Screen.height) * speed * cam.orthographicSize;
-                if (ChartDrawer.Instance.IsPointToFar(cameraTransform.position - shift))
+
+                //Проверка выхода за границы
+                if (ChartDrawer.Instance.IsDateToFar(cameraTransform.position - shift))
                 {  
-                   // return;
+                    return;
                 }
                     cameraTransform.position -= shift;
                 
@@ -57,10 +62,21 @@ namespace Chart
 
             public void OnScroll(PointerEventData eventData)
             {
+                Vector2 shift = cam.ScreenToWorldPoint(eventData.pointerCurrentRaycast.screenPosition);
                 cam.orthographicSize -= eventData.scrollDelta.y;
                 if (cam.orthographicSize > scrollMaxLimit) cam.orthographicSize = scrollMaxLimit;
                 else if (cam.orthographicSize < scrollMinLimit) cam.orthographicSize = scrollMinLimit;
                 objCamera.orthographicSize = cam.orthographicSize;
+
+                shift -= (Vector2)cam.ScreenToWorldPoint(eventData.pointerCurrentRaycast.screenPosition);
+                cameraTransform.position += (Vector3)shift;
+                MoveToPointer(eventData);
+            }
+
+            public void MoveToPointer(PointerEventData eventData)
+            {
+                
+                //Debug.Log(eventData.pointerCurrentRaycast.screenPosition);
             }
 
             public void GoToLastPoint()

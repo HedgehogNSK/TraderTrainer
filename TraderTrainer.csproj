@@ -306,6 +306,7 @@
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Candle.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\CoordinateGrid.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\ExtraData.cs" />
+    <Compile Include="Assets\_Scripts\ChartScripts\Entities\Grid2D.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Price.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Trade.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\FrontCameraDraw.cs" />
@@ -321,6 +322,7 @@
     <Compile Include="Assets\_Scripts\Tools\ArrayTools.cs" />
     <Compile Include="Assets\_Scripts\Tools\DateTimeTools.cs" />
     <Compile Include="Assets\_Scripts\Tools\DrawTools.cs" />
+    <Compile Include="Assets\_Scripts\Tools\LinqTools.cs" />
     <Compile Include="Assets\DataDiagram\Example\Sample.cs" />
     <Compile Include="Assets\DataDiagram\Script\DD_CoordinateAxis.cs" />
     <Compile Include="Assets\DataDiagram\Script\DD_DataDiagram.cs" />

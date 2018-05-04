@@ -44,6 +44,7 @@ namespace Hedge
                 GL.End();
             }
 
+
             static public void DrawLine(Vector2 begin, Vector2 end, float orthographic_size = 1, bool dashed = false, float ratio = 1)
             {
                 float current_gap = gap; //* orthographic_size;

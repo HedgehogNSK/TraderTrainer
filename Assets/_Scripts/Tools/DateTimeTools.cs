@@ -378,7 +378,7 @@ namespace Hedge
             static public int[] possibleDayStep = new int[] { 1, 2, 3, 4, 5, 6, 7, 9, 14 };
             static public int[] possibleMinuteStep = new int[] { 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30 };
             //DateTime dt0, dt1;
-            static public IEnumerable<DateTime> DividePeriodByKeyPoints(DateTime first, DateTime second, int divisorsMaxAmount)
+            static public IEnumerable<DateTime> DividePeriodByKeyPoints(DateTime first, DateTime second, int divisorsMaxAmount) 
             {
 
                 List<DateTime> keyPoints = new List<DateTime>();
