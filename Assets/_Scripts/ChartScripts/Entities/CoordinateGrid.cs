@@ -7,6 +7,7 @@ using Hedge.Tools;
 
 namespace Chart
 {
+    using Entity;
     public class CoordinateGrid : IGrid
     {
         //Соответствует 0 на оси абцисс
@@ -56,12 +57,12 @@ namespace Chart
 
         public float FromYAxisToPrice(float y)
         {
-            return y;
+            return y/ Candle.scale;
         }
 
         public float FromPriceToYAxis(float price)
         {
-            return price;
+            return Candle.scale*price;
         }
 
         //Костыльная функция для правки дат, которые пришли из GridCoords.

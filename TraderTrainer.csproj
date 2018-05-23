@@ -301,6 +301,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\_Scripts\ChartScripts\Controllers\NavigationController.cs" />
+    <Compile Include="Assets\_Scripts\ChartScripts\DataManager\CryptoCompareDataManager.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\DataManager\SimpleChartViewer.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\DataManager\SQLChartViewer.cs" />
     <Compile Include="Assets\_Scripts\ChartScripts\Entities\Candle.cs" />

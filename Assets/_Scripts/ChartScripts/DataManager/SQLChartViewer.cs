@@ -88,49 +88,7 @@ public class SQLChartViewer : IChartDataManager
            
         }
     }
-    /* void Connection()
-     {
-
-         string connectionString =
-           "Server=localhost;" +
-           "Database=test;" +
-           "User ID=postgres;" +
-           "Password=fun2db;";
-         // IDbConnection dbcon; ## CHANGE THIS TO
-         NpgsqlConnection dbcon;
-
-         dbcon = new NpgsqlConnection(connectionString);
-         dbcon.Open();
-         //IDbCommand dbcmd = dbcon.CreateCommand();## CHANGE THIS TO
-         NpgsqlCommand dbcmd = dbcon.CreateCommand();
-         // requires a table to be created named employee
-         // with columns firstname and lastname
-         // such as,
-         //        CREATE TABLE employee (
-         //           firstname varchar(32),
-         //           lastname varchar(32));
-         string sql =
-             "SELECT firstname, lastname " +
-             "FROM employee";
-         dbcmd.CommandText = sql;
-         //IDataReader reader = dbcmd.ExecuteReader(); ## CHANGE THIS TO
-         NpgsqlDataReader reader = dbcmd.ExecuteReader();
-         while (reader.Read())
-         {
-             string FirstName = (string)reader["firstname"];
-             string LastName = (string)reader["lastname"];
-             Console.WriteLine("Name: " +
-                  FirstName + " " + LastName);
-         }
-         // clean up
-         reader.Close();
-         reader = null;
-         dbcmd.Dispose();
-         dbcmd = null;
-         dbcon.Close();
-         dbcon = null;
-     }*/
-
+    
     TimeFrame tFrame;
     public TimeFrame TFrame
     {
@@ -141,7 +99,7 @@ public class SQLChartViewer : IChartDataManager
         }
     }
 
-    public DateTime? chartBeginTime;
+    private DateTime? chartBeginTime;
     public DateTime ChartBeginTime { get
         {
             if (chartBeginTime == null)
@@ -167,7 +125,7 @@ public class SQLChartViewer : IChartDataManager
             return (DateTime)chartBeginTime;
         } }
 
-    public DateTime? chartEndTime;
+    private DateTime? chartEndTime;
     public DateTime ChartEndTime { get
         {
             if (chartEndTime==null)
@@ -253,16 +211,12 @@ ORDER BY date ASC;"
 
     public IEnumerable<PriceFluctuation> GetPriceFluctuationsByTimeFrame(DateTime fromDate, DateTime toDate)
     {
-        if (fromDate == toDate)
-        {
-            //Debug.LogError("Дата не может быть NULL");
-            //return null;
-        }
+        if (fromDate >= toDate) Debug.LogWarning("FromDate больше или совпадает с toDate");
 
         List<PriceFluctuation> pricesFluct = new List<PriceFluctuation>();
         List<Trade> trades = new List<Trade>();
-        DateTime endDate = toDate.UpToNextFrame(TFrame);
-        DateTime beginDate = fromDate.FloorToTimeFrame(TFrame);
+        DateTime endDate = fromDate <= toDate ? toDate.UpToNextFrame(TFrame) : fromDate.UpToNextFrame(TFrame);
+        DateTime beginDate = fromDate <= toDate ? fromDate.FloorToTimeFrame(TFrame) : toDate.FloorToTimeFrame(TFrame);
         using (NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT price, date, volume
 FROM trades
 WHERE pair_id = @pair_id AND date >= @earliest_date AND date < @latest_date

@@ -49,16 +49,15 @@ namespace ChartGame
             void Start()
             {
 
-                chartDrawer.ChartDataManager = new SimpleChartViewer(1000, new TimeFrame(Period.Hour, 2));
+                chartDrawer.ChartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Minute, 5));
                 Chart.Controllers.NavigationController.Instance.Initialize();
-               // chartDrawer.DrawChart();
+                // chartDrawer.DrawChart();
                 //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 //DateTime dt = sqlDB.GetPrice(0);
                 //Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());
                 //Debug.Log(sqlDB.TyrToSetPairByAcronym("Test", "Test2"));
                 //Debug.Log(sqlDB.ChartBeginTime);
                 //Debug.Log(sqlDB.ChartEndTime);
-
             }
 
             // Update is called once per frame

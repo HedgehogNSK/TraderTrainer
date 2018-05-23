@@ -52,16 +52,6 @@ namespace Chart
                 
                 coordGrid.ZeroPoint = chartDataManager.ChartBeginTime;
                 coordGrid.Step = chartDataManager.TFrame;
-
-                /*visibleRange.ticks1 = chartDataManager.ChartEndTime.Ticks;
-                visibleRange.ticks0 = (chartDataManager.ChartEndTime - frameCount * chartDataManager.TFrame).Ticks;
-                if (!cam)
-                    Debug.LogError("Не задана камера");
-                else
-                {
-                    scaleX = visibleRange.ticks1 - visibleRange.ticks0 / cam.pixelWidth;
-
-                }*/
                 
             }
         }
@@ -134,7 +124,7 @@ namespace Chart
         internal Vector2 GetLastPoint()
         {
             float x = coordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);
-            float y = (float)chartDataManager.GetFluctuation(chartDataManager.ChartEndTime).Close;
+            float y = coordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.ChartEndTime).Close);
             return new Vector2(x, y);
         }
 

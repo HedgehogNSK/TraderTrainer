@@ -229,15 +229,6 @@ public class SimpleChartViewer : IChartDataManager
     {
         if (!IsSettingsSet()) return null;
 
-        //Вычисляем количество свечей в периоде
-        /*int count= DateTimeInstruments.CountFramesInPeriod(TFrame, firstDate, secondDate, TimeSpan.Zero);
-        if (count < 0)
-        {
-            Debug.Log("Не верное количество фреймов в периоде");
-            return null;
-        }
-        //Если запрос загрузить количество свечей превышает количество доступных свечей
-        if (count > TFrameCount) count = TFrameCount;*/
 
         double open, close, min, max, volume;
         List <PriceFluctuation> candles = new List<PriceFluctuation>();

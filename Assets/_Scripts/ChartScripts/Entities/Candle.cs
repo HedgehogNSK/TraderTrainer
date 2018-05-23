@@ -10,7 +10,7 @@ namespace Chart
     {
         public class Candle : MonoBehaviour
         {
-
+            static public float scale = 0.02f;
             [SerializeField] SpriteRenderer body, shadow, borders;
 
             [SerializeField]
@@ -31,10 +31,10 @@ namespace Chart
 
             public bool Set(int position, PriceFluctuation fluctuation)
             {
-                float bodySize = Mathf.Abs((float)(fluctuation.Open - fluctuation.Close));
-                float shadowSize = (float)(fluctuation.High - fluctuation.Low);
+                float bodySize = scale*Mathf.Abs((float)(fluctuation.Open - fluctuation.Close));
+                float shadowSize = (float)(scale *(fluctuation.High - fluctuation.Low));
                 body.size = new Vector2(body.size.x, bodySize);
-                borders.size = body.size + new Vector2(0.1f, 0.1f);
+                borders.size = body.size + scale * new Vector2( 0.1f, 0.1f);
                 shadow.size = new Vector2(shadow.size.x, shadowSize);
 
                 if (fluctuation.Open > fluctuation.Close)
@@ -48,16 +48,16 @@ namespace Chart
                 }
                 shadow.color = shadowColor;
 
-                transform.position = new Vector2(position, bodySize / 2 + (float)fluctuation.Open);
-                shadow.transform.position = new Vector2(position, shadowSize / 2 + (float)fluctuation.Low);
+                transform.position = new Vector2(position, bodySize / 2 + scale * (float)fluctuation.Open);
+                shadow.transform.position = new Vector2(position, shadowSize / 2 + scale * (float)fluctuation.Low);
                 PeriodBegin = fluctuation.PeriodBegin;
                 return true;
             }
 
             public bool Set(PriceFluctuation fluctuation)
             {
-                float bodySize =(float) (fluctuation.Open - fluctuation.Close);
-                float shadowSize = (float)(fluctuation.High - fluctuation.Low);
+                float bodySize =(float)(scale * (fluctuation.Open - fluctuation.Close));
+                float shadowSize = (float)(scale * (fluctuation.High - fluctuation.Low));
                 body.size = new Vector2(body.size.x, Mathf.Abs(bodySize));
                 borders.size = body.size + new Vector2(0.05f, 0.05f);
                 shadow.size = new Vector2(shadow.size.x, shadowSize);
