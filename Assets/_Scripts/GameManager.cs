@@ -49,7 +49,7 @@ namespace ChartGame
             void Start()
             {
 
-                chartDrawer.ChartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Minute, 5));
+                chartDrawer.ChartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Hour, 1));
                 Chart.Controllers.NavigationController.Instance.Initialize();
                 // chartDrawer.DrawChart();
                 //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
@@ -63,7 +63,14 @@ namespace ChartGame
             // Update is called once per frame
             void Update()
             {
-
+                if(Input.GetKeyDown(KeyCode.UpArrow))
+                { Candle.Scale *= 1.1f;
+                    
+                }
+                if (Input.GetKeyDown(KeyCode.DownArrow))
+                {
+                    Candle.Scale /= 1.1f;                  
+                }
             }
         }
     }

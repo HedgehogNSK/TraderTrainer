@@ -44,7 +44,7 @@ public class CryptoCompareDataManager : IChartDataManager
     private string data_frame = "histoday";
     private string reciprocal_currency_acronym = "USD";
     private string base_currency_acronym = "BTC";
-    private string market_acronym = "CCCAGG";
+    private string market_acronym = "Bitfinex";
     public JsonData dc;
 
     bool initialized = false;
@@ -118,27 +118,6 @@ public class CryptoCompareDataManager : IChartDataManager
                 DateTime dt_next;
                 IEnumerable<TradeData> tradeData = dc.Data;
                 double volume, open, close, low, high;
-                /*if (tradeData.NotNullOrEmpty())
-                    while (dt_current <= chartEndTime)
-                    {
-
-                        dt_next = dt_current.UpToNextFrame(TFrame);
-                        var query = tradeData.Where(data => data.time <= DateTimeTools.DateToTimestamp(dt_next));
-                        if (query.NotNullOrEmpty())
-                        {
-                            tradeData = tradeData.Except(query);
-
-                            open = query.Where(trade => query.Any(t => trade.time <= t.time)).FirstOrDefault().open;
-                            //open = query.Where(trade => trade.time == query.Min(t => t.time)).FirstOrDefault().open;
-                            close = query.Where(trade => query.Any(t => trade.time >= t.time)).FirstOrDefault().close;
-                            high = query.Max(x => x.high);
-                            low = query.Min(x => x.low);
-                            volume = query.Sum(trade => trade.volumefrom);
-                            candles.Add(new PriceFluctuation(dt_current, volume, open, close, low, high));
-
-                        }
-                        dt_current = dt_next;
-                    }*/
 
                 int i = 0;
                 open = high = low = close = volume = 0;
@@ -171,7 +150,18 @@ public class CryptoCompareDataManager : IChartDataManager
                     dt_current = dt_next;
                     open = high = low = close = volume = 0;
                 }
-
+                /*for(int j= dc.Data.Length-1;j > dc.Data.Length - 11; j-- )
+                {
+                    Debug.Log(DateTimeTools.TimestampToDate(dc.Data[j].time) +" Open:" +dc.Data[j].open + 
+                        " Close:" + dc.Data[j].close + 
+                        " Low:" + dc.Data[j].low + 
+                        " High:" + dc.Data[j].high);
+                    Debug.Log(candles[j].PeriodBegin + 
+                        " Open:" + candles[j].Open +
+                        " Close:" + candles[j].Close +
+                        " Low:" + candles[j].Low +
+                        " High:" + candles[j].High);
+                }*/
                 initialized = true;
             }
 
@@ -188,15 +178,21 @@ public class CryptoCompareDataManager : IChartDataManager
     public PriceFluctuation GetFluctuation(DateTime dateTime)
     {
         if (!initialized) return null;
-
-        return candles.Where(candle => candle.PeriodBegin <= dateTime).Where(candle => candles.Any(other=> other.PeriodBegin < candle.PeriodBegin)).FirstOrDefault();    
+        PriceFluctuation result;
+        int i = candles.Count;
+        for (; i >0 && candles[i-1].PeriodBegin > dateTime; i--) ;
+        if (i > 0)
+        { result = candles[i - 1];
+            return result;
+        }
+        return null;    
     }
 
     public IEnumerable<PriceFluctuation> GetPriceFluctuationsByTimeFrame(DateTime fromDate, DateTime toDate)
     {
         if (!initialized) return null;
 
-        return candles.Where(candle => candle.PeriodBegin >= fromDate && candle.PeriodBegin< toDate);
+        return candles.Where(candle => candle.PeriodBegin >= fromDate && candle.PeriodBegin<= toDate);
     }
 
     [System.Serializable]

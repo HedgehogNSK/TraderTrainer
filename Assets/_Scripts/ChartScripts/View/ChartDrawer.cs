@@ -125,6 +125,7 @@ namespace Chart
         {
             float x = coordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);
             float y = coordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.ChartEndTime).Close);
+            print("Положение последней точки:"+y);
             return new Vector2(x, y);
         }
 
@@ -146,8 +147,8 @@ namespace Chart
 
 
             //Вывод цен на экран
-            decimal lowestPrice = (decimal)leftDownCorner.y;
-            decimal highestPrice = (decimal)rightUpCorner.y;
+            decimal lowestPrice = (decimal)coordGrid.FromYAxisToPrice(leftDownCorner.y);
+            decimal highestPrice = (decimal)coordGrid.FromYAxisToPrice(rightUpCorner.y);
             List<decimal> pricesList = Ariphmetic.DividePriceRangeByKeyPoints(lowestPrice, highestPrice, priceTextPool.FieldsAmount);
             priceTextPool.CleanPool();
 
@@ -194,45 +195,6 @@ namespace Chart
         }
 
        
-       /* public void DrawCandles(int open, int high, int low, int close,int date, int width)
-        {
-            Material lineMaterial = new Material(Shader.Find("Unlit/Color"));
-            lineMaterial.SetPass(0);
-
-            GL.PushMatrix();
-            GL.LoadOrtho();
-
-            GL.Begin(GL.QUADS);
-
-            Vector2 p1, p2, p3, p4;
-            double screenBottom =0;
-            foreach (PriceFluctuation fluct in fluctuationList)
-            {
-                p1 = new Vector2(date, low);
-                p2 = new Vector2(date + width, low);
-                p3 = new Vector2(date, high);
-                p4 = new Vector2(date + width, high);
-
-                GL.Vertex3(p1.x, p1.y, 1);
-                GL.Vertex3(p2.x, p2.y, 1);
-                GL.Vertex3(p3.x, p3.y, 1);
-                GL.Vertex3(p4.x, p4.y, 1);
-            }
-           
-            GL.End();
-            GL.PopMatrix();
-            
-        }
-
-        */
-       /* public void DrawFluctuations()
-        {
-
-            foreach (PriceFluctuation fluctuation in fluctuationList)
-            {
-                //DrawCandle(1);
-            }
-        }*/
         public void DownloadFluctuations()
         {
             leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
@@ -303,12 +265,11 @@ namespace Chart
                     if (point1.FloorToTimeFrame(timeFrame) != visibleStartDate)
                         fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, point1);
 
-                    if (point2.UpToNextFrame(timeFrame) < visibleEndDate)
+                    if (point2.UpToNextFrame(timeFrame) <= visibleEndDate)
                         fluctuations = fluctuations.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2, visibleEndDate));
                 }
 
-                //fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate).Where(fluct => candlesInScreen.All(candle=> candle.PeriodBegin != fluct.PeriodBegin));
-                else
+               else
                 {
                     fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
                 }
@@ -339,12 +300,6 @@ namespace Chart
             Vector2 camToViewportFromXToBottom = cam.ScreenToViewportPoint(new Vector2(pointerScreenPosition.x, 0));
 
             //Магнитизм к X. Необходимо будет переписать
-            if (true)
-            {
-                //pointerWolrdPosition = new Vector2(Mathf.RoundToInt(pointerWolrdPosition.x), pointerWolrdPosition.y);
-                //camToWorldFromXToTop = new Vector2(Mathf.RoundToInt(camToWorldFromXToTop.x), camToWorldFromXToTop.y);
-                //camToWorldFromXToBottom = new Vector2(Mathf.RoundToInt(camToWorldFromXToBottom.x), camToWorldFromXToBottom.y);
-            }
 
             DrawTools.DrawLine(pointerViewportPosition, camToViewportFromXToTop, cam.orthographicSize * 1.1f, true, cam.aspect);
             DrawTools.DrawLine(pointerViewportPosition, camToViewportFromXToBottom, cam.orthographicSize * 1.1f, true, cam.aspect);

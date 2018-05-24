@@ -57,12 +57,12 @@ namespace Chart
 
         public float FromYAxisToPrice(float y)
         {
-            return y/ Candle.scale;
+            return y/ Candle.Scale;
         }
 
         public float FromPriceToYAxis(float price)
         {
-            return Candle.scale*price;
+            return Candle.Scale*price;
         }
 
         //Костыльная функция для правки дат, которые пришли из GridCoords.

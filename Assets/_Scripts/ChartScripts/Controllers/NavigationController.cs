@@ -63,7 +63,7 @@ namespace Chart
             public void OnScroll(PointerEventData eventData)
             {
                 Vector2 shift = cam.ScreenToWorldPoint(eventData.pointerCurrentRaycast.screenPosition);
-                cam.orthographicSize -= eventData.scrollDelta.y;
+                cam.orthographicSize -= eventData.scrollDelta.y* cam.orthographicSize/10;
                 if (cam.orthographicSize > scrollMaxLimit) cam.orthographicSize = scrollMaxLimit;
                 else if (cam.orthographicSize < scrollMinLimit) cam.orthographicSize = scrollMinLimit;
                 objCamera.orthographicSize = cam.orthographicSize;
@@ -86,11 +86,17 @@ namespace Chart
                 //Смещение на удобный обзор
                 cameraTransform.position -= Vector3.right *cam.orthographicSize * cam.aspect * 0.4f;
             }
+            public void ShiftCamera(float mult)
+            {
+                cameraTransform.position = new Vector3(cameraTransform.position.x, cameraTransform.position.y* mult, cameraTransform.position.z);
 
+
+            }
             public void Initialize()
             {             
                 cam.orthographicSize = defaultOrthoSize;
                 objCamera.orthographicSize = defaultOrthoSize;
+                Entity.Candle.OnScaleChange += ShiftCamera;
                 GoToLastPoint();
             }
 
