@@ -3,24 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using Hedge.Tools;
 using System;
-
+using Chart.Controllers;
 namespace Chart
 {
     namespace Entity
     {
         public class Candle : MonoBehaviour
         {
-            static float scale = 0.1f;
-            static public float Scale
-            {
-                get { return scale; }
-                set
-                {
-                    OnScaleChange(value/scale);
-                    scale = value;
-                }
-            }
-            static public event Action<float> OnScaleChange;
+
+            float scale = 1;
             [SerializeField] SpriteRenderer body, shadow, borders;
             static float borderWidth = 0.15f;
             [SerializeField]
@@ -39,10 +30,23 @@ namespace Chart
 
             public DateTime PeriodBegin { get; set; }
 
+            private IGrid grid;
+            public IGrid Grid {
+                get { return grid; }
+                set
+                {
+                    if (grid != null)
+                        grid.OnScaleChange -= ChangeScale;
+                    grid = value;
+                    grid.OnScaleChange += ChangeScale;
+                }
+            }
+            
             public bool Set(int position, PriceFluctuation fluctuation)
             {
-                float bodyHeight = scale*((float)(fluctuation.Close - fluctuation.Open));
-                float shadowHeight = (float)(scale *(fluctuation.High - fluctuation.Low));
+                
+                float bodyHeight = Grid.Scale*((float)(fluctuation.Close - fluctuation.Open));
+                float shadowHeight = (float)(Grid.Scale * (fluctuation.High - fluctuation.Low));
                 body.size = new Vector2(body.size.x, bodyHeight);
                 borders.size = body.size + new Vector2(borderWidth, bodyHeight>0? borderWidth : -borderWidth);
                 shadow.size = new Vector2(shadow.size.x, shadowHeight);
@@ -58,14 +62,13 @@ namespace Chart
                 }
                 shadow.color = shadowColor;
 
-                transform.position = new Vector2(position, bodyHeight / 2 + scale * (float)fluctuation.Open);
-                shadow.transform.position = new Vector2(position, shadowHeight / 2 + scale * (float)fluctuation.Low);
+                transform.position = new Vector2(position, bodyHeight / 2 + Grid.Scale * (float)fluctuation.Open);
+                shadow.transform.position = new Vector2(position, shadowHeight / 2 + Grid.Scale * (float)fluctuation.Low);
                 PeriodBegin = fluctuation.PeriodBegin;
-                OnScaleChange += ChangeScale;
                 return true;
             }
 
-            private void ChangeScale(float multiplier)
+            public void ChangeScale(float multiplier)
             {
                 body.size = new Vector2(body.size.x, body.size.y *multiplier);
                 borders.size = body.size + multiplier * new Vector2(borderWidth, body.size.y>0? borderWidth : -borderWidth);
@@ -76,7 +79,7 @@ namespace Chart
 
             private void OnDestroy()
             {
-                OnScaleChange -= ChangeScale;
+                grid.OnScaleChange -= ChangeScale;
             }
         }
 

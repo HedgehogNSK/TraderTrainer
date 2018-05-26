@@ -34,15 +34,48 @@ namespace Chart
             //float yBounds =0.8f;
             float speed = 5f;
 
-            //Vector2 screen;
+            private IGrid coordGrid;
+            public IGrid CoordGrid {
+                get { return coordGrid; }
+                set
+                {
+                    if(CoordGrid!=null)
+                        CoordGrid.OnScaleChange -= ShiftCamera;
+                    coordGrid = value;
+
+                }
+            }
+            IChartDataManager chartDataManager;
+            public IChartDataManager ChartDataManager
+            {
+                get { return chartDataManager; }
+                set
+                {
+                    chartDataManager = value;
+                }
+            }
+
+            public bool IsSettingsSet
+            {
+                get
+                {
+                    if (ChartDataManager != null && CoordGrid != null)
+                        return true;
+                    else
+                    {
+                        Debug.Log("Navigation Controller не может выполнить действие, пока не заданы все параметры");
+                        return false;
+                    }
+                }
+            }
+
             private void Awake()
             {
                 cam = Camera.main;
                 cameraTransform = cam.transform;
             }
             private void Start()
-            {
-                Entity.Candle.OnScaleChange += ShiftCamera;
+            {               
                 Initialize();
             }
             public void OnDrag(PointerEventData eventData)
@@ -70,32 +103,33 @@ namespace Chart
 
                 shift -= (Vector2)cam.ScreenToWorldPoint(eventData.pointerCurrentRaycast.screenPosition);
                 cameraTransform.position += (Vector3)shift;
-                MoveToPointer(eventData);
             }
 
-            public void MoveToPointer(PointerEventData eventData)
+
+            internal Vector3 GetLastPoint()
             {
-                
-                //Debug.Log(eventData.pointerCurrentRaycast.screenPosition);
+                if (!IsSettingsSet) return Vector3.zero;
+                float x = CoordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);
+                float y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.ChartEndTime).Close);
+                return new Vector3(x, y);
             }
 
             public void GoToLastPoint()
             {
-                cameraTransform.position = (Vector3)ChartDrawer.Instance.GetLastPoint()  + Vector3.forward*cameraTransform.position.z;
-
-                //Смещение на удобный обзор
+                cameraTransform.position = GetLastPoint()  + Vector3.forward*cameraTransform.position.z;
+                //Смещение фокуса, искомая свеча была не по центру
                 cameraTransform.position -= Vector3.right *cam.orthographicSize * cam.aspect * 0.4f;
             }
             public void ShiftCamera(float mult)
             {
                 cameraTransform.position = new Vector3(cameraTransform.position.x, cameraTransform.position.y* mult, cameraTransform.position.z);
-
-
             }
             public void Initialize()
-            {             
+            {
+                CoordGrid.OnScaleChange += ShiftCamera;
                 cam.orthographicSize = defaultOrthoSize;
                 objCamera.orthographicSize = defaultOrthoSize;
+                
                 GoToLastPoint();
             }
 

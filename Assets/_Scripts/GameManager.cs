@@ -40,6 +40,8 @@ namespace ChartGame
             SimpleChartViewer db;
             SQLChartViewer sqlDB;
             IChartDataManager chartDataManager;
+            IGrid grid;
+
             // Use this for initialization
             private void Awake()
             {
@@ -48,9 +50,13 @@ namespace ChartGame
             }
             void Start()
             {
-
-                chartDrawer.ChartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Hour, 1));
-                Chart.Controllers.NavigationController.Instance.Initialize();
+                chartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Hour, 1));
+                grid = new CoordinateGrid(chartDataManager.ChartBeginTime, chartDataManager.TFrame);
+                chartDrawer.ChartDataManager = chartDataManager;
+                chartDrawer.CoordGrid = grid;
+                Chart.Controllers.NavigationController.Instance.ChartDataManager = chartDataManager;
+                Chart.Controllers.NavigationController.Instance.CoordGrid = grid;
+              // Chart.Controllers.NavigationController.Instance.Initialize();
                 // chartDrawer.DrawChart();
                 //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 //DateTime dt = sqlDB.GetPrice(0);
@@ -64,12 +70,13 @@ namespace ChartGame
             void Update()
             {
                 if(Input.GetKeyDown(KeyCode.UpArrow))
-                { Candle.Scale *= 1.1f;
+                {
+                    grid.Scale *= 1.1f;
                     
                 }
                 if (Input.GetKeyDown(KeyCode.DownArrow))
                 {
-                    Candle.Scale /= 1.1f;                  
+                    grid.Scale /= 1.1f;                  
                 }
             }
         }

@@ -15,8 +15,13 @@ namespace Chart
         //соответствует 1 единице смещения по оси абцисс
         TimeFrame step = new TimeFrame(Period.Hour);
 
+        public CoordinateGrid(DateTime zeroPoint, TimeFrame step):base()
+        {
+            ZeroPoint = zeroPoint;
+            Step = step;
+        }
         public DateTime ZeroPoint
-            {
+        {
             get
             {
                 return zeroPoint;
@@ -32,7 +37,19 @@ namespace Chart
             }
         }
 
-        public Action Updated;
+        float scale = 1;
+        public float Scale
+        {
+            get { return scale; }
+            set
+            {
+                OnScaleChange(value / scale);
+                scale = value;
+            }
+        }
+
+
+        public event Action<float> OnScaleChange;
 
         public DateTime FromXAxisToDate(float x)
         {
@@ -57,18 +74,20 @@ namespace Chart
 
         public float FromYAxisToPrice(float y)
         {
-            return y/ Candle.Scale;
+            return y/ Scale;
         }
 
         public float FromPriceToYAxis(float price)
         {
-            return Candle.Scale*price;
+            return Scale*price;
         }
 
         //Костыльная функция для правки дат, которые пришли из GridCoords.
         DateTime correct_dt0, correct_dt1;
         //Относительное отклонение текущей разницы дат, от дат на предыдущей итерации, которое считается в пределах нормы
         const double deviation = 0.0625;
+
+
         public DateTime DateCorrection(DateTime dt0, DateTime dt1)
         {
             if (correct_dt0 != correct_dt1)

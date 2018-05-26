@@ -41,20 +41,13 @@ namespace Chart
 
 
         IChartDataManager chartDataManager;
-        IGrid coordGrid;
-        Grid2D grid2D;
         public IChartDataManager ChartDataManager
         {
             get { return chartDataManager; }
-            set
-            {
-                chartDataManager = value;
-                
-                coordGrid.ZeroPoint = chartDataManager.ChartBeginTime;
-                coordGrid.Step = chartDataManager.TFrame;
-                
-            }
+            set { chartDataManager = value; }
         }
+
+        public IGrid CoordGrid { get; set; }
         public Color baseColor;
         public Color crossColor;
         [SerializeField] Candle candleDummy;
@@ -79,16 +72,10 @@ namespace Chart
         void Awake()
         {
             cam = GetComponent<Camera>();
-            if (cam == null || ChartDataManager == null)
-                Debug.Log("Повесь скрипт на камеру и задайте все параметры");
-            coordGrid = new CoordinateGrid();
+            if (cam == null )
+                Debug.Log("ChartDrawer должен знать на какую камеру рисовать");
 
         }
-        // Use this for initialization
-        void Start()
-        {
-        }
-
         void Update()
         {
             DrawChart();
@@ -97,21 +84,13 @@ namespace Chart
         void OnPostRender()
         {
             DrawGrid();
-            //DrawDateText();
-            //DrawCross();
         }
-
-        /*private void OnDrawGizmos()
-        {
-            if (!cam) cam = GetComponent<Camera>();
-            DrawGrid();
-        }*/
 
         public bool IsSettingsSet
         {
             get
             {
-                if (ChartDataManager != null && candleDummy != null && candlesParent != null)
+                if (ChartDataManager != null && CoordGrid!=null && candleDummy != null && candlesParent != null)
                     return true;
                 else
                 {
@@ -121,25 +100,12 @@ namespace Chart
             }
         }
 
-        internal Vector2 GetLastPoint()
-        {
-            float x = coordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);
-            float y = coordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.ChartEndTime).Close);
-            print("Положение последней точки:"+y);
-            return new Vector2(x, y);
-        }
-
-        public List<DateTime> GetDateTimeCluePoints()
-        {
-            return new List<DateTime>();
-        }
-
         public void DrawGrid()
         {
+            if (!IsSettingsSet) return;
+
             leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
             rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
-
-
 
             DrawTools.LineColor = baseColor;
             DrawTools.dashLength = 0.025f;
@@ -147,15 +113,15 @@ namespace Chart
 
 
             //Вывод цен на экран
-            decimal lowestPrice = (decimal)coordGrid.FromYAxisToPrice(leftDownCorner.y);
-            decimal highestPrice = (decimal)coordGrid.FromYAxisToPrice(rightUpCorner.y);
+            decimal lowestPrice = (decimal)CoordGrid.FromYAxisToPrice(leftDownCorner.y);
+            decimal highestPrice = (decimal)CoordGrid.FromYAxisToPrice(rightUpCorner.y);
             List<decimal> pricesList = Ariphmetic.DividePriceRangeByKeyPoints(lowestPrice, highestPrice, priceTextPool.FieldsAmount);
             priceTextPool.CleanPool();
 
             float yPoint;
             foreach (var price in pricesList)
             {
-                yPoint = coordGrid.FromPriceToYAxis((float)price);
+                yPoint = CoordGrid.FromPriceToYAxis((float)price);
                 priceTextPool.SetText(
                     price.ToString("F8"),
                     cam.WorldToScreenPoint(new Vector2(0, yPoint)).y,
@@ -170,17 +136,17 @@ namespace Chart
 
 
             //Вычисляем точки на временной сетке и отрисовываем их
-            DateTime dt0 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
-            DateTime dt1 = coordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
+            DateTime dt0 = CoordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedZero).x);
+            DateTime dt1 = CoordGrid.FromXAxisToDate((int)cam.ViewportToWorldPoint(cachedOne).x);
 
-            if (coordGrid is CoordinateGrid)
-                dt0 = (coordGrid as CoordinateGrid).DateCorrection(dt0, dt1);
+            if (CoordGrid is CoordinateGrid)
+                dt0 = (CoordGrid as CoordinateGrid).DateCorrection(dt0, dt1);
 
             var dateList = DateTimeTools.DividePeriodByKeyPoints(dt0, dt1, dateTextPool.FieldsAmount);
             dateTextPool.CleanPool();
             foreach (var date in dateList)
             {
-                Vector2 dateLine = new Vector2(coordGrid.FromDateToXAxis(date), 0);
+                Vector2 dateLine = new Vector2(CoordGrid.FromDateToXAxis(date), 0);
 
                 dateTextPool.SetText(
                     date.ChartStringFormat(),
@@ -197,13 +163,15 @@ namespace Chart
        
         public void DownloadFluctuations()
         {
+            if (!IsSettingsSet) return;
+
             leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
             rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
             float screenLength = rightUpCorner.x- leftDownCorner.x;
             screenLength = screenLength < 100 ? screenLength : 100;
             TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = coordGrid.FromXAxisToDate(leftDownCorner.x- screenLength).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = coordGrid.FromXAxisToDate(rightUpCorner.x+ screenLength).UpToNextFrame(timeFrame);
+            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x- screenLength).FloorToTimeFrame(timeFrame);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x+ screenLength).UpToNextFrame(timeFrame);
             if (chartDataManager.ChartEndTime < visibleEndDate)
                 visibleEndDate = chartDataManager.ChartEndTime;
             if (chartDataManager.ChartBeginTime > visibleStartDate)
@@ -240,12 +208,13 @@ namespace Chart
 
         public void DrawChart()
         {
+            if (!IsSettingsSet) return;
             leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
             rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
 
             TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = coordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = coordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
+            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
             if (chartDataManager.ChartEndTime < visibleEndDate)
                 visibleEndDate = chartDataManager.ChartEndTime;
             if (chartDataManager.ChartBeginTime > visibleStartDate)
@@ -277,7 +246,8 @@ namespace Chart
                 foreach (var priceFluctuation in fluctuations)
                 {
                     Candle newCandle = Instantiate(candleDummy, candlesParent);
-                    newCandle.Set(coordGrid.FromDateToXAxis(priceFluctuation.PeriodBegin), priceFluctuation);
+                    newCandle.Grid = CoordGrid;
+                    newCandle.Set(CoordGrid.FromDateToXAxis(priceFluctuation.PeriodBegin), priceFluctuation);
                     candles.Add(newCandle);
 
                 }
@@ -307,19 +277,6 @@ namespace Chart
             DrawTools.DrawLine(pointerViewportPosition, cam.ScreenToViewportPoint(new Vector2(cam.pixelWidth, pointerScreenPosition.y)), cam.orthographicSize, true, cam.aspect);
         }
 
-        public void DrawDateText()
-        {
-            dateTextPool.CleanPool();
-            foreach (var date in dateList)
-            {
-                dateTextPool.SetText(
-                    coordGrid.FromXAxisToDate((int)date).ToShortDateString() + " " + coordGrid.FromXAxisToDate((int)date).Hour + ":" + coordGrid.FromXAxisToDate((int)date).Minute
-                    , cam.WorldToScreenPoint(new Vector2(date, 0)).x,
-                    TextPoolManager.ShiftBy.Horizontal
-                    );
-            }
-        }
-
         void OnGUI()
         {
             Vector2 pointerScreenPosition;
@@ -332,14 +289,6 @@ namespace Chart
             GUILayout.Label("World position: " + pointerWolrdPosition.ToString("F3"));
             GUILayout.EndArea();
 
-            /*foreach(var date in dateList)
-              {
-                  //Debug.Log(cam.WorldToScreenPoint(new Vector3(date,0,0)).x);
-                  GUILayout.BeginArea(new Rect(cam.WorldToScreenPoint(new Vector3(date, 0, 0)).x - 50,0, 200, 200));
-                  GUILayout.Label(FromPositionToDate(date).ToShortDateString() +" "+ FromPositionToDate(date).Hour+":"+ FromPositionToDate(date).Minute);
-                  //cam.WorldToScreenPoint(new Vector3(price, 0, 0)).
-                  GUILayout.EndArea();
-              }*/
         }
 
         private void GetWorldPointerPosition(out Vector2 pointerScreenPosition, out Vector3 pointerWolrdPosition)
@@ -357,8 +306,8 @@ namespace Chart
 
         public bool IsDateToFar(Vector3 point)
         {
-            float x0 = coordGrid.FromDateToXAxis(ChartDataManager.ChartBeginTime);
-            float x1 = coordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);          
+            float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.ChartBeginTime);
+            float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);          
             //Debug.Log("BeginTime:" + x0 + " EndTime:" + x1);
             if (point.x < x0 || point.x > x1) return true;
             return false;
