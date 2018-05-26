@@ -42,7 +42,7 @@ namespace Chart
             }
             private void Start()
             {
-                //screen = new Vector2(Screen.width, Screen.height);
+                Entity.Candle.OnScaleChange += ShiftCamera;
                 Initialize();
             }
             public void OnDrag(PointerEventData eventData)
@@ -96,7 +96,6 @@ namespace Chart
             {             
                 cam.orthographicSize = defaultOrthoSize;
                 objCamera.orthographicSize = defaultOrthoSize;
-                Entity.Candle.OnScaleChange += ShiftCamera;
                 GoToLastPoint();
             }
 

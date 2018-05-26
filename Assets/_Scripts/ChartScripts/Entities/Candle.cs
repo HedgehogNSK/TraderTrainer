@@ -22,7 +22,7 @@ namespace Chart
             }
             static public event Action<float> OnScaleChange;
             [SerializeField] SpriteRenderer body, shadow, borders;
-
+            static float borderWidth = 0.15f;
             [SerializeField]
             private Color downColor;
             [SerializeField]
@@ -44,7 +44,7 @@ namespace Chart
                 float bodyHeight = scale*((float)(fluctuation.Close - fluctuation.Open));
                 float shadowHeight = (float)(scale *(fluctuation.High - fluctuation.Low));
                 body.size = new Vector2(body.size.x, bodyHeight);
-                borders.size = body.size + scale * new Vector2( 0.2f, bodyHeight>0?0.2f:-0.2f);
+                borders.size = body.size + new Vector2(borderWidth, bodyHeight>0? borderWidth : -borderWidth);
                 shadow.size = new Vector2(shadow.size.x, shadowHeight);
 
                 if (fluctuation.Open > fluctuation.Close)
@@ -68,34 +68,11 @@ namespace Chart
             private void ChangeScale(float multiplier)
             {
                 body.size = new Vector2(body.size.x, body.size.y *multiplier);
-                borders.size = body.size + multiplier * new Vector2(0.2f, body.size.y>0? 0.2f:-0.2f);
+                borders.size = body.size + multiplier * new Vector2(borderWidth, body.size.y>0? borderWidth : -borderWidth);
                 shadow.size = new Vector2(shadow.size.x, shadow.size.y * multiplier);
                 transform.position = new Vector2(transform.position.x, transform.position.y* multiplier);
                 shadow.transform.localPosition = new Vector2(shadow.transform.localPosition.x, shadow.transform.localPosition.y* multiplier);
             }
-
-            public bool Set(PriceFluctuation fluctuation)
-            {
-                float bodySize =(float)(scale * (fluctuation.Open - fluctuation.Close));
-                float shadowSize = (float)(scale * (fluctuation.High - fluctuation.Low));
-                body.size = new Vector2(body.size.x, Mathf.Abs(bodySize));
-                borders.size = body.size + new Vector2(0.05f, 0.05f);
-                shadow.size = new Vector2(shadow.size.x, shadowSize);
-
-                if (bodySize < 0)
-                {
-                    body.color = downColor;
-                }
-                else
-                {
-                    body.color = upColor;
-
-                }
-                shadow.color = shadowColor;
-                OnScaleChange += ChangeScale;
-                return true;
-            }
-
 
             private void OnDestroy()
             {
