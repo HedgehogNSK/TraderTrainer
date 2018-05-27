@@ -42,9 +42,12 @@ namespace Chart
                 }
             }
             
-            public bool Set(int position, PriceFluctuation fluctuation)
+            public bool Set(PriceFluctuation fluctuation)
             {
-                
+                if(Grid==null)
+                {
+                    Debug.LogError("Сначала задайте Grid для свечки");
+                }
                 float bodyHeight = Grid.Scale*((float)(fluctuation.Close - fluctuation.Open));
                 float shadowHeight = (float)(Grid.Scale * (fluctuation.High - fluctuation.Low));
                 body.size = new Vector2(body.size.x, bodyHeight);
@@ -62,8 +65,8 @@ namespace Chart
                 }
                 shadow.color = shadowColor;
 
-                transform.position = new Vector2(position, bodyHeight / 2 + Grid.Scale * (float)fluctuation.Open);
-                shadow.transform.position = new Vector2(position, shadowHeight / 2 + Grid.Scale * (float)fluctuation.Low);
+                transform.position = new Vector2(Grid.FromDateToXAxis(fluctuation.PeriodBegin), bodyHeight / 2 + Grid.Scale * (float)fluctuation.Open);
+                shadow.transform.position = new Vector2(shadow.transform.position.x, shadowHeight / 2 + Grid.Scale * (float)fluctuation.Low);
                 PeriodBegin = fluctuation.PeriodBegin;
                 return true;
             }

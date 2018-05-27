@@ -69,12 +69,12 @@ namespace ChartGame
             // Update is called once per frame
             void Update()
             {
-                if(Input.GetKeyDown(KeyCode.UpArrow))
+                if(Input.GetKey(KeyCode.UpArrow))
                 {
                     grid.Scale *= 1.1f;
                     
                 }
-                if (Input.GetKeyDown(KeyCode.DownArrow))
+                if (Input.GetKey(KeyCode.DownArrow))
                 {
                     grid.Scale /= 1.1f;                  
                 }

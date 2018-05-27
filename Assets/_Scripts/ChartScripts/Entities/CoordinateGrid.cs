@@ -43,8 +43,12 @@ namespace Chart
             get { return scale; }
             set
             {
-                OnScaleChange(value / scale);
-                scale = value;
+                //Оптимизация скорости работы
+                if (Mathf.Abs(value/scale - 1) >= 0.001f)
+                {
+                    OnScaleChange(value / scale);
+                    scale = value;
+                }
             }
         }
 

@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System;
 using System.Linq;
+using Hedge.Tools;
+using Chart.Entity;
 
 namespace Chart
 {
@@ -33,6 +35,8 @@ namespace Chart
             //float xBounds = 0.0f;
             //float yBounds =0.8f;
             float speed = 5f;
+            Vector2 cachedZero = Vector2.zero;
+            Vector2 cachedOne = Vector2.one;
 
             private IGrid coordGrid;
             public IGrid CoordGrid {
@@ -54,7 +58,7 @@ namespace Chart
                     chartDataManager = value;
                 }
             }
-
+            public bool autoscale = false;
             public bool IsSettingsSet
             {
                 get
@@ -89,7 +93,15 @@ namespace Chart
                 {  
                     return;
                 }
+
+                if (autoscale)
+                {
+                    cameraTransform.position -= Vector3.right*shift.x;
+                }
+                else
+                {
                     cameraTransform.position -= shift;
+                }
                 
             }
 
@@ -104,7 +116,6 @@ namespace Chart
                 shift -= (Vector2)cam.ScreenToWorldPoint(eventData.pointerCurrentRaycast.screenPosition);
                 cameraTransform.position += (Vector3)shift;
             }
-
 
             internal Vector3 GetLastPoint()
             {

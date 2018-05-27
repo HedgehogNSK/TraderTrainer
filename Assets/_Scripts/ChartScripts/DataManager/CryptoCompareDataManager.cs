@@ -150,18 +150,7 @@ public class CryptoCompareDataManager : IChartDataManager
                     dt_current = dt_next;
                     open = high = low = close = volume = 0;
                 }
-                /*for(int j= dc.Data.Length-1;j > dc.Data.Length - 11; j-- )
-                {
-                    Debug.Log(DateTimeTools.TimestampToDate(dc.Data[j].time) +" Open:" +dc.Data[j].open + 
-                        " Close:" + dc.Data[j].close + 
-                        " Low:" + dc.Data[j].low + 
-                        " High:" + dc.Data[j].high);
-                    Debug.Log(candles[j].PeriodBegin + 
-                        " Open:" + candles[j].Open +
-                        " Close:" + candles[j].Close +
-                        " Low:" + candles[j].Low +
-                        " High:" + candles[j].High);
-                }*/
+                www.Dispose();
                 initialized = true;
             }
 
@@ -191,7 +180,7 @@ public class CryptoCompareDataManager : IChartDataManager
     public IEnumerable<PriceFluctuation> GetPriceFluctuationsByTimeFrame(DateTime fromDate, DateTime toDate)
     {
         if (!initialized) return null;
-
+        
         return candles.Where(candle => candle.PeriodBegin >= fromDate && candle.PeriodBegin<= toDate);
     }
 
