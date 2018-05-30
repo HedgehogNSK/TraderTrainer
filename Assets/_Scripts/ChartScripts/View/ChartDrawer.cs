@@ -6,8 +6,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using Hedge.Tools;
 using Chart.Entity;
+
 namespace Chart
 {
+    using Managers;
     public class ChartDrawer : MonoBehaviour, IChartDrawer
     {
         #region SINGLETON
@@ -90,8 +92,15 @@ namespace Chart
         }
         void Start()
         {
-        Autoscale = false;
+            GameManager.Instance.GoToNextFluctuation += UpdateInNextFrame;
+            Autoscale = false;
         }
+
+        private void UpdateInNextFrame()
+        {
+            needToBeUpdated = true;
+        }
+
         void Update()
         {          
             if (NeedToBeUpdated)//Оптимизация
@@ -99,7 +108,8 @@ namespace Chart
                 leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
                 rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
                 if (Autoscale) AutoScale();
-                DrawChart();         
+                //DrawChart();
+                DrawChart(GameManager.Instance.firstFluctuationID, GameManager.Instance.fluctuationsCountToLoad);
 
             }
         }
@@ -111,6 +121,7 @@ namespace Chart
             
         }
 
+        bool needToBeUpdated =false;
         bool NeedToBeUpdated {
             get
             {
@@ -129,8 +140,14 @@ namespace Chart
                     previousScale = CoordGrid.Scale;
                     if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))
                     {
+                       
                         autoscaleToggle.isOn = false;
                     }
+                    return true;
+                }
+
+                if (needToBeUpdated) {
+                    needToBeUpdated = false;
                     return true;
                 }
 
@@ -248,6 +265,62 @@ namespace Chart
 
         }
 
+        public void DrawChart(int fromFluctuation =0,int loadFluctuationCount=10000)
+        {
+            if (!IsSettingsSet) return;
+            
+            TimeFrame timeFrame = chartDataManager.TFrame;
+
+          
+
+            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
+
+            DateTime beginTime = chartDataManager.ChartBeginTime + fromFluctuation * timeFrame;                     //Грузить информацию с определённой свечи
+            beginTime = beginTime < chartDataManager.ChartBeginTime ? chartDataManager.ChartBeginTime : beginTime;  //Проверка, что определённой свеча должна быть не раньше первой имеющейся
+            DateTime endTime = beginTime + loadFluctuationCount * timeFrame;                                        //Грузить информацию до определённой свечи
+            endTime = endTime < chartDataManager.ChartEndTime ? endTime : chartDataManager.ChartEndTime;            //Проверка, что определённой свеча должна быть не позже имеющейся
+
+            if (endTime < visibleEndDate)
+                visibleEndDate = endTime;
+
+            if (beginTime > visibleStartDate)
+                visibleStartDate = beginTime;
+
+            var candlesInScreen = candles.Where(candle => candle.PeriodBegin >= visibleStartDate && candle.PeriodBegin <= visibleEndDate);
+            var existDatePoints = candlesInScreen.Select(c => c.PeriodBegin);
+
+            fluctuations = new List<PriceFluctuation>();
+            if (visibleStartDate < visibleEndDate)
+            {
+                if (existDatePoints.NotNullOrEmpty())
+                {
+                    var point1 = existDatePoints.Min();
+                    var point2 = existDatePoints.Max();
+
+                    if (point1.FloorToTimeFrame(timeFrame) != visibleStartDate)
+                        fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, point1);
+
+                    if (point2.UpToNextFrame(timeFrame) <= visibleEndDate)
+                        fluctuations = fluctuations.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2, visibleEndDate));
+                }
+
+                else
+                {
+                    fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
+                }
+
+                foreach (var priceFluctuation in fluctuations)
+                {
+                    Candle newCandle = Instantiate(candleDummy, candlesParent);
+                    newCandle.Grid = CoordGrid;
+                    newCandle.Set(priceFluctuation);
+                    candles.Add(newCandle);
+
+                }
+            }
+        }
+
         public void DrawChart()
         {
             if (!IsSettingsSet) return;
@@ -350,6 +423,11 @@ namespace Chart
             //Debug.Log("BeginTime:" + x0 + " EndTime:" + x1);
             if (point.x < x0 || point.x > x1) return true;
             return false;
+        }
+
+        private void OnDestroy()
+        {
+            GameManager.Instance.GoToNextFluctuation -= UpdateInNextFrame;
         }
 
     }

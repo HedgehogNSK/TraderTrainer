@@ -6,9 +6,9 @@ using System;
 using System.Linq;
 using Hedge.Tools;
 using Chart.Entity;
-
 namespace Chart
 {
+    using Managers;
     namespace Controllers
     {
       
@@ -120,8 +120,13 @@ namespace Chart
             internal Vector3 GetLastPoint()
             {
                 if (!IsSettingsSet) return Vector3.zero;
-                float x = CoordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);
-                float y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.ChartEndTime).Close);
+
+                DateTime endTime = ChartDataManager.ChartBeginTime  + (GameManager.Instance.firstFluctuationID + GameManager.Instance.fluctuationsCountToLoad) * ChartDataManager.TFrame;                                        //Грузить информацию до определённой свечи
+                endTime = endTime < chartDataManager.ChartEndTime ? endTime : chartDataManager.ChartEndTime;            //Проверка, что определённой свеча должна быть не позже имеющейся
+
+
+                float x = CoordGrid.FromDateToXAxis(endTime);
+                float y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(endTime).Close);
                 return new Vector3(x, y);
             }
 
@@ -140,8 +145,13 @@ namespace Chart
                 CoordGrid.OnScaleChange += ShiftCamera;
                 cam.orthographicSize = defaultOrthoSize;
                 objCamera.orthographicSize = defaultOrthoSize;
-                
+                GameManager.Instance.GoToNextFluctuation += GoToLastPoint;
                 GoToLastPoint();
+            }
+
+            private void OnDestroy()
+            {
+                GameManager.Instance.GoToNextFluctuation -= GoToLastPoint;
             }
 
         }

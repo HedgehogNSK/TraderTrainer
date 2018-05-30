@@ -6,7 +6,7 @@ using Chart;
 using Chart.Entity;
 using Hedge.Tools;
 
-namespace ChartGame
+namespace Chart
 {
     namespace Managers
     {
@@ -18,19 +18,18 @@ namespace ChartGame
             {
                 get
                 {
-                    return _instance;
-                }
-                set
-                {
-                    if(!_instance)
+                    if (!_instance)
                     {
                         _instance = FindObjectOfType<GameManager>();
-                        if(!_instance)
+                        if (!_instance)
                         {
                             Debug.LogError("Создай объект GameManager на сцене");
                         }
+                        return _instance;
                     }
+                    return _instance;
                 }
+                
             }
             #endregion
 
@@ -41,7 +40,9 @@ namespace ChartGame
             SQLChartViewer sqlDB;
             IChartDataManager chartDataManager;
             IGrid grid;
-
+            public event Action GoToNextFluctuation;
+            public int firstFluctuationID = 1000;
+            public int fluctuationsCountToLoad = 1;
             // Use this for initialization
             private void Awake()
             {
@@ -77,6 +78,12 @@ namespace ChartGame
                 if (Input.GetKey(KeyCode.DownArrow))
                 {
                     grid.Scale /= 1.1f;                  
+                }
+
+                if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    fluctuationsCountToLoad++;
+                    GoToNextFluctuation();
                 }
             }
         }
