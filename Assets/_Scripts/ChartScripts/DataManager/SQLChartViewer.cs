@@ -27,7 +27,6 @@ public class SQLChartViewer : IChartDataManager
           "Database=game;" +
           "User ID=user;" +
           "Password=F1ndS0me)neElse;";
-        // IDbConnection dbcon; ## CHANGE THIS TO
 
 
         dbcon = new NpgsqlConnection(connectionString);
@@ -62,7 +61,7 @@ public class SQLChartViewer : IChartDataManager
         return true;
     }
 
-    public bool TyrToSetPairByAcronym(string base_currency_acronym, string reciprocal_currency_acronym)
+    public bool TryToSetPairByAcronym(string base_currency_acronym, string reciprocal_currency_acronym)
     {
         using (NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT pair_id 
            FROM currency_pairs  
@@ -99,10 +98,10 @@ public class SQLChartViewer : IChartDataManager
         }
     }
 
-    private DateTime? chartBeginTime;
-    public DateTime ChartBeginTime { get
+    private DateTime? dataBeginTime;
+    public DateTime DataBeginTime { get
         {
-            if (chartBeginTime == null)
+            if (dataBeginTime == null)
             {
                 using (NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT MIN(date) 
              FROM trades 
@@ -113,7 +112,7 @@ public class SQLChartViewer : IChartDataManager
                     { using (var reader = cmd.ExecuteReader())
                     {
                         reader.Read();
-                        chartBeginTime = reader.GetDateTime(0);
+                        dataBeginTime = reader.GetDateTime(0);
                     } }
                     catch
                     {
@@ -122,13 +121,13 @@ public class SQLChartViewer : IChartDataManager
                 }
 
             }
-            return (DateTime)chartBeginTime;
+            return (DateTime)dataBeginTime;
         } }
 
-    private DateTime? chartEndTime;
-    public DateTime ChartEndTime { get
+    private DateTime? dataEndTime;
+    public DateTime DataEndTime { get
         {
-            if (chartEndTime==null)
+            if (dataEndTime==null)
             {
              using (NpgsqlCommand cmd = new NpgsqlCommand(@"SELECT MAX(date) 
              FROM trades 
@@ -140,7 +139,7 @@ public class SQLChartViewer : IChartDataManager
                         using (var reader = cmd.ExecuteReader())
                         {
                             reader.Read();
-                            chartEndTime = reader.GetDateTime(0);
+                            dataEndTime = reader.GetDateTime(0);
                          
                         }
                     }
@@ -151,29 +150,8 @@ public class SQLChartViewer : IChartDataManager
                 }             
             
             }
-            return (DateTime)chartEndTime;
+            return (DateTime)dataEndTime;
         } }
-
-    public ExtraData GetDataByPoint(double timestamp)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public DateTime GetPrice(double timestamp)
-    {
-        DateTime date;
-        using (NpgsqlCommand cmd = new NpgsqlCommand("SELECT date " +
-             "FROM trades " +
-             "LIMIT 1;", dbcon))
-        {
-            using (var reader = cmd.ExecuteReader())
-            {
-                reader.Read();
-                date = reader.GetTimeStamp(0);
-            }
-        }
-        return date;
-    }
 
     public PriceFluctuation GetFluctuation(DateTime timestamp)
     { 
@@ -208,7 +186,7 @@ ORDER BY date ASC;"
        
     }
 
-
+    //TODO: сделать кэширование
     public IEnumerable<PriceFluctuation> GetPriceFluctuationsByTimeFrame(DateTime fromDate, DateTime toDate)
     {
         if (fromDate >= toDate) Debug.LogWarning("FromDate больше или совпадает с toDate");

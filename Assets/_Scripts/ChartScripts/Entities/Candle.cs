@@ -11,15 +11,11 @@ namespace Chart
         public class Candle : MonoBehaviour
         {
 
-            float scale = 1;
             [SerializeField] SpriteRenderer body, shadow, borders;
-            static float borderWidth = 0.15f;
-            [SerializeField]
-            private Color downColor;
-            [SerializeField]
-            private Color upColor;
-            [SerializeField]
-            private Color shadowColor;
+            [SerializeField] static float borderWidth = 0.15f;
+            [SerializeField] private Color downColor;
+            [SerializeField] private Color upColor;
+            [SerializeField] private Color shadowColor;
 
 
             public Color DownColor { get { return downColor; } set { downColor = value; } }

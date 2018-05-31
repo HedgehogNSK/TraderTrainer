@@ -15,7 +15,7 @@ public class SimpleChartViewer : IChartDataManager
 
     public int TFrameCount {get{return tFrameCount; }}
 
-    public DateTime ChartBeginTime
+    public DateTime DataBeginTime
     {
         get
         {
@@ -23,7 +23,7 @@ public class SimpleChartViewer : IChartDataManager
         }
     }
 
-    public DateTime ChartEndTime
+    public DateTime DataEndTime
     {
         get
         {

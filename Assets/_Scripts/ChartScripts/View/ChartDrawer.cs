@@ -80,9 +80,6 @@ namespace Chart
             Autoscale = !Autoscale;
         }
         List<Candle> candles = new List<Candle>();
-        List<PriceFluctuation> fluctuationList = new List<PriceFluctuation>();
-        List<float> dateList = new List<float>();
-        //List<float> priceList = new List<float>();
 
         void Awake()
         {
@@ -107,9 +104,8 @@ namespace Chart
             {
                 leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
                 rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
-                if (Autoscale) AutoScale();
-                //DrawChart();
-                DrawChart(GameManager.Instance.firstFluctuationID, GameManager.Instance.fluctuationsCountToLoad);
+                if (Autoscale) ScaleChart();
+                DrawChart();
 
             }
         }
@@ -235,8 +231,8 @@ namespace Chart
         Transform camTransform;
         IEnumerable<PriceFluctuation> fluctuations;
 
-        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-        private void AutoScale()
+        //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        private void ScaleChart()
         {
             
            
@@ -265,62 +261,6 @@ namespace Chart
 
         }
 
-        public void DrawChart(int fromFluctuation =0,int loadFluctuationCount=10000)
-        {
-            if (!IsSettingsSet) return;
-            
-            TimeFrame timeFrame = chartDataManager.TFrame;
-
-          
-
-            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
-
-            DateTime beginTime = chartDataManager.ChartBeginTime + fromFluctuation * timeFrame;                     //Грузить информацию с определённой свечи
-            beginTime = beginTime < chartDataManager.ChartBeginTime ? chartDataManager.ChartBeginTime : beginTime;  //Проверка, что определённой свеча должна быть не раньше первой имеющейся
-            DateTime endTime = beginTime + loadFluctuationCount * timeFrame;                                        //Грузить информацию до определённой свечи
-            endTime = endTime < chartDataManager.ChartEndTime ? endTime : chartDataManager.ChartEndTime;            //Проверка, что определённой свеча должна быть не позже имеющейся
-
-            if (endTime < visibleEndDate)
-                visibleEndDate = endTime;
-
-            if (beginTime > visibleStartDate)
-                visibleStartDate = beginTime;
-
-            var candlesInScreen = candles.Where(candle => candle.PeriodBegin >= visibleStartDate && candle.PeriodBegin <= visibleEndDate);
-            var existDatePoints = candlesInScreen.Select(c => c.PeriodBegin);
-
-            fluctuations = new List<PriceFluctuation>();
-            if (visibleStartDate < visibleEndDate)
-            {
-                if (existDatePoints.NotNullOrEmpty())
-                {
-                    var point1 = existDatePoints.Min();
-                    var point2 = existDatePoints.Max();
-
-                    if (point1.FloorToTimeFrame(timeFrame) != visibleStartDate)
-                        fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, point1);
-
-                    if (point2.UpToNextFrame(timeFrame) <= visibleEndDate)
-                        fluctuations = fluctuations.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2, visibleEndDate));
-                }
-
-                else
-                {
-                    fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
-                }
-
-                foreach (var priceFluctuation in fluctuations)
-                {
-                    Candle newCandle = Instantiate(candleDummy, candlesParent);
-                    newCandle.Grid = CoordGrid;
-                    newCandle.Set(priceFluctuation);
-                    candles.Add(newCandle);
-
-                }
-            }
-        }
-
         public void DrawChart()
         {
             if (!IsSettingsSet) return;
@@ -328,16 +268,16 @@ namespace Chart
             TimeFrame timeFrame = chartDataManager.TFrame;
             DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
             DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
-            if (chartDataManager.ChartEndTime < visibleEndDate)
-                visibleEndDate = chartDataManager.ChartEndTime;
-            if (chartDataManager.ChartBeginTime > visibleStartDate)
-                visibleStartDate = chartDataManager.ChartBeginTime;
+            if (chartDataManager.DataEndTime < visibleEndDate)
+                visibleEndDate = chartDataManager.DataEndTime;
+            if (chartDataManager.DataBeginTime > visibleStartDate)
+                visibleStartDate = chartDataManager.DataBeginTime;
 
             var candlesInScreen = candles.Where(candle => candle.PeriodBegin >= visibleStartDate && candle.PeriodBegin <= visibleEndDate);
             var existDatePoints = candlesInScreen.Select(c => c.PeriodBegin);
 
             fluctuations = new List<PriceFluctuation>();
-            if (visibleStartDate < visibleEndDate)
+            if (visibleStartDate <= visibleEndDate)
             {
                 if (existDatePoints.NotNullOrEmpty())
                 {
@@ -418,8 +358,8 @@ namespace Chart
 
         public bool IsDateToFar(Vector3 point)
         {
-            float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.ChartBeginTime);
-            float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.ChartEndTime);          
+            float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.DataBeginTime);
+            float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.DataEndTime);          
             //Debug.Log("BeginTime:" + x0 + " EndTime:" + x1);
             if (point.x < x0 || point.x > x1) return true;
             return false;
@@ -427,7 +367,8 @@ namespace Chart
 
         private void OnDestroy()
         {
-            GameManager.Instance.GoToNextFluctuation -= UpdateInNextFrame;
+            if(GameManager.Instance)
+                GameManager.Instance.GoToNextFluctuation -= UpdateInNextFrame;
         }
 
     }

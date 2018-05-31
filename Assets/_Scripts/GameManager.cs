@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Chart;
-using Chart.Entity;
+
 using Hedge.Tools;
 
 namespace Chart
 {
+    using Entity;
+    using Controllers;
+
     namespace Managers
     {
         public class GameManager : MonoBehaviour
@@ -23,7 +25,7 @@ namespace Chart
                         _instance = FindObjectOfType<GameManager>();
                         if (!_instance)
                         {
-                            Debug.LogError("Создай объект GameManager на сцене");
+                            Debug.LogWarning("Создай объект GameManager на сцене");
                         }
                         return _instance;
                     }
@@ -33,16 +35,19 @@ namespace Chart
             }
             #endregion
 
-            [SerializeField]Candle candleDummy;
+            [SerializeField] Candle candleDummy;
             [SerializeField] Transform candlesParent;
-            [SerializeField]ChartDrawer chartDrawer;
+            [SerializeField] ChartDrawer chartDrawer;
             SimpleChartViewer db;
             SQLChartViewer sqlDB;
             IChartDataManager chartDataManager;
+            IDateWorkFlow dateWorkFlow;
             IGrid grid;
             public event Action GoToNextFluctuation;
+            public event Func<bool> CanWeGoToNextFluctuation;
             public int firstFluctuationID = 1000;
             public int fluctuationsCountToLoad = 1;
+
             // Use this for initialization
             private void Awake()
             {
@@ -52,13 +57,18 @@ namespace Chart
             void Start()
             {
                 chartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Hour, 1));
-                grid = new CoordinateGrid(chartDataManager.ChartBeginTime, chartDataManager.TFrame);
+                dateWorkFlow = chartDataManager as IDateWorkFlow;
+                dateWorkFlow.SetWorkDataRange(firstFluctuationID, fluctuationsCountToLoad);
+                if (dateWorkFlow != null)
+                {
+                    CanWeGoToNextFluctuation += dateWorkFlow.AddTimeStep;
+                }
+                grid = new CoordinateGrid(chartDataManager.DataBeginTime, chartDataManager.TFrame);
                 chartDrawer.ChartDataManager = chartDataManager;
                 chartDrawer.CoordGrid = grid;
-                Chart.Controllers.NavigationController.Instance.ChartDataManager = chartDataManager;
-                Chart.Controllers.NavigationController.Instance.CoordGrid = grid;
-              // Chart.Controllers.NavigationController.Instance.Initialize();
-                // chartDrawer.DrawChart();
+                NavigationController.Instance.ChartDataManager = chartDataManager;
+                NavigationController.Instance.CoordGrid = grid;
+               
                 //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
                 //DateTime dt = sqlDB.GetPrice(0);
                 //Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());
@@ -82,7 +92,7 @@ namespace Chart
 
                 if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    fluctuationsCountToLoad++;
+                    CanWeGoToNextFluctuation();
                     GoToNextFluctuation();
                 }
             }

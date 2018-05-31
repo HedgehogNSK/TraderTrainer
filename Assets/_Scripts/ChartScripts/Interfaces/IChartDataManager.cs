@@ -17,8 +17,8 @@ namespace Chart
     {
         //Задаёт тайм-фрейм на котором интерфейс должен оперировать в текущий момент
         TimeFrame TFrame { get; set; }
-        DateTime ChartBeginTime { get; }
-        DateTime ChartEndTime { get; }
+        DateTime DataBeginTime { get; }
+        DateTime DataEndTime { get; }
         
         //По timestamp возвращает данные о колебании цены в рамках таймфрейма
         Entity.PriceFluctuation GetFluctuation(DateTime dateTime);

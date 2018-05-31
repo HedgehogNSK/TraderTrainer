@@ -35,8 +35,6 @@ namespace Chart
             //float xBounds = 0.0f;
             //float yBounds =0.8f;
             float speed = 5f;
-            Vector2 cachedZero = Vector2.zero;
-            Vector2 cachedOne = Vector2.one;
 
             private IGrid coordGrid;
             public IGrid CoordGrid {
@@ -121,12 +119,14 @@ namespace Chart
             {
                 if (!IsSettingsSet) return Vector3.zero;
 
-                DateTime endTime = ChartDataManager.ChartBeginTime  + (GameManager.Instance.firstFluctuationID + GameManager.Instance.fluctuationsCountToLoad) * ChartDataManager.TFrame;                                        //Грузить информацию до определённой свечи
-                endTime = endTime < chartDataManager.ChartEndTime ? endTime : chartDataManager.ChartEndTime;            //Проверка, что определённой свеча должна быть не позже имеющейся
-
-
-                float x = CoordGrid.FromDateToXAxis(endTime);
-                float y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(endTime).Close);
+              
+                float x = CoordGrid.FromDateToXAxis(chartDataManager.DataEndTime);
+                float y;
+                if (autoscale)
+                y = cameraTransform.position.y;
+                else
+                y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.DataEndTime).Close);
+                    
                 return new Vector3(x, y);
             }
 
@@ -142,16 +142,17 @@ namespace Chart
             }
             public void Initialize()
             {
-                CoordGrid.OnScaleChange += ShiftCamera;
+                
                 cam.orthographicSize = defaultOrthoSize;
                 objCamera.orthographicSize = defaultOrthoSize;
                 GameManager.Instance.GoToNextFluctuation += GoToLastPoint;
+                CoordGrid.OnScaleChange += ShiftCamera;
                 GoToLastPoint();
             }
 
             private void OnDestroy()
             {
-                GameManager.Instance.GoToNextFluctuation -= GoToLastPoint;
+               if(GameManager.Instance) GameManager.Instance.GoToNextFluctuation -= GoToLastPoint;
             }
 
         }
