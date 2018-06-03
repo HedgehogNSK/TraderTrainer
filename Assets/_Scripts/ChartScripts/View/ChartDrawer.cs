@@ -55,8 +55,8 @@ namespace Chart
 
         Camera cam;
 
-        Vector3 leftDownCorner;
-        Vector3 rightUpCorner;
+        Vector3 worldPointInLeftDownCorner;
+        Vector3 worldPointInRightUpCorner;
         Vector3 camPreviousPosition;
         float orthographicSizePrevious;
         float previousScale =0;
@@ -102,8 +102,8 @@ namespace Chart
         {          
             if (NeedToBeUpdated)//Оптимизация
             {
-                leftDownCorner = cam.ViewportToWorldPoint(cachedZero);
-                rightUpCorner = cam.ViewportToWorldPoint(cachedOne);
+                worldPointInLeftDownCorner = cam.ViewportToWorldPoint(cachedZero);
+                worldPointInRightUpCorner = cam.ViewportToWorldPoint(cachedOne);
                 if (Autoscale) ScaleChart();
                 DrawChart();
 
@@ -176,13 +176,13 @@ namespace Chart
 
 
             DrawTools.LineColor = baseColor;
-            DrawTools.dashLength = 0.025f;
-            DrawTools.gap = 0.03f;
+            DrawTools.dashLength = 0.05f;
+            DrawTools.gap = 0.07f;
 
 
             //Вывод цен на экран
-            decimal lowestPrice = (decimal)CoordGrid.FromYAxisToPrice(leftDownCorner.y);
-            decimal highestPrice = (decimal)CoordGrid.FromYAxisToPrice(rightUpCorner.y);
+            decimal lowestPrice = (decimal)CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
+            decimal highestPrice = (decimal)CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
             List<decimal> pricesList = Ariphmetic.DividePriceRangeByKeyPoints(lowestPrice, highestPrice, priceTextPool.FieldsAmount);
             priceTextPool.CleanPool();
 
@@ -195,10 +195,15 @@ namespace Chart
                     cam.WorldToScreenPoint(new Vector2(0, yPoint)).y,
                     TextPoolManager.ShiftBy.Vertical
                     );
-                Vector2 pricePoint1 = new Vector2(0, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
-                Vector2 pricePoint2 = new Vector2(1, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
+                //Vector2 pricePoint1 = new Vector2(0, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
+                //Vector2 pricePoint2 = new Vector2(1, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
 
-                DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
+                //DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
+
+                Vector2 pricePoint1 = new Vector2(worldPointInLeftDownCorner.x,  yPoint);
+                Vector2 pricePoint2 = new Vector2(worldPointInRightUpCorner.x, yPoint);
+               
+                DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true);
             }
 
 
@@ -214,17 +219,25 @@ namespace Chart
             dateTextPool.CleanPool();
             foreach (var date in dateList)
             {
-                Vector2 dateLine = new Vector2(CoordGrid.FromDateToXAxis(date), 0);
-
+                //Vector2 dateLine = new Vector2(CoordGrid.FromDateToXAxis(date), 0);
+                float dateLine = CoordGrid.FromDateToXAxis(date);
                 dateTextPool.SetText(
                     date.ChartStringFormat(),
-                    cam.WorldToScreenPoint(dateLine).x,
+                    //cam.WorldToScreenPoint(dateLine).x,
+                    cam.WorldToScreenPoint(new Vector2(dateLine,0)).x,
                     TextPoolManager.ShiftBy.Horizontal
                     );
 
-                Vector2 datePoint1 = new Vector2(cam.WorldToViewportPoint(dateLine).x, 0);
-                Vector2 datePoint2 = new Vector2(cam.WorldToViewportPoint(dateLine).x, 1);
-                DrawTools.DrawLine(datePoint1, datePoint2, cam.orthographicSize, true, cam.aspect);
+                //Vector2 datePoint1 = new Vector2(cam.WorldToViewportPoint(dateLine).x, 0);
+                //Vector2 datePoint2 = new Vector2(cam.WorldToViewportPoint(dateLine).x, 1);
+
+                //DrawTools.DrawLine(datePoint1, datePoint2, cam.orthographicSize, true, cam.aspect);
+
+                Vector2 datePoint1 = new Vector2(dateLine, worldPointInLeftDownCorner.y);
+                Vector2 datePoint2 = new Vector2(dateLine, worldPointInRightUpCorner.y);
+
+                DrawTools.DrawLine(datePoint1, datePoint2, cam.orthographicSize, true);
+
             }
         }
 
@@ -239,12 +252,12 @@ namespace Chart
             if (!IsSettingsSet) return;
             
             TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
+            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x).FloorToTimeFrame(timeFrame);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
             fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);    
 
-            float highestPriceOnScreen = CoordGrid.FromYAxisToPrice(rightUpCorner.y);
-            float lowestPriceOnScreen = CoordGrid.FromYAxisToPrice(leftDownCorner.y);
+            float highestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
+            float lowestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
 
             float highestPrice = (float) fluctuations.Max(f => f.High);
             float lowestPrice = (float) fluctuations.Min(f => f.Low);
@@ -266,8 +279,8 @@ namespace Chart
             if (!IsSettingsSet) return;
 
             TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(leftDownCorner.x).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(rightUpCorner.x).UpToNextFrame(timeFrame);
+            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x).FloorToTimeFrame(timeFrame);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
             if (chartDataManager.DataEndTime < visibleEndDate)
                 visibleEndDate = chartDataManager.DataEndTime;
             if (chartDataManager.DataBeginTime > visibleStartDate)
@@ -281,14 +294,14 @@ namespace Chart
             {
                 if (existDatePoints.NotNullOrEmpty())
                 {
-                    var point1 = existDatePoints.Min();
-                    var point2 = existDatePoints.Max();
+                    DateTime point1 = existDatePoints.Min();
+                    DateTime point2 = existDatePoints.Max();
 
                     if (point1.FloorToTimeFrame(timeFrame) != visibleStartDate)
                         fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, point1);
 
                     if (point2.UpToNextFrame(timeFrame) <= visibleEndDate)
-                        fluctuations = fluctuations.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2, visibleEndDate));
+                        fluctuations = fluctuations.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2.UpToNextFrame(timeFrame), visibleEndDate));
                 }
 
                else
@@ -296,7 +309,7 @@ namespace Chart
                     fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
                 }
 
-                foreach (var priceFluctuation in fluctuations)
+                foreach (PriceFluctuation priceFluctuation in fluctuations)
                 {
                     Candle newCandle = Instantiate(candleDummy, candlesParent);
                     newCandle.Grid = CoordGrid;
@@ -314,20 +327,21 @@ namespace Chart
             Vector2 pointerScreenPosition;
             Vector3 pointerWolrdPosition;
             GetWorldPointerPosition(out pointerScreenPosition, out pointerWolrdPosition);
-            Vector2 pointerViewportPosition = cam.ScreenToViewportPoint(pointerScreenPosition);
+            //Vector2 pointerViewportPosition = cam.ScreenToViewportPoint(pointerScreenPosition);
             DrawTools.LineColor = crossColor;
-            DrawTools.dashLength = 0.03f;
-            DrawTools.gap = 0.04f;
+            DrawTools.dashLength = 0.05f;
+            DrawTools.gap = 0.07f;
 
-            Vector2 camToViewportFromXToTop = cam.ScreenToViewportPoint(new Vector2(pointerScreenPosition.x, cam.pixelHeight));
-            Vector2 camToViewportFromXToBottom = cam.ScreenToViewportPoint(new Vector2(pointerScreenPosition.x, 0));
+            Vector2 modifiedPointerPosition = new Vector2(Mathf.Round(pointerWolrdPosition.x), pointerWolrdPosition.y);
+            Vector2 camToViewportFromXToTop =new Vector2(modifiedPointerPosition.x, worldPointInRightUpCorner.y);
+            Vector2 camToViewportFromXToBottom = new Vector2(modifiedPointerPosition.x, worldPointInLeftDownCorner.y);
 
             //Магнитизм к X. Необходимо будет переписать
 
-            DrawTools.DrawLine(pointerViewportPosition, camToViewportFromXToTop, cam.orthographicSize * 1.1f, true, cam.aspect);
-            DrawTools.DrawLine(pointerViewportPosition, camToViewportFromXToBottom, cam.orthographicSize * 1.1f, true, cam.aspect);
-            DrawTools.DrawLine(pointerViewportPosition, cam.ScreenToViewportPoint(new Vector2(0, pointerScreenPosition.y)), cam.orthographicSize, true, cam.aspect);
-            DrawTools.DrawLine(pointerViewportPosition, cam.ScreenToViewportPoint(new Vector2(cam.pixelWidth, pointerScreenPosition.y)), cam.orthographicSize, true, cam.aspect);
+            DrawTools.DrawLine(modifiedPointerPosition, camToViewportFromXToTop, cam.orthographicSize *1.1f, true);
+            DrawTools.DrawLine(modifiedPointerPosition, camToViewportFromXToBottom, cam.orthographicSize *1.1f, true);
+            DrawTools.DrawLine(modifiedPointerPosition, new Vector2(worldPointInLeftDownCorner.x, pointerWolrdPosition.y), cam.orthographicSize, true);
+            DrawTools.DrawLine(modifiedPointerPosition, new Vector2(worldPointInRightUpCorner.x, pointerWolrdPosition.y), cam.orthographicSize, true);
         }
 
         void OnGUI()

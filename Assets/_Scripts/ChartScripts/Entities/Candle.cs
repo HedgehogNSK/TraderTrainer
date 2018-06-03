@@ -70,7 +70,7 @@ namespace Chart
             public void ChangeScale(float multiplier)
             {
                 body.size = new Vector2(body.size.x, body.size.y *multiplier);
-                borders.size = body.size + multiplier * new Vector2(borderWidth, body.size.y>0? borderWidth : -borderWidth);
+                borders.size = body.size + new Vector2(borderWidth, body.size.y>0? borderWidth : -borderWidth);
                 shadow.size = new Vector2(shadow.size.x, shadow.size.y * multiplier);
                 transform.position = new Vector2(transform.position.x, transform.position.y* multiplier);
                 shadow.transform.localPosition = new Vector2(shadow.transform.localPosition.x, shadow.transform.localPosition.y* multiplier);
