@@ -12,7 +12,7 @@ namespace Hedge
             static public float thickness = 0.002f;
             static public float gap = 0.5f; //gap = dashlength + shift
             static public float dashLength = 0.3f;
-            static Material lineMaterial = new Material(Shader.Find("Unlit/Color"));
+            static Material lineMaterial = new Material(Shader.Find("Unlit/SimpleColor"));
             static public Color LineColor
             {
                 get { return lineMaterial.color; }
@@ -21,16 +21,6 @@ namespace Hedge
                     lineMaterial.color = value;
                     lineMaterial.hideFlags = HideFlags.HideAndDontSave;
                 }
-            }
-
-            static public void SetProperties(Color color)
-            {
-                //Надо вытащить куда-то
-                var shader = Shader.Find("Unlit/Color");
-                lineMaterial = new Material(shader);
-                lineMaterial.color = color;
-                lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-                //
             }
 
             static public void TestDraw(Vector2 begin, Vector2 end)

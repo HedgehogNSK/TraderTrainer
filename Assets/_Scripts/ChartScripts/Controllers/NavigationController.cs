@@ -56,7 +56,6 @@ namespace Chart
                     chartDataManager = value;
                 }
             }
-            public bool autoscale = false;
             public bool IsSettingsSet
             {
                 get
@@ -87,12 +86,12 @@ namespace Chart
                 Vector3 shift = new Vector2(eventData.delta.x / Screen.width, eventData.delta.y / Screen.height) * speed * cam.orthographicSize;
 
                 //Проверка выхода за границы
-                if (ChartDrawer.Instance.IsDateToFar(cameraTransform.position - shift))
+                if (!CanMoveFurther(cameraTransform.position,-shift))
                 {  
                     return;
                 }
 
-                if (autoscale)
+                if (ChartDrawer.Instance.Autoscale)
                 {
                     cameraTransform.position -= Vector3.right*shift.x;
                 }
@@ -122,7 +121,7 @@ namespace Chart
               
                 float x = CoordGrid.FromDateToXAxis(chartDataManager.DataEndTime);
                 float y;
-                if (autoscale)
+                if (ChartDrawer.Instance.Autoscale)
                 y = cameraTransform.position.y;
                 else
                 y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.DataEndTime).Close);
@@ -140,6 +139,20 @@ namespace Chart
             {
                 cameraTransform.position = new Vector3(cameraTransform.position.x, cameraTransform.position.y* mult, cameraTransform.position.z);
             }
+
+            
+            public bool CanMoveFurther(Vector3 fromPoint, Vector3 byStep)
+            {
+                float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.DataBeginTime);
+                float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.DataEndTime);
+
+                Vector3 nextpoint = fromPoint + byStep;
+                if ((nextpoint.x>x0 && nextpoint.x < x1) 
+                    ||(nextpoint.x <= x0&& byStep.x >=0 )
+                    ||(nextpoint.x >= x1 && byStep.x <= 0)) return true;
+                return false;
+            }
+
             public void Initialize()
             {
                 

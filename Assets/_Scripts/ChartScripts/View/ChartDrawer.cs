@@ -70,15 +70,11 @@ namespace Chart
             set {
                 if(autoscaleToggle!=null && autoscaleToggle.isOn!=value)
                     autoscaleToggle.isOn = value;
-                autoscale = value;
-                Controllers.NavigationController.Instance.autoscale = value;//костылёк
+                autoscale = value;             
                 autoscaleSwitched = true;
             }
         }
-        public void SwitchAutoscale ()
-        {
-            Autoscale = !Autoscale;
-        }
+
         List<Candle> candles = new List<Candle>();
 
         void Awake()
@@ -90,7 +86,7 @@ namespace Chart
         void Start()
         {
             GameManager.Instance.GoToNextFluctuation += UpdateInNextFrame;
-            Autoscale = false;
+            Autoscale = true;
         }
 
         private void UpdateInNextFrame()
@@ -102,6 +98,7 @@ namespace Chart
         {          
             if (NeedToBeUpdated)//Оптимизация
             {
+
                 worldPointInLeftDownCorner = cam.ViewportToWorldPoint(cachedZero);
                 worldPointInRightUpCorner = cam.ViewportToWorldPoint(cachedOne);
                 if (Autoscale) ScaleChart();
@@ -121,11 +118,11 @@ namespace Chart
         bool NeedToBeUpdated {
             get
             {
-                if (orthographicSizePrevious != cam.orthographicSize)
+               /* if (orthographicSizePrevious != cam.orthographicSize)
                 {
                     Autoscale = true;
                     return true;
-                }
+                }*/
                 if (autoscaleSwitched)
                 {
                     autoscaleSwitched = false;
@@ -368,15 +365,6 @@ namespace Chart
 #endif
 
             pointerWolrdPosition = cam.ScreenToWorldPoint(new Vector3(pointerScreenPosition.x, pointerScreenPosition.y, cam.nearClipPlane));
-        }
-
-        public bool IsDateToFar(Vector3 point)
-        {
-            float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.DataBeginTime);
-            float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.DataEndTime);          
-            //Debug.Log("BeginTime:" + x0 + " EndTime:" + x1);
-            if (point.x < x0 || point.x > x1) return true;
-            return false;
         }
 
         private void OnDestroy()

@@ -205,7 +205,7 @@ RectTransform:
   - {fileID: 1459562471}
   - {fileID: 2121312619}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -677,20 +677,20 @@ Camera:
   m_GameObject: {fileID: 691660895}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 3
   m_BackGroundColor: {r: 0.89411765, g: 0.90588236, b: 0.90588236, a: 1}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0
+    y: 0.1
     width: 0.92
-    height: 0.94
+    height: 0.82
   near clip plane: 0.3
   far clip plane: 20
   field of view: 60
   orthographic: 1
   orthographic size: 5.2
-  m_Depth: -1
+  m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 0
@@ -734,8 +734,8 @@ MonoBehaviour:
   dateTextPool: {fileID: 581051117}
   priceTextPool: {fileID: 1867543494}
   autoscaleToggle: {fileID: 2121312620}
-  baseColor: {r: 0.35294116, g: 0.35294116, b: 0.35294116, a: 1}
-  crossColor: {r: 0.14509805, g: 0.4509804, b: 0.7921569, a: 0.99215686}
+  baseColor: {r: 0.7264151, g: 0.7264151, b: 0.7264151, a: 1}
+  crossColor: {r: 0.46764863, g: 0.49095917, b: 0.8773585, a: 0.99215686}
   candleDummy: {fileID: 114299864865166204, guid: f6d0fcf9f662fc84e83513d382706eb1,
     type: 2}
   candlesParent: {fileID: 2145623622}
@@ -757,12 +757,12 @@ RectTransform:
   m_Children:
   - {fileID: 1918094440}
   m_Father: {fileID: 1902706721}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 24.1, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &789629042
 GameObject:
@@ -1006,7 +1006,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &827075001
 MonoBehaviour:
@@ -1227,7 +1227,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1015466197
 GameObject:
@@ -1869,7 +1869,7 @@ GameObject:
   - component: {fileID: 1461852577}
   - component: {fileID: 1461852576}
   m_Layer: 0
-  m_Name: DateCamera
+  m_Name: BGCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1888,15 +1888,15 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.94
-    width: 0.92
+    y: 0
+    width: 1
     height: 1
   near clip plane: 0
   far clip plane: 1
   field of view: 60
   orthographic: 1
   orthographic size: 0.1
-  m_Depth: 0
+  m_Depth: -5
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 0
@@ -1921,8 +1921,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_Father: {fileID: 1902706721}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1521405041
 GameObject:
@@ -2287,71 +2287,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1821963620}
---- !u!1 &1848864777
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 1848864781}
-  - component: {fileID: 1848864780}
-  m_Layer: 0
-  m_Name: PriceCamera
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!20 &1848864780
-Camera:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1848864777}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.89411765, g: 0.90588236, b: 0.90588236, a: 0}
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0.91
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0
-  far clip plane: 1
-  field of view: 60
-  orthographic: 1
-  orthographic size: 0.1
-  m_Depth: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 0
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!4 &1848864781
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1848864777}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1867543493
 GameObject:
   m_ObjectHideFlags: 0
@@ -2443,6 +2378,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 1461852577}
   - {fileID: 691660903}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -2491,7 +2427,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1918094439
 GameObject:
@@ -2542,14 +2478,14 @@ Camera:
   m_GameObject: {fileID: 1918094439}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 3
+  m_ClearFlags: 4
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0
+    y: 0.1
     width: 0.92
-    height: 0.94
+    height: 0.82
   near clip plane: 0.3
   far clip plane: 20
   field of view: 60
@@ -2707,7 +2643,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 50, y: -34.63, z: 0}
 --- !u!1 &2111100357
 GameObject:
@@ -2874,7 +2810,7 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Toggle+ToggleEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_IsOn: 0
+  m_IsOn: 1
 --- !u!1 &2122859390
 GameObject:
   m_ObjectHideFlags: 0
@@ -2923,10 +2859,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objCamera: {fileID: 1918094443}
-  scrollMaxLimit: 1000
+  scrollMaxLimit: 100
   scrollMinLimit: 3
   defaultOrthoSize: 10
-  autoscale: 0
 --- !u!114 &2122859393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2986,5 +2921,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
