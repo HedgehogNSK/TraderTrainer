@@ -35,6 +35,14 @@ namespace Chart
             }
             #endregion
 
+            public enum Mode
+            {
+                Simple,
+                Advanced,
+                Real
+            }
+            public Mode gameMode;
+
             [SerializeField] Candle candleDummy;
             [SerializeField] Transform candlesParent;
             [SerializeField] ChartDrawer chartDrawer;
@@ -45,8 +53,8 @@ namespace Chart
             IGrid grid;
             public event Action GoToNextFluctuation;
             public event Func<bool> CanWeGoToNextFluctuation;
-            public int firstFluctuationID = 1000;
-            public int fluctuationsCountToLoad = 1;
+            public int firstFluctuationID = 200;
+            public int fluctuationsCountToLoad = 100;
 
             // Use this for initialization
             private void Awake()
@@ -77,6 +85,12 @@ namespace Chart
                 //Debug.Log(sqlDB.ChartEndTime);
             }
 
+            internal IChartDataManager GenerateGame(Mode mode = Mode.Simple)
+            {
+                gameMode = mode;
+                return chartDataManager;
+            }
+
             // Update is called once per frame
             void Update()
             {
@@ -92,8 +106,12 @@ namespace Chart
 
                 if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    CanWeGoToNextFluctuation();
+                    if (dateWorkFlow.AddTimeStep())
                     GoToNextFluctuation();
+                    else
+                    {
+                        Debug.Log("Больше нечего отрисовывать");
+                    }
                 }
             }
         }

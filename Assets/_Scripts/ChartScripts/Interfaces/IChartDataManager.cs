@@ -21,7 +21,7 @@ namespace Chart
         DateTime DataEndTime { get; }
         
         //По timestamp возвращает данные о колебании цены в рамках таймфрейма
-        Entity.PriceFluctuation GetFluctuation(DateTime dateTime);
+        Entity.PriceFluctuation GetPriceFluctuation(DateTime dateTime);
         //По возвращает данные околибании цен в рамках таймфрейма
         IEnumerable<Entity.PriceFluctuation> GetPriceFluctuationsByTimeFrame(DateTime fromDate, DateTime toDate);
         //IEnumerable<Entity.PriceFluctuation> GetPriceFluctuationsByTimeFrame(From position, int framesCount = int.MaxValue);

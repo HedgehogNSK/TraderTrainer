@@ -124,7 +124,7 @@ namespace Chart
                 if (ChartDrawer.Instance.Autoscale)
                 y = cameraTransform.position.y;
                 else
-                y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetFluctuation(chartDataManager.DataEndTime).Close);
+                y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetPriceFluctuation(chartDataManager.DataEndTime).Close);
                     
                 return new Vector3(x, y);
             }

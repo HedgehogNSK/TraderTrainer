@@ -166,7 +166,7 @@ namespace Chart
         }
 
 
-        public PriceFluctuation GetFluctuation(DateTime dateTime)
+        public PriceFluctuation GetPriceFluctuation(DateTime dateTime)
         {
             if (!initialized) return null;
             PriceFluctuation result;
@@ -230,16 +230,34 @@ namespace Chart
             dataEndTime = tmp2;
         }
 
+        //TODO: Прикутить ограничение
+        /*
+        DateTime dateLimit; 
+        public DateTime DateLimit {
+            get { return dateLimit; }
+            set
+            {
+                DateTime tmp = candles.Last().PeriodBegin.UpToNextFrame(TFrame);
+                dateLimit = value > tmp ? tmp: value ;
+                if (value > tmp) Debug.Log("Значение DateLimit превышает дату закрытия последнего колебания, поэтому ему была присвоена дата закрытия");
+            }
+        }
+        public int MaxCountFluctuationToShow { set { DateLimit = DataBeginTime + value * TFrame; } }
+        //*/
+
         public bool AddTimeStep()
         {
-            dataEndTime += tFrame;
-            if (dataEndTime >= candles.Last().PeriodBegin.UpToNextFrame(TFrame))
+            DateTime tmp = dataEndTime + tFrame;
+            if (tmp > candles.Last().PeriodBegin.UpToNextFrame(TFrame))
             {
                 dataEndTime = candles.Last().PeriodBegin.UpToNextFrame(TFrame);
                 return false;
             }
             else
+            {
+                dataEndTime = tmp;
                 return true;
+            }
         }
 
         public ExtraData GetDataByPoint(DateTime dateTime)

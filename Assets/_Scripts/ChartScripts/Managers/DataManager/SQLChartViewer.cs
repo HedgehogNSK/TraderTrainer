@@ -153,7 +153,7 @@ public class SQLChartViewer : IChartDataManager
             return (DateTime)dataEndTime;
         } }
 
-    public PriceFluctuation GetFluctuation(DateTime timestamp)
+    public PriceFluctuation GetPriceFluctuation(DateTime timestamp)
     { 
         DateTime periodEnd;
         periodEnd = timestamp.UpToNextFrame(TFrame);

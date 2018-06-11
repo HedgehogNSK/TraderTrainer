@@ -70,7 +70,7 @@ public class SimpleChartViewer : IChartDataManager
         return trades[id].Price;
     }
 
-    public PriceFluctuation GetFluctuation(DateTime timestamp)
+    public PriceFluctuation GetPriceFluctuation(DateTime timestamp)
     {
         if (!IsSettingsSet()) return null;
 
