@@ -63,7 +63,13 @@ namespace Chart
                     Debug.LogError("[GameObject]"+name + ": Задай все параметры");
             }
             void Start()
+            {              
+             
+            }
+
+            internal IChartDataManager GenerateGame(Mode mode = Mode.Simple)
             {
+                gameMode = mode;
                 chartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Hour, 1));
                 dateWorkFlow = chartDataManager as IDateWorkFlow;
                 dateWorkFlow.SetWorkDataRange(firstFluctuationID, fluctuationsCountToLoad);
@@ -76,18 +82,7 @@ namespace Chart
                 chartDrawer.CoordGrid = grid;
                 NavigationController.Instance.ChartDataManager = chartDataManager;
                 NavigationController.Instance.CoordGrid = grid;
-               
-                //sqlDB = new SQLChartViewer(new TimeFrame(Period.Hour,2));
-                //DateTime dt = sqlDB.GetPrice(0);
-                //Debug.Log(DateTime.SpecifyKind(dt, DateTimeKind.Local).ToString());
-                //Debug.Log(sqlDB.TyrToSetPairByAcronym("Test", "Test2"));
-                //Debug.Log(sqlDB.ChartBeginTime);
-                //Debug.Log(sqlDB.ChartEndTime);
-            }
 
-            internal IChartDataManager GenerateGame(Mode mode = Mode.Simple)
-            {
-                gameMode = mode;
                 return chartDataManager;
             }
 
@@ -106,7 +101,7 @@ namespace Chart
 
                 if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    if (dateWorkFlow.AddTimeStep())
+                    if (dateWorkFlow!=null && dateWorkFlow.AddTimeStep())
                     GoToNextFluctuation();
                     else
                     {

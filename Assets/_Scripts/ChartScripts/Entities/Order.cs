@@ -24,15 +24,15 @@ namespace Chart
 
             public State state { get; set; }
             public Type type { get; set; }
-            double amount;
-            public double Amount
+            decimal amount;
+            public decimal Amount
             {
                 get { return amount; }
                 set { amount = value; }
             }
 
-            double price;
-            public double Price
+            decimal price;
+            public decimal Price
             {
                 get { return price; }
                 set { price = value; }
@@ -41,7 +41,7 @@ namespace Chart
             DateTime lastChange;
             public DateTime LastChange { get { return lastChange; } }
 
-            public Order(Type type, double amount,  double price = 0)
+            public Order(Type type, decimal amount, decimal price = 0)
             {
                 this.amount = amount;
                 this.price = price;
@@ -58,7 +58,7 @@ namespace Chart
 
             }
 
-            public bool IsOrderSettingsCorrect(double amount, double price)
+            public bool IsOrderSettingsCorrect(decimal amount, decimal price)
             {
 
                     if (amount == 0)

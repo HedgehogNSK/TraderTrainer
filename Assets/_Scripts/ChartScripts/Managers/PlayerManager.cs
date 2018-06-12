@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Linq;
 namespace Chart
@@ -28,6 +29,11 @@ namespace Chart
                 }
             }
 
+            public Text txtBalance;
+            public Text txtPosition;
+            public Text txtTotal;
+            public Text txtProfit;
+            public Text txtPrice;
             
             [Serializable]
             public enum Position
@@ -40,7 +46,7 @@ namespace Chart
                 Short
             }
             Position tradeDirection;
-            List<Order> playerOrders;
+            List<Order> playerOrders = new List<Order>();
 
             private float cash;
             public float Cash
@@ -54,85 +60,113 @@ namespace Chart
 
             private void Initialize()
             {
-                tmpPlayerCap =  initialCap = playerCurrentBalance = PlayerPrefs.GetFloat("Deposit", 10000);
+                tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
+                PositionSize = 0;
                 tradeDirection = Position.None;
                 playerOrders = new List<Order>();
 
 
             }
 
-            public double Total
+            public decimal Total(decimal price)
             {
-                get
+                if (chartData != null)
                 {
-                    if (chartData != null)
-                    {
-                        PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.DataEndTime);
-                        if (positionSize >= 0)
-                            return
-                                (playerCurrentBalance + positionSize * fluct.Close);
-                        else
-                            return playerCurrentBalance - positionSize * (2 * cachedPrice - fluct.Close);
-                    }
-                    else return 0;
+                    PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.DataEndTime);
+                    if (PositionSize >= 0)
+                        return
+                            (PlayerCurrentBalance + PositionSize * price);
+                    else
+                        return PlayerCurrentBalance + PositionSize*( price - 2*openPositionPrice);
+                }
+                else return 0;
+
+            }
+
+            public decimal TotalProfit(decimal price)
+            {
+
+                if (chartData != null)
+                {
+                    return Total(price) - initialCap;
+                }
+                else return 0;
+            }
+
+            List<decimal> lastTradesProfit = new List<decimal>();
+
+
+            decimal playerCurrentBalance;
+            public decimal PlayerCurrentBalance
+            {
+                get { return playerCurrentBalance; }
+                set
+                {
+                    playerCurrentBalance = value;
+                    txtBalance.text = playerCurrentBalance.ToString("F4");
+                   
+                }
+            }
+            decimal initialCap;
+            decimal tmpPlayerCap = 0;
+            decimal positionSize;
+            public decimal PositionSize
+            {
+                get { return positionSize; }
+                set
+                {
+                    positionSize = value;
+                    txtPosition.text = positionSize.ToString("F4");                  
                 }
             }
 
-            public double TotalProfit
-            {
-                get
-                {
-                    if (chartData!=null)
-                    {
-                            return Total - initialCap;
-                    }
-                    else return 0;
-                }
-            }
-
-            List<double> lastTradesProfit = new List<double>();
-           
-
-            double playerCurrentBalance;
-            double initialCap;
-            double tmpPlayerCap = 0;
-            double positionSize = 0;
-            public double PlayerPosition {
-                get { return positionSize; }      
-            }
-
-            double positionOpenCost = 0;
+            decimal positionOpenCost = 0;
 
             
-            public void CreateOrder(Order.Type type,double amount, double price=0)
+            public void CreateOrder(Order.Type type, decimal amount, decimal price =0)
             {
                 Order newOrder = new Order(type, amount,  price);
                 playerOrders.Add(newOrder);
             }
 
             //Проверка количества
-            public bool IsAmountCorrect(double amount, double price)
+            public bool IsAmountCorrect(decimal amount, decimal price)
             {
                                              
-                return (Math.Abs(amount + positionSize) > Total / price);
+                return (amount!= decimal.MaxValue && amount!= decimal.MinValue && Math.Abs(amount + PositionSize) <= Total(price) / price);
             }
 
             //Фильтр размера ордера   
-            public double AmountFilter(double amount, double price)
+            public decimal AmountFilter(decimal amount, decimal price)
             {                              
-                if (IsAmountCorrect(amount, price))
+                if (!IsAmountCorrect(amount, price))
                 {
-                    amount = Math.Sign(amount) * (Total / price - positionSize);
+
+                    if (Math.Sign(amount) != Math.Sign(PositionSize))
+                    {
+                        amount = Math.Sign(amount) * (Total(price) / price) - PositionSize;
+                    }
+                    else
+                    {
+                        amount = Math.Sign(amount) * (PlayerCurrentBalance / price);
+                    }
                 }
                 return amount;
             }
-            double cachedPrice;
+            decimal openPositionPrice;
+            
+            public void UpdateSomeData(decimal price)
+            {
+                txtTotal.text = Total(price).ToString("F2");
+                txtProfit.text = TotalProfit(price).ToString("F2");
+                txtPrice.text = openPositionPrice.ToString("F2");
+            }
             //Сейчас функция не учитывает объём 
-            public void CheckPosition()
+            public void UpdatePosition()
             {
                 PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.DataEndTime);
                 var orders = playerOrders.Where(order => order.state == Order.State.Waiting);
-                double price;
+                decimal price;
 
                 foreach (Order order in orders)
                 {
@@ -143,93 +177,109 @@ namespace Chart
                                 price = 0;
                                 if (order.Amount > 0)
                                 {
-                                    if (order.Price >= fluct.Open)
+                                    if (order.Price >= (decimal)fluct.Open)
                                     {
-                                        price = fluct.Open;
+                                        price = (decimal)fluct.Open;
 
                                     }
-                                    else if (order.Price >= fluct.Low)
+                                    else if (order.Price >= (decimal)fluct.Low)
                                     {
                                         price = order.Price;
                                     }
                                 }
                                 else
                                 {
-                                    if (order.Price <= fluct.Open)
+                                    if (order.Price <= (decimal)fluct.Open)
                                     {
-                                        price = fluct.Open;
+                                        price = (decimal)fluct.Open;
 
                                     }
-                                    else if (order.Price <= fluct.High)
+                                    else if (order.Price <= (decimal)fluct.High)
                                     {
                                         price = order.Price;
                                     }
 
                                 }
-                                
+                                if (price == 0) return;
+
                             }
                             break;
                         case Order.Type.Market:
                             {
-                                price = fluct.Open;                           
+                                price = (decimal) fluct.Open;
+                                order.Amount = AmountFilter(order.Amount, price);
                             }
                             break;
 
                         default: { throw new ArgumentOutOfRangeException("Действие для этого типа ордера не описано"); }
                     }
-                    if (price == 0) return;
 
-                    if(order.type == Order.Type.Market)
-                    order.Amount = AmountFilter(order.Amount, price);
-
-                    if (IsAmountCorrect(order.Amount, price))
-                    { //Расчёт позиции и баланса
-                        if (order.Amount > 0)
-                        {
-                            if (positionSize >= 0)
-                            {
-                                playerCurrentBalance -= order.Amount * price;
-                                positionSize += order.Amount;
-
-                            }
-                            else if (positionSize < 0)
-                            {
-                                cachedPrice = (positionSize * cachedPrice + order.Amount * price) / (positionSize + order.Amount);
-                                positionSize += order.Amount;
-                            }
-                        }
-                        else if (order.Amount < 0)
-                        {
-                            if (positionSize <= 0)
-                            {
-                                playerCurrentBalance += order.Amount * price;
-                                cachedPrice = (positionSize * cachedPrice + order.Amount * price) / (positionSize + order.Amount);
-                                positionSize -= order.Amount;
-
-                            }
-                            else if (positionSize > 0)
-                            {
-                                playerCurrentBalance -= order.Amount * price;
-                                positionSize -= order.Amount;
-                                cachedPrice = price;
-                            }
-                        }
-
-                        if (Math.Sign(positionSize) != Math.Sign(positionSize - order.Amount))
-                        {
-                            tmpPlayerCap = playerCurrentBalance + positionSize * price;
-                            lastTradesProfit.Add(tmpPlayerCap);
-                        }
-                        order.state = Order.State.Filled;
-                    }
-                    else
-                    {
-                        order.state = Order.State.Canceled;
-                        Debug.Log("Недостаточно средств, для выполнения ордера");
-                    }
-
+                    RecalculatePosition(order, price);
+                  
+                   
                 }
 
+            }
+
+            //Расчёт позиции и баланса
+            private void RecalculatePosition(Order order, decimal price)
+            {
+                if (IsAmountCorrect(order.Amount, price))
+                { 
+                    if (order.Amount > 0)
+                    {
+                        if (PositionSize >= 0)
+                        {
+                            PlayerCurrentBalance -= order.Amount * price;
+                            openPositionPrice = price;
+                        }
+                        else if (PositionSize < 0)
+                        {
+                            if (order.Amount > PositionSize)
+                            {
+                                PlayerCurrentBalance += PositionSize * (price - 2 * openPositionPrice) - (order.Amount + PositionSize) * price;
+                                openPositionPrice = price;
+                            }
+                            else
+                            {
+                                //PlayerCurrentBalance +=  order.Amount* price;
+                                openPositionPrice = (PositionSize * openPositionPrice + order.Amount * price) / (PositionSize + order.Amount);
+
+                            }
+                        }
+                    }
+                    else if (order.Amount < 0)
+                    {
+                        if (PositionSize <= 0)
+                        {
+                            PlayerCurrentBalance += order.Amount * price;
+                            openPositionPrice = (PositionSize * openPositionPrice + order.Amount * price) / (PositionSize + order.Amount);
+
+                        }
+                        else if (PositionSize > 0)
+                        {
+                            PlayerCurrentBalance += -order.Amount > PositionSize ?
+                                PositionSize * price + (order.Amount + PositionSize) * price :
+                                -order.Amount * price;
+                            openPositionPrice = price;
+
+                        }
+
+                    }
+                    PositionSize += order.Amount;
+
+                    if (Math.Sign(PositionSize) != Math.Sign(PositionSize - order.Amount))
+                    {
+                        tmpPlayerCap = PlayerCurrentBalance + PositionSize * price;
+                        lastTradesProfit.Add(tmpPlayerCap);
+                    }
+                    order.state = Order.State.Filled;
+                }
+                else
+                {
+                    order.state = Order.State.Canceled;
+                    Debug.Log("Недостаточно средств, для выполнения ордера");
+                }
             }
 
             public void Buy()
@@ -239,7 +289,7 @@ namespace Chart
                     case GameManager.Mode.Simple:
                         {
                             
-                            CreateOrder(Order.Type.Market,double.MaxValue);
+                            CreateOrder(Order.Type.Market,decimal.MaxValue);
                         } break;
                     default: { Debug.Log("Для этого мода игры не реализован алгоритм"); }break;
                 }
@@ -252,7 +302,7 @@ namespace Chart
                     case GameManager.Mode.Simple:
                         {
 
-                            CreateOrder(Order.Type.Market, double.MinValue);
+                            CreateOrder(Order.Type.Market, decimal.MinValue);
                         }
                         break;
                     default: { Debug.Log("Для этого мода игры не реализован алгоритм"); } break;
@@ -266,6 +316,10 @@ namespace Chart
 
             private IChartDataManager chartData;
 
+            public void Start()
+            {
+                StartGame();
+            }
             public void StartGame()
             {
                 if (GameManager.Instance)
@@ -273,7 +327,12 @@ namespace Chart
                     Initialize();
                     GameManager.Mode mode = GameManager.Mode.Simple;
                     chartData = GameManager.Instance.GenerateGame(mode);
-                    GameManager.Instance.GoToNextFluctuation += CheckPosition;
+                    UpdateSomeData((decimal)chartData.GetPriceFluctuation(chartData.DataEndTime).Close);
+
+                    GameManager.Instance.GoToNextFluctuation += UpdatePosition;
+                    GameManager.Instance.GoToNextFluctuation += ()=>{
+                        UpdateSomeData((decimal)chartData.GetPriceFluctuation(chartData.DataEndTime).Close);
+                    };
                 }
                 else
                 {
@@ -284,7 +343,11 @@ namespace Chart
 
             private void OnDestroy()
             {
-                GameManager.Instance.GoToNextFluctuation -= CheckPosition;
+                if (GameManager.Instance)
+                {
+                    GameManager.Instance.GoToNextFluctuation -= UpdatePosition;
+                    //GameManager.Instance.GoToNextFluctuation -= UpdateSomeData;
+                }
             }
         }
     }
