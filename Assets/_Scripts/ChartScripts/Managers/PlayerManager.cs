@@ -77,7 +77,7 @@ namespace Chart
                         return
                             (PlayerCurrentBalance + PositionSize * price);
                     else
-                        return PlayerCurrentBalance + PositionSize*( price - 2*openPositionPrice);
+                        return PlayerCurrentBalance + PositionSize*( price - 2*OpenPositionPrice);
                 }
                 else return 0;
 
@@ -119,10 +119,9 @@ namespace Chart
                     txtPosition.text = positionSize.ToString("F4");                  
                 }
             }
-
-            decimal positionOpenCost = 0;
-
             
+            public decimal OpenPositionPrice { get; private set; }
+
             public void CreateOrder(Order.Type type, decimal amount, decimal price =0)
             {
                 Order newOrder = new Order(type, amount,  price);
@@ -153,13 +152,13 @@ namespace Chart
                 }
                 return amount;
             }
-            decimal openPositionPrice;
+
             
             public void UpdateSomeData(decimal price)
             {
                 txtTotal.text = Total(price).ToString("F2");
                 txtProfit.text = TotalProfit(price).ToString("F2");
-                txtPrice.text = openPositionPrice.ToString("F2");
+                txtPrice.text = OpenPositionPrice.ToString("F2");
             }
             //Сейчас функция не учитывает объём 
             public void UpdatePosition()
@@ -231,19 +230,19 @@ namespace Chart
                         if (PositionSize >= 0)
                         {
                             PlayerCurrentBalance -= order.Amount * price;
-                            openPositionPrice = price;
+                            OpenPositionPrice = price;
                         }
                         else if (PositionSize < 0)
                         {
                             if (order.Amount > PositionSize)
                             {
-                                PlayerCurrentBalance += PositionSize * (price - 2 * openPositionPrice) - (order.Amount + PositionSize) * price;
-                                openPositionPrice = price;
+                                PlayerCurrentBalance += PositionSize * (price - 2 * OpenPositionPrice) - (order.Amount + PositionSize) * price;
+                                OpenPositionPrice = price;
                             }
                             else
                             {
                                 //PlayerCurrentBalance +=  order.Amount* price;
-                                openPositionPrice = (PositionSize * openPositionPrice + order.Amount * price) / (PositionSize + order.Amount);
+                                OpenPositionPrice = (PositionSize * OpenPositionPrice + order.Amount * price) / (PositionSize + order.Amount);
 
                             }
                         }
@@ -253,7 +252,7 @@ namespace Chart
                         if (PositionSize <= 0)
                         {
                             PlayerCurrentBalance += order.Amount * price;
-                            openPositionPrice = (PositionSize * openPositionPrice + order.Amount * price) / (PositionSize + order.Amount);
+                            OpenPositionPrice = (PositionSize * OpenPositionPrice + order.Amount * price) / (PositionSize + order.Amount);
 
                         }
                         else if (PositionSize > 0)
@@ -261,7 +260,7 @@ namespace Chart
                             PlayerCurrentBalance += -order.Amount > PositionSize ?
                                 PositionSize * price + (order.Amount + PositionSize) * price :
                                 -order.Amount * price;
-                            openPositionPrice = price;
+                            OpenPositionPrice = price;
 
                         }
 
@@ -279,33 +278,6 @@ namespace Chart
                 {
                     order.state = Order.State.Canceled;
                     Debug.Log("Недостаточно средств, для выполнения ордера");
-                }
-            }
-
-            public void Buy()
-            {
-                switch(GameManager.Instance.gameMode)
-                {
-                    case GameManager.Mode.Simple:
-                        {
-                            
-                            CreateOrder(Order.Type.Market,decimal.MaxValue);
-                        } break;
-                    default: { Debug.Log("Для этого мода игры не реализован алгоритм"); }break;
-                }
-            }
-
-            public void Sell()
-            {
-                switch (GameManager.Instance.gameMode)
-                {
-                    case GameManager.Mode.Simple:
-                        {
-
-                            CreateOrder(Order.Type.Market, decimal.MinValue);
-                        }
-                        break;
-                    default: { Debug.Log("Для этого мода игры не реализован алгоритм"); } break;
                 }
             }
 

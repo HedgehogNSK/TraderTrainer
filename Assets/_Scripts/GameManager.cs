@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 using Hedge.Tools;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using Hedge.Tools.UnityUI;
 
 namespace Chart
 {
@@ -46,25 +49,53 @@ namespace Chart
             [SerializeField] Candle candleDummy;
             [SerializeField] Transform candlesParent;
             [SerializeField] ChartDrawer chartDrawer;
+            [SerializeField] Button SellButton;
+            [SerializeField] Button BuyButton;
+            [SerializeField] AdvancedButton ExtraButton;
             SimpleChartViewer db;
             SQLChartViewer sqlDB;
             IChartDataManager chartDataManager;
             IDateWorkFlow dateWorkFlow;
             IGrid grid;
             public event Action GoToNextFluctuation;
-            public event Func<bool> CanWeGoToNextFluctuation;
             public int firstFluctuationID = 200;
             public int fluctuationsCountToLoad = 100;
+            public float pressButtonDelay = 0.2f;
 
+            EventTrigger trigger;
             // Use this for initialization
             private void Awake()
             {
                 if (!candleDummy || !candlesParent)
                     Debug.LogError("[GameObject]"+name + ": Задай все параметры");
+                if(!SellButton || !BuyButton || !ExtraButton)
+                {
+                    Debug.LogError("[GameObject]"+name +": Не задана одна из кнопок контроля");
+                    return;
+                }
+               
+
             }
+
+            BaseEventData baseEventData = new BaseEventData(EventSystem.current);
+            
             void Start()
-            {              
-             
+            {
+                SellButton.onClick.AddListener(Sell);     
+                BuyButton.onClick.AddListener(Buy);
+
+                ExtraButton.onPressHold += TryLoadNextFluctuation;
+
+                //trigger = ExtraButton.gameObject.AddComponent<EventTrigger>();
+                //var pointerDown = new EventTrigger.Entry();
+                //pointerDown.eventID = EventTriggerType.PointerDown;
+                //pointerDown.callback.AddListener((e) => { StayInPosition(true, pressButtonDelay); });
+                //trigger.triggers.Add(pointerDown);
+
+                //var pointerUp = new EventTrigger.Entry();
+                //pointerUp.eventID = EventTriggerType.PointerUp;
+                //pointerUp.callback.AddListener((e) => { StayInPosition(false); });
+                //trigger.triggers.Add(pointerUp);
             }
 
             internal IChartDataManager GenerateGame(Mode mode = Mode.Simple)
@@ -73,10 +104,7 @@ namespace Chart
                 chartDataManager = new CryptoCompareDataManager(tframe: new TimeFrame(Period.Hour, 1));
                 dateWorkFlow = chartDataManager as IDateWorkFlow;
                 dateWorkFlow.SetWorkDataRange(firstFluctuationID, fluctuationsCountToLoad);
-                if (dateWorkFlow != null)
-                {
-                    CanWeGoToNextFluctuation += dateWorkFlow.AddTimeStep;
-                }
+
                 grid = new CoordinateGrid(chartDataManager.DataBeginTime, chartDataManager.TFrame);
                 chartDrawer.ChartDataManager = chartDataManager;
                 chartDrawer.CoordGrid = grid;
@@ -101,13 +129,80 @@ namespace Chart
 
                 if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    if (dateWorkFlow!=null && dateWorkFlow.AddTimeStep())
-                    GoToNextFluctuation();
-                    else
-                    {
-                        Debug.Log("Больше нечего отрисовывать");
-                    }
+                    TryLoadNextFluctuation();
                 }
+            }
+
+            public bool TryLoadNextFluctuation(PointerEventData eventData = null)
+            {
+                if (dateWorkFlow == null)
+                {
+                    Debug.LogError("Невозможно загрузить следующее колебание. Отсутствуют рабочее временнОе пространство");
+                    return false;
+                }
+
+                if (!dateWorkFlow.AddTimeStep())
+                {
+                    Debug.Log(" Невозможно загрузить следующее колебание. Достигнут край рабочей области");
+                    return false;
+                }
+
+                GoToNextFluctuation();
+
+                return true;
+            }
+
+            public void Buy()
+            {
+                switch (gameMode)
+                {
+                    case Mode.Simple:
+                        {
+
+                            PlayerManager.Instance.CreateOrder(Order.Type.Market, decimal.MaxValue);
+                        }
+                        break;
+                    default: { Debug.Log("Для этого мода игры не реализован алгоритм"); } break;
+                }
+                TryLoadNextFluctuation();
+            }
+
+            public void Sell()
+            {
+                switch (gameMode)
+                {
+                    case Mode.Simple:
+                        {
+
+                            PlayerManager.Instance.CreateOrder(Order.Type.Market, decimal.MinValue);
+                        }
+                        break;
+                    default: { Debug.Log("Для этого мода игры не реализован алгоритм"); } break;
+                }
+                TryLoadNextFluctuation();
+
+            }
+
+            Coroutine load;
+            public void StayInPosition(bool isDown,float time = 0)
+            {
+                if (isDown)
+                {
+                    load = StartCoroutine(FluctuationDelayLoader(time));
+                }
+                else
+                {
+                    StopCoroutine(load);
+                }
+            }
+
+            IEnumerator FluctuationDelayLoader(float time)
+            {
+                while (TryLoadNextFluctuation())
+                {
+                    yield return new WaitForSecondsRealtime(time);
+                }
+
             }
         }
     }
