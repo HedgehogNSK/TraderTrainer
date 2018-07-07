@@ -57,6 +57,38 @@ namespace Chart
                 }
                 private set { cash = value; }
             }
+            List<decimal> lastTradesProfit = new List<decimal>();
+
+
+            decimal playerCurrentBalance;
+            public decimal PlayerCurrentBalance
+            {
+                get { return playerCurrentBalance; }
+                set
+                {
+                    playerCurrentBalance = value;
+                    txtBalance.text = playerCurrentBalance.ToString("F4");
+
+                }
+            }
+
+            decimal initialCap;
+            decimal tmpPlayerCap = 0;
+
+            public event Action<decimal> PositionSizeIsChanged;
+            decimal positionSize;
+            public decimal PositionSize
+            {
+                get { return positionSize; }
+                set
+                {
+                    positionSize = value;
+                    txtPosition.text = positionSize.ToString("F4");
+                    if(PositionSizeIsChanged!=null) PositionSizeIsChanged(value);
+                }
+            }
+
+            public decimal OpenPositionPrice { get; private set; }
 
             private void Initialize()
             {
@@ -92,36 +124,7 @@ namespace Chart
                 }
                 else return 0;
             }
-
-            List<decimal> lastTradesProfit = new List<decimal>();
-
-
-            decimal playerCurrentBalance;
-            public decimal PlayerCurrentBalance
-            {
-                get { return playerCurrentBalance; }
-                set
-                {
-                    playerCurrentBalance = value;
-                    txtBalance.text = playerCurrentBalance.ToString("F4");
-                   
-                }
-            }
-            decimal initialCap;
-            decimal tmpPlayerCap = 0;
-            decimal positionSize;
-            public decimal PositionSize
-            {
-                get { return positionSize; }
-                set
-                {
-                    positionSize = value;
-                    txtPosition.text = positionSize.ToString("F4");                  
-                }
-            }
             
-            public decimal OpenPositionPrice { get; private set; }
-
             public void CreateOrder(Order.Type type, decimal amount, decimal price =0)
             {
                 Order newOrder = new Order(type, amount,  price);

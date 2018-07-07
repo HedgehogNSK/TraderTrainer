@@ -92,9 +92,9 @@ namespace Hedge
                 }
             }
 
-            static public int CountFramesInPeriod(TimeFrame tframe, double periodBeginTimestamp, double periodEndTimestamp)
+            static public double CountFramesInPeriod(TimeFrame tframe, double periodBeginTimestamp, double periodEndTimestamp)
             {
-                int count;
+                double count;
                 double frames_count;
                 double periodLength = periodEndTimestamp - periodBeginTimestamp;
 
@@ -141,10 +141,8 @@ namespace Hedge
                             return -1;
                         }
                 }
-
-                count = (int)frames_count;
-                if (frames_count != count) count++;
-                return count;
+      
+                return frames_count;
             }
             static public int CountFramesInPeriod(TimeFrame tframe, DateTime firstDate, DateTime secondDate, TimeSpan offset)
             {

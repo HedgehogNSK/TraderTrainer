@@ -23,15 +23,18 @@ namespace Hedge
                 }
             }
 
+            //Если камера не будет наведена на то место через которое проходит линия, то ничего отрисовываться не будет
             static public void TestDraw(Vector2 begin, Vector2 end)
             {
                 lineMaterial.SetPass(0);
+                GL.PushMatrix();
                 GL.Begin(GL.LINES);
                 GL.Color(Color.red);
                 GL.Vertex(begin);
                 GL.Color(Color.red);
                 GL.Vertex(end);
                 GL.End();
+                GL.PopMatrix();
             }
 
 
@@ -272,6 +275,26 @@ namespace Hedge
                 GL.End();
                 GL.PopMatrix();
             }
+
+            static public void DrawRectangle(Vector2 leftAngle, Vector2 rightAngle, Color color)
+            {
+                LineColor = color;
+                lineMaterial.SetPass(0);
+
+                GL.PushMatrix();
+                GL.LoadPixelMatrix();
+                GL.Begin(GL.QUADS);
+
+                GL.Vertex3(leftAngle.x,leftAngle.y, 1);
+                GL.Vertex3(leftAngle.x,rightAngle.y, 1);
+                GL.Vertex3(rightAngle.x,rightAngle.y, 1);
+                GL.Vertex3(rightAngle.x,leftAngle.y, 1);
+
+                GL.End();
+
+                GL.PopMatrix();
+            }
+
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Hedge.Tools;
 namespace Chart
 {
     public class FrontCameraDraw : MonoBehaviour

@@ -11,7 +11,7 @@ namespace Hedge
     {
         namespace UnityUI
         {
-            public class AdvancedButton : MonoBehaviour, IPointerDownHandler,IPointerUpHandler
+            public class AdvancedButton : Selectable
             {
 
                 public event Func<PointerEventData,bool> onPressHold;
@@ -23,15 +23,19 @@ namespace Hedge
 
 
                 Coroutine pointerDownCoroutine;
-                public void OnPointerUp(PointerEventData eventData)
+                public override void OnPointerUp(PointerEventData eventData)
                 {
-                  if (pointerDownCoroutine!=null)
+                    base.OnPointerUp(eventData);
+
+                    if (pointerDownCoroutine!=null)
                         StopCoroutine(pointerDownCoroutine);
                 }
 
-                public void OnPointerDown(PointerEventData eventData)
+                public override void OnPointerDown(PointerEventData eventData)
                 {
-                  pointerDownCoroutine = StartCoroutine(PressCoroutine(eventData));
+                    base.OnPointerDown(eventData);
+
+                    pointerDownCoroutine = StartCoroutine(PressCoroutine(eventData));
                 }
 
                 IEnumerator PressCoroutine(PointerEventData eventData)

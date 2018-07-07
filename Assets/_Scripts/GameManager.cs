@@ -28,7 +28,7 @@ namespace Chart
                         _instance = FindObjectOfType<GameManager>();
                         if (!_instance)
                         {
-                            Debug.LogWarning("Создай объект GameManager на сцене");
+                            Debug.LogWarning("Объект GameManager отсутствует на сцене");
                         }
                         return _instance;
                     }
@@ -52,6 +52,9 @@ namespace Chart
             [SerializeField] Button SellButton;
             [SerializeField] Button BuyButton;
             [SerializeField] AdvancedButton ExtraButton;
+            [SerializeField] Button ExitButton;
+            [SerializeField] Color colorLongExit, colorShortExit;
+            Image exitButtonImage;
             SimpleChartViewer db;
             SQLChartViewer sqlDB;
             IChartDataManager chartDataManager;
@@ -60,7 +63,6 @@ namespace Chart
             public event Action GoToNextFluctuation;
             public int firstFluctuationID = 200;
             public int fluctuationsCountToLoad = 100;
-            public float pressButtonDelay = 0.2f;
 
             EventTrigger trigger;
             // Use this for initialization
@@ -76,26 +78,26 @@ namespace Chart
                
 
             }
-
-            BaseEventData baseEventData = new BaseEventData(EventSystem.current);
             
             void Start()
             {
                 SellButton.onClick.AddListener(Sell);     
                 BuyButton.onClick.AddListener(Buy);
+                ExitButton.onClick.AddListener(Exit);
+                exitButtonImage = ExitButton.GetComponent<Image>();
 
                 ExtraButton.onPressHold += TryLoadNextFluctuation;
 
-                //trigger = ExtraButton.gameObject.AddComponent<EventTrigger>();
-                //var pointerDown = new EventTrigger.Entry();
-                //pointerDown.eventID = EventTriggerType.PointerDown;
-                //pointerDown.callback.AddListener((e) => { StayInPosition(true, pressButtonDelay); });
-                //trigger.triggers.Add(pointerDown);
-
-                //var pointerUp = new EventTrigger.Entry();
-                //pointerUp.eventID = EventTriggerType.PointerUp;
-                //pointerUp.callback.AddListener((e) => { StayInPosition(false); });
-                //trigger.triggers.Add(pointerUp);
+                ExitButton.gameObject.SetActive(false);
+                PlayerManager.Instance.PositionSizeIsChanged += (x) => 
+                {
+                    ExitButton.gameObject.SetActive(x != 0);
+                    
+                    BuyButton.gameObject.SetActive(x <= 0);
+                    SellButton.gameObject.SetActive(x >= 0);
+                    ExitButton.transform.position = x > 0 ? BuyButton.transform.position : SellButton.transform.position;
+                    exitButtonImage.color = x > 0 ? colorLongExit : colorShortExit;
+                };
             }
 
             internal IChartDataManager GenerateGame(Mode mode = Mode.Simple)
@@ -183,26 +185,10 @@ namespace Chart
 
             }
 
-            Coroutine load;
-            public void StayInPosition(bool isDown,float time = 0)
+            public void Exit()
             {
-                if (isDown)
-                {
-                    load = StartCoroutine(FluctuationDelayLoader(time));
-                }
-                else
-                {
-                    StopCoroutine(load);
-                }
-            }
-
-            IEnumerator FluctuationDelayLoader(float time)
-            {
-                while (TryLoadNextFluctuation())
-                {
-                    yield return new WaitForSecondsRealtime(time);
-                }
-
+                PlayerManager.Instance.CreateOrder(Order.Type.Market, -PlayerManager.Instance.PositionSize);
+                TryLoadNextFluctuation();
             }
         }
     }

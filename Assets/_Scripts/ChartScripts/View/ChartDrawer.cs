@@ -27,7 +27,8 @@ namespace Chart
         }
         #endregion
 
-        public float offset = 1.05f;
+        //Отставание графика от вертикальных границ
+        public float chartOffsetFromVerticalBorders = 1.05f;
         struct ScreenViewField
         {
             public float price0;
@@ -50,6 +51,9 @@ namespace Chart
         public IGrid CoordGrid { get; set; }
         public Color baseColor;
         public Color crossColor;
+        public Color volumeUpColor;
+        public Color volumeDownColor;
+
         [SerializeField] Candle candleDummy;
         [SerializeField] Transform candlesParent;
 
@@ -266,7 +270,7 @@ namespace Chart
             if (Mathf.Abs(new_y/cam.transform.position.y-1) >0.001f)
             cam.transform.position = new Vector3(cam.transform.position.x, new_y, cam.transform.position.z);
 
-            CoordGrid.Scale *= (highestPriceOnScreen - lowestPriceOnScreen) / (priceRange * offset);
+            CoordGrid.Scale *= (highestPriceOnScreen - lowestPriceOnScreen) / (priceRange * chartOffsetFromVerticalBorders);
 
 
         }
@@ -365,6 +369,52 @@ namespace Chart
 #endif
 
             pointerWolrdPosition = cam.ScreenToWorldPoint(new Vector3(pointerScreenPosition.x, pointerScreenPosition.y, cam.nearClipPlane));
+        }
+
+        public void DrawVolume(Rect camRect)
+        {
+            if (!IsSettingsSet) return;
+
+            TimeFrame timeFrame = chartDataManager.TFrame;
+            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
+           
+            visibleEndDate = visibleEndDate.UpToNextFrame(timeFrame);
+            float tmp = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
+            float tmp2 = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (CoordGrid.FromDateToXAxis(visibleEndDate) - worldPointInLeftDownCorner.x) - 1;
+
+
+            if (visibleStartDate <= visibleEndDate)
+            {
+                fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
+
+                int count = DateTimeTools.CountFramesInPeriod(timeFrame, visibleStartDate, visibleEndDate, TimeSpan.Zero);
+                float pixelLenghtFrame = camRect.width * tmp / count;
+                float maxVolume = (float)fluctuations.Max(x => x.Volume);
+               
+                Vector2 barLeftDownCorner = camRect.min - new Vector2 (tmp2 *camRect.width + pixelLenghtFrame / 2, 0) ;
+                Vector2 barRightUpCorner;
+                Vector2 bordersOffset = new Vector2((100/count<1? 1: 100/count), 0);
+
+                if (chartDataManager.DataBeginTime > visibleStartDate)
+                {
+                    int shift = DateTimeTools.CountFramesInPeriod(timeFrame, visibleStartDate, chartDataManager.DataBeginTime, TimeSpan.Zero);
+                    barLeftDownCorner += new Vector2(shift* pixelLenghtFrame, 0);
+                }
+
+                foreach (var fluctuation in fluctuations)
+                {
+                    
+                    float pixelHeightFrame = (float)fluctuation.Volume / maxVolume * camRect.height;
+                    barRightUpCorner = barLeftDownCorner + new Vector2(pixelLenghtFrame, pixelHeightFrame);
+
+                    DrawTools.DrawRectangle(barLeftDownCorner+ bordersOffset, barRightUpCorner- bordersOffset, fluctuation.Close - fluctuation.Open>0? volumeUpColor: volumeDownColor);
+
+                    barLeftDownCorner = new Vector2(barRightUpCorner.x,camRect.min.y);
+
+                }
+            }
+         
         }
 
         private void OnDestroy()
