@@ -10,17 +10,17 @@ using Chart.Entity;
 using UnityNpgsql;
 using UnityNpgsqlTypes;
 using Microsoft;
-public class SQLChartViewer : IChartDataManager
+public class SQLChartDataManager : IChartDataManager
 {
 
     NpgsqlConnection dbcon;
 
-    ~SQLChartViewer()
+    ~SQLChartDataManager()
     {
         dbcon.Close();
     }
 
-    public SQLChartViewer()
+    public SQLChartDataManager()
     {
         string connectionString =
           "Server=localhost;" +
@@ -41,7 +41,7 @@ public class SQLChartViewer : IChartDataManager
         }
     }
 
-    public SQLChartViewer(TimeFrame tframe) :this()
+    public SQLChartDataManager(TimeFrame tframe) :this()
     {
         this.tFrame = tframe;
     }

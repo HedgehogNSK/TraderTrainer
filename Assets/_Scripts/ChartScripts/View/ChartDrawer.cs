@@ -352,7 +352,7 @@ namespace Chart
 
         }
 
-        private void GetWorldPointerPosition(out Vector2 pointerScreenPosition, out Vector3 pointerWolrdPosition)
+        public void GetWorldPointerPosition(out Vector2 pointerScreenPosition, out Vector3 pointerWolrdPosition)
         {
 
 #if UNITY_EDITOR || UNITY_WEBGL

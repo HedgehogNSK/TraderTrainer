@@ -47,20 +47,15 @@ namespace Chart
 
         private string url_base = "https://min-api.cryptocompare.com/data/";
         private string data_frame = "histoday";
-        private string reciprocal_currency_acronym = "USD";
-        private string base_currency_acronym = "BTC";
-        private string market_acronym = "Bitfinex";
+        private string reciprocal_currency_acronym;
+        private string base_currency_acronym;
+        private string market_acronym ;
         public JsonData dc;
 
+        
         bool initialized = false;
 
-        public CryptoCompareDataManager(TimeFrame tframe)
-        {
-            tFrame = tframe;
-            var e1 = getData(tframe);
-            while (e1.MoveNext()) ;
-        }
-        public CryptoCompareDataManager(TimeFrame tframe, string base_currency_acronym, string reciprocal_currency_acronym = "USD", string market_acronym = "CCCAGG")
+        public CryptoCompareDataManager(TimeFrame tframe, string base_currency_acronym = "BTC", string reciprocal_currency_acronym = "USD", string market_acronym = "Bitfinex")
         {
             tFrame = tframe;
             this.base_currency_acronym = base_currency_acronym;

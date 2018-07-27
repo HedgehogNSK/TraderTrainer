@@ -7,7 +7,7 @@ using Chart.Entity;
 using UnityEngine;
 using System.Linq;
 
-public class SimpleChartViewer : IChartDataManager
+public class SimpleChartDataManager : IChartDataManager
 {
     Trade[] trades;
     int current = 0;
@@ -41,7 +41,7 @@ public class SimpleChartViewer : IChartDataManager
         }
     }
 
-    public SimpleChartViewer(int size, TimeFrame timeFrame)
+    public SimpleChartDataManager(int size, TimeFrame timeFrame)
     {
         trades = new Trade[size];
         for(int id = 0; id!=size; id++)

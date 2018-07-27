@@ -28,12 +28,6 @@ namespace Chart
 
                 }
             }
-
-            public Text txtBalance;
-            public Text txtPosition;
-            public Text txtTotal;
-            public Text txtProfit;
-            public Text txtPrice;
             
             [Serializable]
             public enum Position
@@ -47,27 +41,21 @@ namespace Chart
             }
             Position tradeDirection;
             List<Order> playerOrders = new List<Order>();
+            private IChartDataManager chartData;
 
-            private float cash;
-            public float Cash
-            {
-                get
-                {
-                    return cash;
-                }
-                private set { cash = value; }
-            }
             List<decimal> lastTradesProfit = new List<decimal>();
 
 
+            public event Action<decimal> CurrentBalanceChanged;
+            public event Action<decimal> PositionSizeIsChanged;
             decimal playerCurrentBalance;
             public decimal PlayerCurrentBalance
             {
                 get { return playerCurrentBalance; }
                 set
                 {
-                    playerCurrentBalance = value;
-                    txtBalance.text = playerCurrentBalance.ToString("F4");
+                    playerCurrentBalance = value;                    
+                    if (CurrentBalanceChanged != null) CurrentBalanceChanged(value);
 
                 }
             }
@@ -75,30 +63,20 @@ namespace Chart
             decimal initialCap;
             decimal tmpPlayerCap = 0;
 
-            public event Action<decimal> PositionSizeIsChanged;
+            
             decimal positionSize;
             public decimal PositionSize
             {
                 get { return positionSize; }
                 set
                 {
-                    positionSize = value;
-                    txtPosition.text = positionSize.ToString("F4");
+                    positionSize = value;                    
                     if(PositionSizeIsChanged!=null) PositionSizeIsChanged(value);
                 }
             }
 
             public decimal OpenPositionPrice { get; private set; }
 
-            private void Initialize()
-            {
-                tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
-                PositionSize = 0;
-                tradeDirection = Position.None;
-                playerOrders = new List<Order>();
-
-
-            }
 
             public decimal Total(decimal price)
             {
@@ -156,13 +134,15 @@ namespace Chart
                 return amount;
             }
 
-            
-            public void UpdateSomeData(decimal price)
+            public void InitializeData(IChartDataManager chartData)
             {
-                txtTotal.text = Total(price).ToString("F2");
-                txtProfit.text = TotalProfit(price).ToString("F2");
-                txtPrice.text = OpenPositionPrice.ToString("F2");
+                this.chartData = chartData;
+                tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
+                PositionSize = 0;
+                tradeDirection = Position.None;
+                playerOrders = new List<Order>();
             }
+            
             //Сейчас функция не учитывает объём 
             public void UpdatePosition()
             {
@@ -283,38 +263,6 @@ namespace Chart
                     Debug.Log("Недостаточно средств, для выполнения ордера");
                 }
             }
-
-            public void StayInPosition()
-            {
-
-            }
-
-            private IChartDataManager chartData;
-
-            public void Start()
-            {
-                StartGame();
-            }
-            public void StartGame()
-            {
-                if (GameManager.Instance)
-                {
-                    Initialize();
-                    GameManager.Mode mode = GameManager.Mode.Simple;
-                    chartData = GameManager.Instance.GenerateGame(mode);
-                    UpdateSomeData((decimal)chartData.GetPriceFluctuation(chartData.DataEndTime).Close);
-
-                    GameManager.Instance.GoToNextFluctuation += UpdatePosition;
-                    GameManager.Instance.GoToNextFluctuation += ()=>{
-                        UpdateSomeData((decimal)chartData.GetPriceFluctuation(chartData.DataEndTime).Close);
-                    };
-                }
-                else
-                {
-                    Debug.Log("GameManager не может сформировать игру");
-                }
-            }
-
 
             private void OnDestroy()
             {

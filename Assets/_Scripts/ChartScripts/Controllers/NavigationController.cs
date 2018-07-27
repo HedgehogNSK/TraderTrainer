@@ -35,6 +35,8 @@ namespace Chart
             //float xBounds = 0.0f;
             //float yBounds =0.8f;
             float speed = 5f;
+            float cachedXPos;
+            public event Action<PriceFluctuation> OnFluctuationSelect;
 
             private IGrid coordGrid;
             public IGrid CoordGrid {
@@ -114,6 +116,22 @@ namespace Chart
                 cameraTransform.position += (Vector3)shift;
             }
 
+            public void Update()
+            {
+                
+                Vector3 pointerWorldPos;
+                Vector2 pointerScreenPos;
+                ChartDrawer.Instance.GetWorldPointerPosition(out pointerScreenPos, out pointerWorldPos);
+                if(cachedXPos != Mathf.Round(pointerWorldPos.x))
+                {
+                    cachedXPos = Mathf.Round(pointerWorldPos.x);
+                    DateTime fluctuationDate =CoordGrid.FromXAxisToDate(cachedXPos);
+                    if(OnFluctuationSelect!=null)
+                        OnFluctuationSelect(ChartDataManager.GetPriceFluctuation(fluctuationDate));
+                    
+                }
+            }
+
             internal Vector3 GetLastPoint()
             {
                 if (!IsSettingsSet) return Vector3.zero;
@@ -158,7 +176,6 @@ namespace Chart
                 
                 cam.orthographicSize = defaultOrthoSize;
                 objCamera.orthographicSize = defaultOrthoSize;
-                GameManager.Instance.GoToNextFluctuation += GoToLastPoint;
                 CoordGrid.OnScaleChange += ShiftCamera;
                 GoToLastPoint();
             }
@@ -167,6 +184,7 @@ namespace Chart
             {
                if(GameManager.Instance) GameManager.Instance.GoToNextFluctuation -= GoToLastPoint;
             }
+
 
         }
     }
