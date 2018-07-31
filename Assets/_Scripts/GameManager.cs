@@ -38,10 +38,11 @@ namespace Chart
             }
             #endregion
 
-            const int MIN_FLUCTUATIONS_AMOUNT = 100;
+            
             const int MIN_HISTORICAL_FLUCTUATIONS_AMOUNT = 25;
             const int MAX_HISTORICAL_FLUCTUATIONS_AMOUNT = 50;
             const int MIN_FLUCTUATIONS_AMOUNT_TOPLAY = 50;
+            const int MIN_FLUCTUATIONS_AMOUNT = MIN_HISTORICAL_FLUCTUATIONS_AMOUNT + MIN_FLUCTUATIONS_AMOUNT_TOPLAY;
 
             public enum Mode
             {
@@ -73,7 +74,7 @@ namespace Chart
             IDateWorkFlow dateWorkFlow;
             IGrid grid;
             public event Action GoToNextFluctuation;
-            public int firstFluctuationID = 200;
+            public int fluctuation1ID = 200;
             public int fluctuationsCountToLoad = 100;
 
             EventTrigger trigger;
@@ -138,8 +139,8 @@ namespace Chart
                             SetRandomGameTime(fluctuationCount);
 
                             dateWorkFlow = chartDataManager as IDateWorkFlow;
-                            dateWorkFlow.SetWorkDataRange(firstFluctuationID, fluctuationsCountToLoad);
-                            Debug.Log(firstFluctuationID + " " + fluctuationsCountToLoad);
+                            dateWorkFlow.SetWorkDataRange(fluctuation1ID, fluctuationsCountToLoad);
+                            Debug.Log(fluctuation1ID + " " + fluctuationsCountToLoad);
 
                             grid = new CoordinateGrid(chartDataManager.DataBeginTime, chartDataManager.TFrame);
                             chartDrawer.ChartDataManager = chartDataManager;
@@ -170,10 +171,14 @@ namespace Chart
                 if (fluctuationCount < MIN_FLUCTUATIONS_AMOUNT)
                     throw new ArgumentOutOfRangeException("Количество свечей должно быть больше "+ MIN_FLUCTUATIONS_AMOUNT+ " Выбирите другой инструмент и попытайтесь снова");
 
-                firstFluctuationID = UnityEngine.Random.Range(0, fluctuationCount -  MIN_HISTORICAL_FLUCTUATIONS_AMOUNT - MIN_FLUCTUATIONS_AMOUNT_TOPLAY);
-                int max_fluctuations_preload = MAX_HISTORICAL_FLUCTUATIONS_AMOUNT < fluctuationCount - MIN_FLUCTUATIONS_AMOUNT_TOPLAY- firstFluctuationID ? MAX_HISTORICAL_FLUCTUATIONS_AMOUNT : fluctuationCount - MIN_FLUCTUATIONS_AMOUNT_TOPLAY- firstFluctuationID;
-                fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, max_fluctuations_preload);
-                
+                //firstFluctuationID = UnityEngine.Random.Range(0, fluctuationCount -  MIN_HISTORICAL_FLUCTUATIONS_AMOUNT - MIN_FLUCTUATIONS_AMOUNT_TOPLAY);
+                //int max_fluctuations_preload = MAX_HISTORICAL_FLUCTUATIONS_AMOUNT < fluctuationCount - MIN_FLUCTUATIONS_AMOUNT_TOPLAY- firstFluctuationID ? MAX_HISTORICAL_FLUCTUATIONS_AMOUNT : fluctuationCount - MIN_FLUCTUATIONS_AMOUNT_TOPLAY- firstFluctuationID;
+                //fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, max_fluctuations_preload);
+                Debug.Log("Количество свечей: " + fluctuationCount);
+                int fluctuations2play = UnityEngine.Random.Range(MIN_FLUCTUATIONS_AMOUNT_TOPLAY, fluctuationCount -  MIN_HISTORICAL_FLUCTUATIONS_AMOUNT);
+                int fluctuations4preload = fluctuationCount - fluctuations2play;  
+                fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, fluctuations4preload > MAX_HISTORICAL_FLUCTUATIONS_AMOUNT? fluctuations4preload: MAX_HISTORICAL_FLUCTUATIONS_AMOUNT);
+                fluctuation1ID = UnityEngine.Random.Range(0, fluctuations4preload- fluctuationsCountToLoad); ;
             }
             IChartDataManager CreateRandomDataManager()
             {
@@ -200,9 +205,13 @@ namespace Chart
                         } break;
                     default: { throw new ArgumentOutOfRangeException("Enum присвоено не верное значение"); }break;
                 }
-
+                
                 int periodSize = availablePeriodSizes[UnityEngine.Random.Range(0, availablePeriodSizes.Length)];
 
+                //Для теста рабочей области
+                randomValue = Period.Day;
+                periodSize = 3;
+                //*/
                 TimeFrame timeFrame = new TimeFrame(randomValue, periodSize);
                 //TODO: Здесь должен быть случайный выбор из любых доступных менеджеров
                 IChartDataManager dm = new CryptoCompareDataManager(timeFrame);
