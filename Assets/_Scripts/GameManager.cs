@@ -38,10 +38,10 @@ namespace Chart
             }
             #endregion
 
-            const int MIN_FLUCTUATIONS_AMOUNT = 75;
+            const int MIN_FLUCTUATIONS_AMOUNT = 100;
             const int MIN_HISTORICAL_FLUCTUATIONS_AMOUNT = 25;
             const int MAX_HISTORICAL_FLUCTUATIONS_AMOUNT = 50;
-            const int MIN_FLUCTUATIONS_AMOUNT_TOPLAY = 25;
+            const int MIN_FLUCTUATIONS_AMOUNT_TOPLAY = 50;
 
             public enum Mode
             {

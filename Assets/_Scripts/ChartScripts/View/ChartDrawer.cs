@@ -370,7 +370,7 @@ namespace Chart
 
             TimeFrame timeFrame = chartDataManager.TFrame;
             DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x);
            
             visibleEndDate = visibleEndDate.UpToNextFrame(timeFrame);
             float tmp = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
