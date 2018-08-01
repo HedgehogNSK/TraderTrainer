@@ -20,11 +20,14 @@ public class SelectedFluctuationOutput : MonoBehaviour {
 	
     void ChangeText(PriceFluctuation fluct)
     {
-        openText.text = fluct.Open.ToString();
-        highText.text = fluct.High.ToString();
-        lowText.text = fluct.Low.ToString();
-        closText.text = fluct.Close.ToString();
-        volumeText.text = fluct.Volume.ToString();
+        if (fluct != null)
+        {
+            openText.text = fluct.Open.ToString();
+            highText.text = fluct.High.ToString();
+            lowText.text = fluct.Low.ToString();
+            closText.text = fluct.Close.ToString();
+            volumeText.text = fluct.Volume.ToString();
+        }
     }
 
     private void OnDestroy()

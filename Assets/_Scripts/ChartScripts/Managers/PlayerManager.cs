@@ -27,19 +27,8 @@ namespace Chart
                     return _instance;
 
                 }
-            }
-            
-            [Serializable]
-            public enum Position
-            {
-               // [EnumMember]
-                None,
-                //[EnumMember]
-                Long,
-                //[EnumMember]
-                Short
-            }
-            Position tradeDirection;
+            }            
+          
             List<Order> playerOrders = new List<Order>();
             private IChartDataManager chartData;
 
@@ -82,7 +71,6 @@ namespace Chart
             {
                 if (chartData != null)
                 {
-                    PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.DataEndTime);
                     if (PositionSize >= 0)
                         return
                             (PlayerCurrentBalance + PositionSize * price);
@@ -139,7 +127,6 @@ namespace Chart
                 this.chartData = chartData;
                 tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
                 PositionSize = 0;
-                tradeDirection = Position.None;
                 playerOrders = new List<Order>();
             }
             

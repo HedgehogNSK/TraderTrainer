@@ -36,10 +36,7 @@ namespace Chart
             {
                 get { return price; }
                 set { price = value; }
-            }
-
-            DateTime lastChange;
-            public DateTime LastChange { get { return lastChange; } }
+            }           
 
             public Order(Type type, decimal amount, decimal price = 0)
             {

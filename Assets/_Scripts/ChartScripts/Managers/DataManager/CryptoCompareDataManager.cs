@@ -113,22 +113,28 @@ namespace Chart
                 {
                     dc = JsonUtility.FromJson<JsonData>(www.text);
                     dataEndTime = DateTimeTools.TimestampToDate(dc.TimeTo);
-                    dataBeginTime = DateTimeTools.TimestampToDate(dc.TimeFrom);
-
+                    if (dataEndTime != dataEndTime.FloorToTimeFrame(TFrame))
+                        dataEndTime = dataEndTime.UpToNextFrame(TFrame);
+                    int i = 0;
+                    while (dc.Data[i].open == 0 && dc.Data[i].close == 0) i++;
+                    dataBeginTime = DateTimeTools.TimestampToDate(dc.Data[i].time).FloorToTimeFrame(TFrame);
+                    
 
                     candles = new List<PriceFluctuation>();
                     DateTime dt_current = dataBeginTime;
                     DateTime dt_next;
                     double volume, open, close, low, high;
 
-                    int i = 0;
+                   
                     open = high = low = close = volume = 0;
+                    double next_date_ts;
                     while (dt_current <= DataEndTime)
                     {
                         dt_next = dt_current.UpToNextFrame(TFrame);
-
-                        if (i != dc.Data.Length && dc.Data[i].time < DateTimeTools.DateToTimestamp(dt_next))
+                        next_date_ts = DateTimeTools.DateToTimestamp(dt_next);
+                        if (i != dc.Data.Length && dc.Data[i].time < next_date_ts)
                         {
+
                             open = dc.Data[i].open;
                             low = dc.Data[i].low;
                             high = dc.Data[i].high;
@@ -136,7 +142,7 @@ namespace Chart
                             i++;
                         }
 
-                        while (i != dc.Data.Length && dc.Data[i].time < DateTimeTools.DateToTimestamp(dt_next))
+                        while (i != dc.Data.Length && dc.Data[i].time < next_date_ts)
                         {
                             if (dc.Data[i].high > high) high = dc.Data[i].high;
                             if (dc.Data[i].low < low) low = dc.Data[i].low;
@@ -144,11 +150,12 @@ namespace Chart
                             i++;
                         }
 
-                        if (i == dc.Data.Length || dc.Data[i].time >= DateTimeTools.DateToTimestamp(dt_next))
+                        if (i == dc.Data.Length || dc.Data[i].time >= next_date_ts)
                             close = dc.Data[i - 1].close;
 
                         if (open != 0)
                             candles.Add(new PriceFluctuation(dt_current, volume, open, close, low, high));
+                        
 
                         dt_current = dt_next;
                         open = high = low = close = volume = 0;

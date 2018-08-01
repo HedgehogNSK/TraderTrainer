@@ -57,7 +57,7 @@ namespace Chart
 
         public DateTime FromXAxisToDate(float x)
         {
-            return zeroPoint + x * step;
+            return zeroPoint + (int)x * step;
         }
 
         public int FromDateToXAxis(DateTime dateTime)

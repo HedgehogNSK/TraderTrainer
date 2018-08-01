@@ -19,7 +19,7 @@ namespace Hedge
             }
             static public double DateToTimestamp(DateTime date)
             {
-                DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+                DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0);
                 TimeSpan diff = date - origin;
                 return Math.Floor(diff.TotalSeconds);
             }
@@ -94,7 +94,7 @@ namespace Hedge
 
             static public double CountFramesInPeriod(TimeFrame tframe, double periodBeginTimestamp, double periodEndTimestamp)
             {
-                double count;
+
                 double frames_count;
                 double periodLength = periodEndTimestamp - periodBeginTimestamp;
 
@@ -148,30 +148,34 @@ namespace Hedge
             {
                 int count;
                 double frames_amount;
-                long periodLength = secondDate.Ticks - firstDate.Ticks;
+                double periodLength = (secondDate - firstDate).Duration().Ticks;
 
                 switch (tframe.period)
                 {
+                    case Period.Second:
+                        {
+                            frames_amount = periodLength / TimeSpan.FromSeconds(tframe.count).Ticks;
+
+                        }break;
                     case Period.Minute:
                         {
-                            frames_amount = (double)periodLength / new TimeSpan(0, tframe.count, 0).Ticks;
+                            frames_amount = periodLength / TimeSpan.FromMinutes(tframe.count).Ticks;
                         }
                         break;
                     case Period.Hour:
                         {
-                            frames_amount = (double)periodLength / new TimeSpan(tframe.count, 0, 0).Ticks;
+                            frames_amount = periodLength / TimeSpan.FromHours(tframe.count).Ticks;
 
                         }
                         break;
                     case Period.Day:
                         {
-                            frames_amount = (double)periodLength / new TimeSpan(tframe.count, 0, 0, 0).Ticks;
-
+                            frames_amount = periodLength / TimeSpan.FromDays(tframe.count).Ticks;
                         }
                         break;
                     case Period.Week:
                         {
-                            frames_amount = (double)periodLength / new TimeSpan(7 * tframe.count, 0, 0, 0).Ticks;
+                            frames_amount = periodLength / TimeSpan.FromDays(7 * tframe.count).Ticks;
 
 
                         }
@@ -200,10 +204,12 @@ namespace Hedge
                         }
                         
                 }
-
-                frames_amount = Math.Abs(frames_amount);
+                
                 count = (int)frames_amount;
-                if (frames_amount != count) count++;
+               
+                //Закоменчено для тестов. 
+                //if (frames_amount != count)
+                 //   count++;
                 return count;
             }
 
@@ -679,7 +685,7 @@ namespace Hedge
 
                 return multiplicator * tFrame;
             }
-
+            //Дважды подумай прежде чем использовать эту операцию. Может лучше использовать int?
             public static TimeFrame operator *(float multiplicator, TimeFrame tFrame)
             {
                 tFrame.count = (int)(tFrame.count *multiplicator);
@@ -712,6 +718,11 @@ namespace Hedge
             public static DateTime operator -(DateTime dateTime, TimeFrame tFrame)
             {
                 return dateTime + (-1)*tFrame;
+            }
+
+            public override string ToString()
+            {
+                return count + " " + period + (count == 1 ? "" : "s");
             }
         }
     }

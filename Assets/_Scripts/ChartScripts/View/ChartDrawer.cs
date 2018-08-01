@@ -99,12 +99,13 @@ namespace Chart
         }
 
         void Update()
-        {          
+        {
+            worldPointInLeftDownCorner = cam.ViewportToWorldPoint(cachedZero);
+            worldPointInRightUpCorner = cam.ViewportToWorldPoint(cachedOne);
             if (NeedToBeUpdated)//Оптимизация
             {
 
-                worldPointInLeftDownCorner = cam.ViewportToWorldPoint(cachedZero);
-                worldPointInRightUpCorner = cam.ViewportToWorldPoint(cachedOne);
+                
                 if (Autoscale) ScaleChart();
                 DrawChart();
 
@@ -370,22 +371,22 @@ namespace Chart
 
             TimeFrame timeFrame = chartDataManager.TFrame;
             DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x);
+            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
            
-            visibleEndDate = visibleEndDate.UpToNextFrame(timeFrame);
-            float tmp = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
-            float tmp2 = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (CoordGrid.FromDateToXAxis(visibleEndDate) - worldPointInLeftDownCorner.x) - 1;
 
+            float worldRealToScreen = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
 
             if (visibleStartDate <= visibleEndDate)
             {
                 fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
 
-                int count = DateTimeTools.CountFramesInPeriod(timeFrame, visibleStartDate, visibleEndDate, TimeSpan.Zero);
-                float pixelLenghtFrame = camRect.width * tmp / count;
+                int count = DateTimeTools.CountFramesInPeriod(timeFrame, visibleStartDate, visibleEndDate,TimeSpan.Zero);
+                float pixelLenghtFrame = camRect.width * worldRealToScreen / count;
                 float maxVolume = (float)fluctuations.Max(x => x.Volume);
-               
-                Vector2 barLeftDownCorner = camRect.min - new Vector2 (tmp2 *camRect.width + pixelLenghtFrame / 2, 0) ;
+
+                //Если свечка видна только частично, то необходимо смещать отрисовку объёма на равную долю видимости
+                float diff = (worldPointInLeftDownCorner.x - CoordGrid.FromDateToXAxis(visibleStartDate)) * camRect.width / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
+                Vector2 barLeftDownCorner = camRect.min - new Vector2 (diff + pixelLenghtFrame / 2, 0) ;
                 Vector2 barRightUpCorner;
                 Vector2 bordersOffset = new Vector2((100/count<1? 1: 100/count), 0);
 
@@ -397,7 +398,6 @@ namespace Chart
 
                 foreach (var fluctuation in fluctuations)
                 {
-                    
                     float pixelHeightFrame = (float)fluctuation.Volume / maxVolume * camRect.height;
                     barRightUpCorner = barLeftDownCorner + new Vector2(pixelLenghtFrame, pixelHeightFrame);
 
