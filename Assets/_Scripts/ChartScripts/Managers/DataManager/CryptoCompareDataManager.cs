@@ -57,6 +57,7 @@ namespace Chart
 
         public CryptoCompareDataManager(TimeFrame tframe, string base_currency_acronym = "BTC", string reciprocal_currency_acronym = "USD", string market_acronym = "Bitfinex")
         {
+            Debug.Log("Пара: " + base_currency_acronym + " " + reciprocal_currency_acronym+ " Биржа: "+ market_acronym +" Тайм-фрейм:"+ tframe);
             tFrame = tframe;
             this.base_currency_acronym = base_currency_acronym;
             this.reciprocal_currency_acronym = reciprocal_currency_acronym;

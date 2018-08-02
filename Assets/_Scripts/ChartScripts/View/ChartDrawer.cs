@@ -28,7 +28,8 @@ namespace Chart
         #endregion
 
         //Отставание графика от вертикальных границ
-        public float chartOffsetFromVerticalBorders = 1.05f;
+        [Range(0,0.7f)]
+        public float chartOffsetFromVerticalBorders = 0.05f;
         struct ScreenViewField
         {
             public float price0;
@@ -62,7 +63,6 @@ namespace Chart
         Vector3 worldPointInLeftDownCorner;
         Vector3 worldPointInRightUpCorner;
         Vector3 camPreviousPosition;
-        float orthographicSizePrevious;
         float previousScale =0;
         Vector3 cachedZero = Vector3.zero;
         Vector3 cachedOne = Vector3.one;
@@ -115,19 +115,13 @@ namespace Chart
         void LateUpdate()
         {
             camPreviousPosition = cam.transform.position;
-            orthographicSizePrevious = cam.orthographicSize;
             
         }
 
         bool needToBeUpdated =false;
         bool NeedToBeUpdated {
             get
-            {
-               /* if (orthographicSizePrevious != cam.orthographicSize)
-                {
-                    Autoscale = true;
-                    return true;
-                }*/
+            {              
                 if (autoscaleSwitched)
                 {
                     autoscaleSwitched = false;
@@ -254,20 +248,20 @@ namespace Chart
             DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
             fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);    
 
-            float highestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
-            float lowestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
+            double highestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
+            double lowestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
 
-            float highestPrice = (float) fluctuations.Max(f => f.High);
-            float lowestPrice = (float) fluctuations.Min(f => f.Low);
-            
-            float priceRange = highestPrice - lowestPrice;
-            float new_y = CoordGrid.FromPriceToYAxis(lowestPrice + priceRange / 2);
+            double highestPrice =  fluctuations.Max(f => f.High);
+            double lowestPrice =  fluctuations.Min(f => f.Low);
+
+            double priceRange = highestPrice - lowestPrice;
+            float new_y = CoordGrid.FromPriceToYAxis((float)(lowestPrice + priceRange / 2));
 
 
-            if (Mathf.Abs(new_y/cam.transform.position.y-1) >0.001f)
+            if (Math.Abs(new_y/cam.transform.position.y-1) >1e-4)
             cam.transform.position = new Vector3(cam.transform.position.x, new_y, cam.transform.position.z);
 
-            CoordGrid.Scale *= (highestPriceOnScreen - lowestPriceOnScreen) / (priceRange * chartOffsetFromVerticalBorders);
+            CoordGrid.Scale *= (1-chartOffsetFromVerticalBorders)* (float)((highestPriceOnScreen - lowestPriceOnScreen) / priceRange);
 
 
         }

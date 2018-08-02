@@ -1400,7 +1400,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -1431,7 +1431,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a6026fa43518014aa31fbb32139f37d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chartOffsetFromVerticalBorders: 1.05
+  chartOffsetFromVerticalBorders: 0.07
   dateTextPool: {fileID: 581051117}
   priceTextPool: {fileID: 1867543494}
   autoscaleToggle: {fileID: 2121312620}
@@ -2500,7 +2500,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -4389,7 +4389,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1

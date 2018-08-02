@@ -43,7 +43,44 @@ namespace Chart
             const int MAX_HISTORICAL_FLUCTUATIONS_AMOUNT = 50;
             const int MIN_FLUCTUATIONS_AMOUNT_TOPLAY = 50;
             const int MIN_FLUCTUATIONS_AMOUNT = MIN_HISTORICAL_FLUCTUATIONS_AMOUNT + MIN_FLUCTUATIONS_AMOUNT_TOPLAY;
+            AssetId[] assets = new AssetId[]
+            {
+               new AssetId ("BTC","USD","Bitfinex" ),
+               new AssetId ("ETH","USD","Bitfinex" ),
+               new AssetId ("ETC","USD","Bitfinex" ),
+               new AssetId ("LTC","USD","Bitfinex" ),
+               new AssetId ("DASH","USD","Bitfinex"),
+               new AssetId ("EOS","USD","Bitfinex" ),
+               new AssetId ("XRP","USD","Bitfinex" ),
+               new AssetId ("XLM","USD","Bitfinex" ),
+               new AssetId ("XMR","USD","Bitfinex" ),
+               new AssetId ("OMG","USD","Bitfinex" ),
+               new AssetId ("ZEC","USD","Bitfinex" ),
+               new AssetId ("NEO","USD","Bitfinex" ),
+               new AssetId ("BTG","USD","Bitfinex" ),
+               new AssetId ("SAN","USD","Bitfinex" ),
+               new AssetId ("QTUM","USD","Bitfinex" ),
+               new AssetId ("TRX","USD","Bitfinex" ),
+               new AssetId ("BCH","USD","Bitfinex" ),
+               new AssetId ("REP","USD","Bitfinex" ),
+               new AssetId ("XVG","USD","Bitfinex" ),
+               new AssetId ("ETH","BTC","Bitfinex" ),
+               new AssetId ("LTC","BTC","Bitfinex" ),
+               new AssetId ("BCH","BTC","Bitfinex" ),
+               new AssetId ("EOS","BTC","Bitfinex" ),
+               new AssetId ("XRP","BTC","Bitfinex" ),
+               new AssetId ("ZEC","BTC","Bitfinex" ),
+               new AssetId ("SAN","BTC","Bitfinex" ),
+               new AssetId ("OMG","BTC","Bitfinex" ),
+               new AssetId ("NEO","BTC","Bitfinex" ),
+               new AssetId ("GNT","BTC","Bitfinex" ),
+               new AssetId ("BCH","ETH","Bitfinex" ),
+               new AssetId ("NEO","ETH","Bitfinex" ),
+               new AssetId ("QTM","ETH","Bitfinex" ),
+               new AssetId ("EOS","ETH","Bitfinex" ),
+               new AssetId ("ZRX","ETH","Bitfinex" ),
 
+            };
             public enum Mode
             {
                 Simple,
@@ -51,7 +88,7 @@ namespace Chart
                 Real
             }
             public Mode gameMode;
-
+            
             [SerializeField] Candle candleDummy;
             [SerializeField] Transform candlesParent;
             [SerializeField] ChartDrawer chartDrawer;
@@ -139,7 +176,6 @@ namespace Chart
 
                             dateWorkFlow = chartDataManager as IDateWorkFlow;
                             dateWorkFlow.SetWorkDataRange(fluctuation1ID, fluctuationsCountToLoad);
-                            Debug.Log(fluctuation1ID + " " + fluctuationsCountToLoad);
 
                             grid = new CoordinateGrid(chartDataManager.DataBeginTime, chartDataManager.TFrame);
                             chartDrawer.ChartDataManager = chartDataManager;
@@ -168,13 +204,14 @@ namespace Chart
             void SetRandomGameTime(int fluctuationCount)
             {
                 if (fluctuationCount < MIN_FLUCTUATIONS_AMOUNT)
-                    throw new ArgumentOutOfRangeException("Количество свечей должно быть больше "+ MIN_FLUCTUATIONS_AMOUNT+ " Выбирите другой инструмент и попытайтесь снова");
+                {
+                    throw new ArgumentOutOfRangeException("Количество свечей должно быть больше " + MIN_FLUCTUATIONS_AMOUNT + " Выбирите другой инструмент и попытайтесь снова");
+                }
                 
                 int fluctuations2play = UnityEngine.Random.Range(MIN_FLUCTUATIONS_AMOUNT_TOPLAY, fluctuationCount -  MIN_HISTORICAL_FLUCTUATIONS_AMOUNT);
                 int fluctuations4preload = fluctuationCount - fluctuations2play;  
                 fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, fluctuations4preload < MAX_HISTORICAL_FLUCTUATIONS_AMOUNT? fluctuations4preload: MAX_HISTORICAL_FLUCTUATIONS_AMOUNT);
                 fluctuation1ID = UnityEngine.Random.Range(0, fluctuations4preload- fluctuationsCountToLoad);
-                Debug.Log("Sum:"+fluctuationCount+ " 2Play:"+ fluctuations2play +" 4Preload:"+ fluctuations4preload + " 1ID:"+fluctuation1ID);
             }
             IChartDataManager CreateRandomDataManager()
             {
@@ -192,7 +229,7 @@ namespace Chart
                             break;
                     case Period.Hour:
                         {
-                            availablePeriodSizes = new int[] { 1, 3, 4, 6, 12 };//{ 1, 3, 4, 6, 12 };
+                            availablePeriodSizes = new int[] { 1, 3, 4 };//{ 1, 3, 4, 6, 12 };
                         }
                         break;
                     case Period.Day:
@@ -203,14 +240,16 @@ namespace Chart
                 }
                 
                 int periodSize = availablePeriodSizes[UnityEngine.Random.Range(0, availablePeriodSizes.Length)];
-
+                int randAssetId = UnityEngine.Random.Range(0, assets.Length);
                 /*/Для теста рабочей области
                 randomValue = Period.Day;
                 periodSize = 3;
                 //*/
                 TimeFrame timeFrame = new TimeFrame(randomValue, periodSize);
+                
+               
                 //TODO: Здесь должен быть случайный выбор из любых доступных менеджеров
-                IChartDataManager dm = new CryptoCompareDataManager(timeFrame);
+                IChartDataManager dm = new CryptoCompareDataManager(timeFrame, assets[randAssetId].base_currency, assets[randAssetId].reciprocal_currency, assets[randAssetId].exchange);
                 
                 return dm;
             }
@@ -290,5 +329,19 @@ namespace Chart
                 TryLoadNextFluctuation();
             }
         }
+
+        struct AssetId
+        {
+            public AssetId(string base_currency, string reciprocal_currency,string exchange)
+            {
+                this.base_currency = base_currency;
+                this.reciprocal_currency = reciprocal_currency;
+                this.exchange = exchange;
+            }
+            public string base_currency;
+            public string reciprocal_currency;
+            public string exchange;
+        }
+
     }
 }
