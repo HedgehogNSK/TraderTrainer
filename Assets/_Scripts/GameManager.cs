@@ -73,12 +73,14 @@ namespace Chart
                new AssetId ("SAN","BTC","Bitfinex" ),
                new AssetId ("OMG","BTC","Bitfinex" ),
                new AssetId ("NEO","BTC","Bitfinex" ),
-               new AssetId ("GNT","BTC","Bitfinex" ),
-               new AssetId ("BCH","ETH","Bitfinex" ),
-               new AssetId ("NEO","ETH","Bitfinex" ),
-               new AssetId ("QTM","ETH","Bitfinex" ),
-               new AssetId ("EOS","ETH","Bitfinex" ),
-               new AssetId ("ZRX","ETH","Bitfinex" ),
+              //new AssetId ("GNT","BTC","Bitfinex" ),
+               //new AssetId ("BCH","ETH","Bitfinex" ),
+               //new AssetId ("NEO","ETH","Bitfinex" ),
+               //new AssetId ("EOS","ETH","Bitfinex" ),
+               //new AssetId ("ZRX","ETH","Bitfinex" ),
+               //new AssetId ("QTM","ETH","Bitfinex" ),
+                
+
 
             };
             public enum Mode
@@ -241,7 +243,7 @@ namespace Chart
                 
                 int periodSize = availablePeriodSizes[UnityEngine.Random.Range(0, availablePeriodSizes.Length)];
                 int randAssetId = UnityEngine.Random.Range(0, assets.Length);
-                /*/Для теста рабочей области
+                //Для теста рабочей области
                 randomValue = Period.Day;
                 periodSize = 3;
                 //*/

@@ -97,11 +97,19 @@ namespace Chart
         {
             needToBeUpdated = true;
         }
-
+        DateTime visibleStartDate, cachedStart;
+        DateTime visibleEndDate, cachedEnd;
         void Update()
         {
             worldPointInLeftDownCorner = cam.ViewportToWorldPoint(cachedZero);
             worldPointInRightUpCorner = cam.ViewportToWorldPoint(cachedOne);
+
+            visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x).FloorToTimeFrame(chartDataManager.TFrame);
+            visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(chartDataManager.TFrame);
+
+            if(visibleStartDate!= cachedStart || visibleEndDate !=cachedEnd)
+            visibleFluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
+
             if (NeedToBeUpdated)//Оптимизация
             {
 
@@ -110,6 +118,8 @@ namespace Chart
                 DrawChart();
 
             }
+            cachedStart = visibleStartDate;
+            cachedEnd = visibleEndDate;
         }
 
         void LateUpdate()
@@ -192,10 +202,6 @@ namespace Chart
                     yPoint,
                     TextPoolManager.ShiftBy.Vertical
                     );
-                //Vector2 pricePoint1 = new Vector2(0, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
-                //Vector2 pricePoint2 = new Vector2(1, cam.WorldToViewportPoint(new Vector2(0, yPoint)).y);
-
-                //DrawTools.DrawLine(pricePoint1, pricePoint2, cam.orthographicSize, true, cam.aspect);
 
                 Vector2 pricePoint1 = new Vector2(cam.WorldToScreenPoint(worldPointInLeftDownCorner).x, yPoint);
                 Vector2 pricePoint2 = new Vector2(cam.WorldToScreenPoint(worldPointInRightUpCorner).x, yPoint);
@@ -234,7 +240,7 @@ namespace Chart
         }
 
         Transform camTransform;
-        IEnumerable<PriceFluctuation> fluctuations;
+        IEnumerable<PriceFluctuation> visibleFluctuations;
 
         //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         private void ScaleChart()
@@ -242,17 +248,13 @@ namespace Chart
             
            
             if (!IsSettingsSet) return;
-            
-            TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
-            fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);    
+              
 
             double highestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
             double lowestPriceOnScreen = CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
 
-            double highestPrice =  fluctuations.Max(f => f.High);
-            double lowestPrice =  fluctuations.Min(f => f.Low);
+            double highestPrice =  visibleFluctuations.Max(f => f.High);
+            double lowestPrice =  visibleFluctuations.Min(f => f.Low);
 
             double priceRange = highestPrice - lowestPrice;
             float new_y = CoordGrid.FromPriceToYAxis((float)(lowestPrice + priceRange / 2));
@@ -271,37 +273,38 @@ namespace Chart
             if (!IsSettingsSet) return;
 
             TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x).FloorToTimeFrame(timeFrame);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
-            if (chartDataManager.DataEndTime < visibleEndDate)
-                visibleEndDate = chartDataManager.DataEndTime;
-            if (chartDataManager.DataBeginTime > visibleStartDate)
-                visibleStartDate = chartDataManager.DataBeginTime;
+            DateTime startDate = visibleStartDate;
+            DateTime endDate = visibleEndDate;
 
-            var candlesInScreen = candles.Where(candle => candle.PeriodBegin >= visibleStartDate && candle.PeriodBegin <= visibleEndDate);
+            if (chartDataManager.DataEndTime < endDate)
+                endDate = chartDataManager.DataEndTime;
+            if (chartDataManager.DataBeginTime > startDate)
+                startDate = chartDataManager.DataBeginTime;
+
+            var candlesInScreen = candles.Where(candle => candle.PeriodBegin >= startDate && candle.PeriodBegin <= endDate);
             var existDatePoints = candlesInScreen.Select(c => c.PeriodBegin);
 
-            fluctuations = new List<PriceFluctuation>();
-            if (visibleStartDate <= visibleEndDate)
+            IEnumerable<PriceFluctuation>  flucToLoad = new List<PriceFluctuation>();
+            if (startDate <= endDate)
             {
                 if (existDatePoints.NotNullOrEmpty())
                 {
                     DateTime point1 = existDatePoints.Min();
                     DateTime point2 = existDatePoints.Max();
 
-                    if (point1.FloorToTimeFrame(timeFrame) != visibleStartDate)
-                        fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, point1);
+                    if (point1.FloorToTimeFrame(timeFrame) != startDate)
+                        flucToLoad = ChartDataManager.GetPriceFluctuationsByTimeFrame(startDate, point1);
 
-                    if (point2.UpToNextFrame(timeFrame) <= visibleEndDate)
-                        fluctuations = fluctuations.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2.UpToNextFrame(timeFrame), visibleEndDate));
+                    if (point2.UpToNextFrame(timeFrame) <= endDate)
+                        flucToLoad = flucToLoad.Union(ChartDataManager.GetPriceFluctuationsByTimeFrame(point2.UpToNextFrame(timeFrame), endDate));
                 }
 
                else
                 {
-                    fluctuations = ChartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
+                    flucToLoad = visibleFluctuations;
                 }
 
-                foreach (PriceFluctuation priceFluctuation in fluctuations)
+                foreach (PriceFluctuation priceFluctuation in flucToLoad)
                 {
                     Candle newCandle = Instantiate(candleDummy, candlesParent);
                     newCandle.Grid = CoordGrid;
@@ -363,20 +366,14 @@ namespace Chart
         {
             if (!IsSettingsSet) return;
 
-            TimeFrame timeFrame = chartDataManager.TFrame;
-            DateTime visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x);
-            DateTime visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(timeFrame);
-           
-
             float worldRealToScreen = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
 
             if (visibleStartDate <= visibleEndDate)
             {
-                fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
 
-                int count = DateTimeTools.CountFramesInPeriod(timeFrame, visibleStartDate, visibleEndDate,TimeSpan.Zero);
+                int count = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, visibleEndDate,TimeSpan.Zero);
                 float pixelLenghtFrame = camRect.width * worldRealToScreen / count;
-                float maxVolume = (float)fluctuations.Max(x => x.Volume);
+                float maxVolume = (float)visibleFluctuations.Max(x => x.Volume);
 
                 //Если свечка видна только частично, то необходимо смещать отрисовку объёма на равную долю видимости
                 float diff = (worldPointInLeftDownCorner.x - CoordGrid.FromDateToXAxis(visibleStartDate)) * camRect.width / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
@@ -386,11 +383,11 @@ namespace Chart
 
                 if (chartDataManager.DataBeginTime > visibleStartDate)
                 {
-                    int shift = DateTimeTools.CountFramesInPeriod(timeFrame, visibleStartDate, chartDataManager.DataBeginTime, TimeSpan.Zero);
+                    int shift = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, chartDataManager.DataBeginTime, TimeSpan.Zero);
                     barLeftDownCorner += new Vector2(shift* pixelLenghtFrame, 0);
                 }
 
-                foreach (var fluctuation in fluctuations)
+                foreach (var fluctuation in visibleFluctuations)
                 {
                     float pixelHeightFrame = (float)fluctuation.Volume / maxVolume * camRect.height;
                     barRightUpCorner = barLeftDownCorner + new Vector2(pixelLenghtFrame, pixelHeightFrame);
@@ -402,6 +399,21 @@ namespace Chart
                 }
             }
          
+        }
+
+        public void DrawDataArray(IEnumerable<PriceFluctuation> values)
+        {
+            PriceFluctuation[] arr = values.ToArray();
+            Vector2 point, point2;
+
+            point = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(arr[0].PeriodBegin), CoordGrid.FromPriceToYAxis((float)arr[0].Close)));
+            for (int i=1; i<arr.Length-1;i++)
+            {                
+                point2 = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(arr[i].PeriodBegin), CoordGrid.FromPriceToYAxis((float)arr[i].Close)));
+                DrawTools.DrawLine(point, point2, false);
+                point = point2;
+
+            }              
         }
 
         private void OnDestroy()

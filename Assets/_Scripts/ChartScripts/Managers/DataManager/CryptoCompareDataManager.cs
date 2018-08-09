@@ -117,7 +117,18 @@ namespace Chart
                     if (dataEndTime != dataEndTime.FloorToTimeFrame(TFrame))
                         dataEndTime = dataEndTime.UpToNextFrame(TFrame);
                     int i = 0;
-                    while (dc.Data[i].open == 0 && dc.Data[i].close == 0) i++;
+                    try
+                    { while (dc.Data[i].open == 0 && dc.Data[i].close == 0) i++; }
+                    catch
+                    {
+                        Debug.Log(base_currency_acronym + ":" + reciprocal_currency_acronym);
+                        Debug.Log("Количество данных:" + dc.Data.Length);
+                        for (int j = 0; j != dc.Data.Length; j++)
+                        {
+                            Debug.Log("Цена открытия "+j+"й свечи:"+dc.Data[j].open + " Дата:"+ DateTimeTools.TimestampToDate(dc.Data[j].time));
+                        }
+                        throw new ArgumentOutOfRangeException("dc.Data вышла за границы");
+                    }
                     dataBeginTime = DateTimeTools.TimestampToDate(dc.Data[i].time).FloorToTimeFrame(TFrame);
                     
 
