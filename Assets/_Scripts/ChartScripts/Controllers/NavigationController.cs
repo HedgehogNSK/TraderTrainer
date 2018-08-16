@@ -49,8 +49,8 @@ namespace Chart
 
                 }
             }
-            IChartDataManager chartDataManager;
-            public IChartDataManager ChartDataManager
+            IScalableDataManager chartDataManager;
+            public IScalableDataManager ChartDataManager
             {
                 get { return chartDataManager; }
                 set
@@ -137,12 +137,12 @@ namespace Chart
                 if (!IsSettingsSet) return Vector3.zero;
 
               
-                float x = CoordGrid.FromDateToXAxis(chartDataManager.DataEndTime);
+                float x = CoordGrid.FromDateToXAxis(chartDataManager.WorkEndTime);
                 float y;
                 if (ChartDrawer.Instance.Autoscale)
                 y = cameraTransform.position.y;
                 else
-                y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetPriceFluctuation(chartDataManager.DataEndTime).Close);
+                y = CoordGrid.FromPriceToYAxis((float)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
                     
                 return new Vector3(x, y);
             }
@@ -161,8 +161,8 @@ namespace Chart
             
             public bool CanMoveFurther(Vector3 fromPoint, Vector3 byStep)
             {
-                float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.DataBeginTime);
-                float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.DataEndTime);
+                float x0 = CoordGrid.FromDateToXAxis(ChartDataManager.WorkBeginTime);
+                float x1 = CoordGrid.FromDateToXAxis(ChartDataManager.WorkEndTime);
 
                 Vector3 nextpoint = fromPoint + byStep;
                 if ((nextpoint.x>x0 && nextpoint.x < x1) 

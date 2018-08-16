@@ -9,7 +9,7 @@ using Chart.Entity;
 
 namespace Chart
 {
-    public class CryptoCompareDataManager : IChartDataManager, IDateWorkFlow
+    public class CryptoCompareDataManager : IScalableDataManager
     {
         List<PriceFluctuation> candles;
 
@@ -44,6 +44,23 @@ namespace Chart
 
         }
 
+        private DateTime workBeginTime;
+        public DateTime WorkBeginTime
+        {
+            get
+            {
+                return workBeginTime;
+            }
+        }
+
+        private DateTime workEndTime;
+        public DateTime WorkEndTime
+        {
+            get
+            {                
+                return workEndTime;
+            }
+        }
 
         private string url_base = "https://min-api.cryptocompare.com/data/";
         private string data_frame = "histoday";
@@ -54,6 +71,8 @@ namespace Chart
 
         
         bool initialized = false;
+
+        public event Action WorkFlowChanged;
 
         public CryptoCompareDataManager(TimeFrame tframe, string base_currency_acronym = "BTC", string reciprocal_currency_acronym = "USD", string market_acronym = "Bitfinex")
         {
@@ -116,6 +135,8 @@ namespace Chart
                     dataEndTime = DateTimeTools.TimestampToDate(dc.TimeTo);
                     if (dataEndTime != dataEndTime.FloorToTimeFrame(TFrame))
                         dataEndTime = dataEndTime.UpToNextFrame(TFrame);
+                    workEndTime = dataEndTime;
+
                     int i = 0;
                     try
                     { while (dc.Data[i].open == 0 && dc.Data[i].close == 0) i++; }
@@ -130,7 +151,7 @@ namespace Chart
                         throw new ArgumentOutOfRangeException("dc.Data вышла за границы");
                     }
                     dataBeginTime = DateTimeTools.TimestampToDate(dc.Data[i].time).FloorToTimeFrame(TFrame);
-                    
+                    workBeginTime = dataBeginTime;
 
                     candles = new List<PriceFluctuation>();
                     DateTime dt_current = dataBeginTime;
@@ -211,19 +232,22 @@ namespace Chart
                 fromTime = toTime;
                 toTime = tmp;
             }
-            if (fromTime > candles[0].PeriodBegin || toTime < candles.Last().PeriodBegin)
+            if (fromTime > DataBeginTime || toTime < DataEndTime)
             {
                 Debug.LogError("Рабочая временная область не должна выходить за временную область данных");
                 return;
             }
 
-            dataBeginTime = fromTime;
-            dataEndTime = toTime;
+            workBeginTime = fromTime;
+            workEndTime = toTime;
+            if (WorkFlowChanged != null) WorkFlowChanged();
         }
         public void ResetWorkDataRange()
         {
-            dataBeginTime = candles[0].PeriodBegin;
-            dataEndTime = candles.Last().PeriodBegin.UpToNextFrame(TFrame);
+            workBeginTime = dataBeginTime;
+            workEndTime = dataEndTime;
+           
+            if(WorkFlowChanged!=null) WorkFlowChanged();
         }
         public void SetWorkDataRange(int startFluctuationNumber, int loadFluctuationCount)
         {
@@ -234,14 +258,15 @@ namespace Chart
             }
             DateTime tmp = candles[0].PeriodBegin + startFluctuationNumber * TFrame;
             DateTime tmp2 = tmp + (loadFluctuationCount-1) * TFrame;
-            if (tmp < dataBeginTime || tmp2 > dataEndTime)
+            if (tmp < DataBeginTime || tmp2 > DataEndTime)
             {
                 Debug.LogError("Рабочая временная область не должна выходить за временную область данных");
                 return;
             }
 
-            dataBeginTime = tmp;
-            dataEndTime = tmp2;
+            workBeginTime = tmp;
+            workEndTime = tmp2;
+            if (WorkFlowChanged != null) WorkFlowChanged();
         }
 
         //TODO: Прикутить ограничение
@@ -261,24 +286,21 @@ namespace Chart
 
         public bool AddTimeStep()
         {
-            DateTime tmp = dataEndTime + tFrame;
+            DateTime tmp = workEndTime + tFrame;
             if (tmp > candles.Last().PeriodBegin.UpToNextFrame(TFrame))
             {
-                dataEndTime = candles.Last().PeriodBegin.UpToNextFrame(TFrame);
+                workEndTime = candles.Last().PeriodBegin.UpToNextFrame(TFrame);
+                if (WorkFlowChanged != null) WorkFlowChanged();
                 return false;
             }
             else
             {
-                dataEndTime = tmp;
+                workEndTime = tmp;
+                if (WorkFlowChanged != null) WorkFlowChanged();
                 return true;
             }
-        }
 
-        public ExtraData GetDataByPoint(DateTime dateTime)
-        {
-            throw new NotImplementedException();
         }
-
 
         [System.Serializable]
         public class TradeData

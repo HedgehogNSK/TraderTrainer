@@ -13,28 +13,20 @@ namespace Chart
             double close;
             double low;
             double high;
-            //double periodBeginTimestamp;
             DateTime periodBegin;
             double volume;
+            Dictionary<int, object> extraData;
 
-            //public double PeriodBegin { get { return periodBeginTimestamp; } }
             public DateTime PeriodBegin { get { return periodBegin; } }
             public double Open { get { return open; } }
             public double Close { get { return close; } }
             public double Low { get { return low; } }
             public double High { get { return high; } }
             public double Volume { get { return volume; } }
+            public Dictionary<int, object> ExtraData { get { return extraData; } }
 
-            /*public PriceFluctuation(double periodBeginTimestamp, double volume, double close, double open = 0, double low = 0, double high = 0)
-            {
-                this.periodBeginTimestamp = periodBeginTimestamp;
-                this.volume = volume;
-                this.open = open;
-                this.close = close;
-                this.low = low;
-                this.high = high;
 
-            }*/
+
 
             public PriceFluctuation(DateTime periodBegin, double volume, double open, double close=0,  double low = 0, double high = 0)
             {
@@ -44,8 +36,9 @@ namespace Chart
                 this.close = close;
                 this.low = low;
                 this.high = high;
+                extraData = new Dictionary<int, object>();
 
-            }
+            }           
 
             public override string ToString()
             {

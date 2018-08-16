@@ -42,8 +42,8 @@ namespace Chart
         [SerializeField] TextPoolManager dateTextPool;
         [SerializeField] TextPoolManager priceTextPool;
         [SerializeField] Toggle autoscaleToggle;
-        IChartDataManager chartDataManager;
-        public IChartDataManager ChartDataManager
+        IScalableDataManager chartDataManager;
+        public IScalableDataManager ChartDataManager
         {
             get { return chartDataManager; }
             set { chartDataManager = value; }
@@ -90,7 +90,7 @@ namespace Chart
         void Start()
         {
             GameManager.Instance.GoToNextFluctuation += UpdateInNextFrame;
-            Autoscale = true;
+            Autoscale = true;          
         }
 
         private void UpdateInNextFrame()
@@ -105,9 +105,14 @@ namespace Chart
             worldPointInRightUpCorner = cam.ViewportToWorldPoint(cachedOne);
 
             visibleStartDate = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x).FloorToTimeFrame(chartDataManager.TFrame);
-            visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(chartDataManager.TFrame);
+            if (visibleStartDate < chartDataManager.WorkBeginTime)
+                visibleStartDate = chartDataManager.WorkBeginTime;
 
-            if(visibleStartDate!= cachedStart || visibleEndDate !=cachedEnd)
+            visibleEndDate = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x).UpToNextFrame(chartDataManager.TFrame);
+            if (visibleEndDate > chartDataManager.WorkEndTime)
+                visibleEndDate = chartDataManager.WorkEndTime;
+
+            if (visibleStartDate!= cachedStart || visibleEndDate !=cachedEnd)
             visibleFluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
 
             if (NeedToBeUpdated)//Оптимизация
@@ -276,10 +281,10 @@ namespace Chart
             DateTime startDate = visibleStartDate;
             DateTime endDate = visibleEndDate;
 
-            if (chartDataManager.DataEndTime < endDate)
-                endDate = chartDataManager.DataEndTime;
-            if (chartDataManager.DataBeginTime > startDate)
-                startDate = chartDataManager.DataBeginTime;
+            if (chartDataManager.WorkEndTime < endDate)
+                endDate = chartDataManager.WorkEndTime;
+            if (chartDataManager.WorkBeginTime > startDate)
+                startDate = chartDataManager.WorkBeginTime;
 
             var candlesInScreen = candles.Where(candle => candle.PeriodBegin >= startDate && candle.PeriodBegin <= endDate);
             var existDatePoints = candlesInScreen.Select(c => c.PeriodBegin);
@@ -336,7 +341,7 @@ namespace Chart
             DrawTools.DrawOnePixelLine(modifiedPointerPosition, new Vector2(cam.pixelRect.xMax, pointerScreenPosition.y), true);
         }
 
-        void OnGUI()
+        /*void OnGUI()
         {
             Vector2 pointerScreenPosition;
             Vector3 pointerWolrdPosition;
@@ -348,7 +353,7 @@ namespace Chart
             GUILayout.Label("World position: " + pointerWolrdPosition.ToString("F3"));
             GUILayout.EndArea();
 
-        }
+        }*/
 
         public void GetWorldPointerPosition(out Vector2 pointerScreenPosition, out Vector3 pointerWolrdPosition)
         {
@@ -379,11 +384,11 @@ namespace Chart
                 float diff = (worldPointInLeftDownCorner.x - CoordGrid.FromDateToXAxis(visibleStartDate)) * camRect.width / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
                 Vector2 barLeftDownCorner = camRect.min - new Vector2 (diff + pixelLenghtFrame / 2, 0) ;
                 Vector2 barRightUpCorner;
-                Vector2 bordersOffset = new Vector2((100/count<1? 1: 100/count), 0);
+                Vector2 bordersOffset = new Vector2((20/count<1? 1: 20/count), 0);
 
-                if (chartDataManager.DataBeginTime > visibleStartDate)
+                if (chartDataManager.WorkBeginTime > visibleStartDate)
                 {
-                    int shift = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, chartDataManager.DataBeginTime, TimeSpan.Zero);
+                    int shift = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, chartDataManager.WorkBeginTime, TimeSpan.Zero);
                     barLeftDownCorner += new Vector2(shift* pixelLenghtFrame, 0);
                 }
 
@@ -401,19 +406,67 @@ namespace Chart
          
         }
 
-        public void DrawDataArray(IEnumerable<PriceFluctuation> values)
+        public void CalculateMovingAverage(int id,int length)
         {
-            PriceFluctuation[] arr = values.ToArray();
+            if (length <= 0)
+            {
+                Debug.LogError("length должен быть >0");
+                return;
+            }
+
+            IEnumerable<PriceFluctuation> fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(chartDataManager.DataBeginTime,chartDataManager.WorkEndTime);
+            IEnumerable<PriceFluctuation> fluctation2calc = fluctuations.Where(fluct => !fluct.ExtraData.ContainsKey(id));
+            List<double> ma_values=new List<double>();
+
+            foreach (var fluct in fluctation2calc.Where(f => f.PeriodBegin >= chartDataManager.WorkBeginTime))
+                {
+                double ma = 0;
+                int i = 0;
+
+                foreach (var prev_fluct in fluctuations.Where(f => f.PeriodBegin <= fluct.PeriodBegin && f.PeriodBegin+ (length-1) * chartDataManager.TFrame >= fluct.PeriodBegin) )
+                {
+                    
+                    ma += prev_fluct.Close;
+                    i++;
+                }
+
+
+                if (i == length)
+                {
+                    ma /= length;
+                    fluct.ExtraData[id] = (float)ma;
+                }
+                else
+                {
+                    Debug.Log("i=" + i + " length=" + length);
+                }
+            }
+            
+
+        }
+        public void DrawPointArray(int id, Color color)
+        {
+            PriceFluctuation[] arr = visibleFluctuations.ToArray();
             Vector2 point, point2;
+            DrawTools.LineColor = color;
+            IEnumerator<PriceFluctuation> it = visibleFluctuations.GetEnumerator();
+         
+            while (it.MoveNext() &&  (!it.Current.ExtraData.ContainsKey(id) || !(it.Current.ExtraData[id] is float) )) ;
 
-            point = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(arr[0].PeriodBegin), CoordGrid.FromPriceToYAxis((float)arr[0].Close)));
-            for (int i=1; i<arr.Length-1;i++)
-            {                
-                point2 = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(arr[i].PeriodBegin), CoordGrid.FromPriceToYAxis((float)arr[i].Close)));
-                DrawTools.DrawLine(point, point2, false);
-                point = point2;
+            point = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(it.Current.PeriodBegin), CoordGrid.FromPriceToYAxis((float)it.Current.ExtraData[id])));
 
-            }              
+            while (it.MoveNext())
+            {
+                if (it.Current.ExtraData[id] is float)
+                {
+                    point2 = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(it.Current.PeriodBegin), CoordGrid.FromPriceToYAxis((float)it.Current.ExtraData[id])));
+                    DrawTools.DrawLine(point, point2, false);
+                    point = point2;
+                }
+
+
+            }
+
         }
 
         private void OnDestroy()

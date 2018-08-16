@@ -109,8 +109,7 @@ namespace Chart
             Image exitButtonImage;
             SimpleChartDataManager db;
             SQLChartDataManager sqlDB;
-            IChartDataManager chartDataManager;
-            IDateWorkFlow dateWorkFlow;
+            IScalableDataManager chartDataManager;
             IGrid grid;
             public event Action GoToNextFluctuation;
             public int fluctuation1ID = 200;
@@ -141,7 +140,6 @@ namespace Chart
                 exitButtonImage = ExitButton.GetComponent<Image>();
 
                 ExtraButton.onPressHold += TryLoadNextFluctuation;
-
                 ExitButton.gameObject.SetActive(false);
                 PlayerManager.Instance.PositionSizeIsChanged += ActivateButtons;
                 PlayerManager.Instance.CurrentBalanceChanged += (x) => { txtBalance.text = x.ToString("F4"); };
@@ -175,11 +173,10 @@ namespace Chart
                             chartDataManager = CreateRandomDataManager();
                             int fluctuationCount = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, chartDataManager.DataBeginTime, chartDataManager.DataEndTime, TimeSpan.Zero);
                             SetRandomGameTime(fluctuationCount);
+                            
+                            chartDataManager.SetWorkDataRange(fluctuation1ID, fluctuationsCountToLoad);
 
-                            dateWorkFlow = chartDataManager as IDateWorkFlow;
-                            dateWorkFlow.SetWorkDataRange(fluctuation1ID, fluctuationsCountToLoad);
-
-                            grid = new CoordinateGrid(chartDataManager.DataBeginTime, chartDataManager.TFrame);
+                            grid = new CoordinateGrid(chartDataManager.WorkBeginTime, chartDataManager.TFrame);
                             chartDrawer.ChartDataManager = chartDataManager;
                             chartDrawer.CoordGrid = grid;
                             NavigationController.Instance.ChartDataManager = chartDataManager;
@@ -190,10 +187,14 @@ namespace Chart
 
                             GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
 
-                            UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.DataEndTime).Close);
+                            UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
                             GoToNextFluctuation += () => {
-                                UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.DataEndTime).Close);
+                                UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
                             };
+                            chartDrawer.CalculateMovingAverage(0, 10);
+                            chartDrawer.CalculateMovingAverage(1, 25);
+                            chartDataManager.WorkFlowChanged += () => { chartDrawer.CalculateMovingAverage(0, 10); };
+                            chartDataManager.WorkFlowChanged += () => { chartDrawer.CalculateMovingAverage(1, 25); };
                         }
                         break;
                     default: {
@@ -215,7 +216,7 @@ namespace Chart
                 fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, fluctuations4preload < MAX_HISTORICAL_FLUCTUATIONS_AMOUNT? fluctuations4preload: MAX_HISTORICAL_FLUCTUATIONS_AMOUNT);
                 fluctuation1ID = UnityEngine.Random.Range(0, fluctuations4preload- fluctuationsCountToLoad);
             }
-            IChartDataManager CreateRandomDataManager()
+            IScalableDataManager CreateRandomDataManager()
             {
                 //В зависимости от типа мэнеджера должен выбираться нужный тайм-фрейм
                 Period[] values = { Period.Minute, Period.Hour, Period.Day };
@@ -243,7 +244,9 @@ namespace Chart
                 
                 int periodSize = availablePeriodSizes[UnityEngine.Random.Range(0, availablePeriodSizes.Length)];
                 int randAssetId = UnityEngine.Random.Range(0, assets.Length);
-                //Для теста рабочей области
+                /*////////////////////////////
+                //Для теста рабочей области//
+                /////////////////////////////
                 randomValue = Period.Day;
                 periodSize = 3;
                 //*/
@@ -251,7 +254,7 @@ namespace Chart
                 
                
                 //TODO: Здесь должен быть случайный выбор из любых доступных менеджеров
-                IChartDataManager dm = new CryptoCompareDataManager(timeFrame, assets[randAssetId].base_currency, assets[randAssetId].reciprocal_currency, assets[randAssetId].exchange);
+                IScalableDataManager dm = new CryptoCompareDataManager(timeFrame, assets[randAssetId].base_currency, assets[randAssetId].reciprocal_currency, assets[randAssetId].exchange);
                 
                 return dm;
             }
@@ -277,13 +280,13 @@ namespace Chart
 
             public bool TryLoadNextFluctuation(PointerEventData eventData = null)
             {
-                if (dateWorkFlow == null)
+                if (chartDataManager == null)
                 {
                     Debug.LogError("Невозможно загрузить следующее колебание. Отсутствуют рабочее временнОе пространство");
                     return false;
                 }
 
-                if (!dateWorkFlow.AddTimeStep())
+                if (!chartDataManager.AddTimeStep())
                 {
                     Debug.Log(" Невозможно загрузить следующее колебание. Достигнут край рабочей области");
                     return false;
