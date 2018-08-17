@@ -30,7 +30,7 @@ namespace Chart
             }            
           
             List<Order> playerOrders = new List<Order>();
-            private IChartDataManager chartData;
+            private IScalableDataManager chartData;
 
             List<decimal> lastTradesProfit = new List<decimal>();
 
@@ -122,7 +122,7 @@ namespace Chart
                 return amount;
             }
 
-            public void InitializeData(IChartDataManager chartData)
+            public void InitializeData(IScalableDataManager chartData)
             {
                 this.chartData = chartData;
                 tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
@@ -133,7 +133,7 @@ namespace Chart
             //Сейчас функция не учитывает объём 
             public void UpdatePosition()
             {
-                PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.DataEndTime);
+                PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.WorkEndTime);
                 var orders = playerOrders.Where(order => order.state == Order.State.Waiting);
                 decimal price;
 
