@@ -406,7 +406,7 @@ namespace Chart
          
         }
 
-        public void CalculateMovingAverage(int id,int length)
+        public void UpdateMovingAverage(int id,int length)
         {
             if (length <= 0)
             {
@@ -416,16 +416,15 @@ namespace Chart
 
             IEnumerable<PriceFluctuation> fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(chartDataManager.DataBeginTime,chartDataManager.WorkEndTime);
             IEnumerable<PriceFluctuation> fluctation2calc = fluctuations.Where(fluct => !fluct.ExtraData.ContainsKey(id));
-            List<double> ma_values=new List<double>();
 
             foreach (var fluct in fluctation2calc.Where(f => f.PeriodBegin >= chartDataManager.WorkBeginTime))
-                {
+            {
                 double ma = 0;
                 int i = 0;
 
-                foreach (var prev_fluct in fluctuations.Where(f => f.PeriodBegin <= fluct.PeriodBegin && f.PeriodBegin+ (length-1) * chartDataManager.TFrame >= fluct.PeriodBegin) )
+                foreach (var prev_fluct in fluctuations.Where(f => f.PeriodBegin <= fluct.PeriodBegin && f.PeriodBegin + (length - 1) * chartDataManager.TFrame >= fluct.PeriodBegin))
                 {
-                    
+
                     ma += prev_fluct.Close;
                     i++;
                 }
@@ -436,36 +435,69 @@ namespace Chart
                     ma /= length;
                     fluct.ExtraData[id] = (float)ma;
                 }
-                else
-                {
-                    Debug.Log("i=" + i + " length=" + length);
-                }
             }
             
 
         }
+        public void CalculateMovingAverage(int id, int length)
+        {
+            if (length <= 0)
+            {
+                Debug.LogError("length должен быть >0");
+                return;
+            }
+
+            IEnumerable<PriceFluctuation> fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(chartDataManager.DataBeginTime, chartDataManager.WorkEndTime);
+            List<double> ma_values = new List<double>();
+            PriceFluctuation startFluct = fluctuations.OrderBy(f => f.PeriodBegin).ElementAtOrDefault(length - 1);
+            if (startFluct != null)
+            {
+                foreach (var fluct in fluctuations.Where(f => f.PeriodBegin >= chartDataManager.WorkBeginTime && f.PeriodBegin >= startFluct.PeriodBegin))
+                {
+                    double ma = 0;
+                    int i = 0;
+
+                    foreach (var prev_fluct in fluctuations.Where(f => f.PeriodBegin <= fluct.PeriodBegin && f.PeriodBegin + (length - 1) * chartDataManager.TFrame >= fluct.PeriodBegin))
+                    {
+
+                        ma += prev_fluct.Close;
+                        i++;
+                    }
+
+
+                    if (i == length)
+                    {
+                        ma /= length;
+                        fluct.ExtraData[id] = (float)ma;
+                    }
+                }
+            }
+
+        }
         public void DrawPointArray(int id, Color color)
         {
-            PriceFluctuation[] arr = visibleFluctuations.ToArray();
             Vector2 point, point2;
             DrawTools.LineColor = color;
             IEnumerator<PriceFluctuation> it = visibleFluctuations.GetEnumerator();
          
             while (it.MoveNext() &&  (!it.Current.ExtraData.ContainsKey(id) || !(it.Current.ExtraData[id] is float) )) ;
 
-            point = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(it.Current.PeriodBegin), CoordGrid.FromPriceToYAxis((float)it.Current.ExtraData[id])));
+            if (!it.Current.ExtraData.ContainsKey(id)) return;
+            
+                point = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(it.Current.PeriodBegin), CoordGrid.FromPriceToYAxis((float)it.Current.ExtraData[id])));
 
-            while (it.MoveNext())
-            {
-                if (it.Current.ExtraData[id] is float)
+                while (it.MoveNext())
                 {
-                    point2 = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(it.Current.PeriodBegin), CoordGrid.FromPriceToYAxis((float)it.Current.ExtraData[id])));
-                    DrawTools.DrawLine(point, point2, false);
-                    point = point2;
+                    if (it.Current.ExtraData[id] is float)
+                    {
+                        point2 = cam.WorldToScreenPoint(new Vector2(CoordGrid.FromDateToXAxis(it.Current.PeriodBegin), CoordGrid.FromPriceToYAxis((float)it.Current.ExtraData[id])));
+                        DrawTools.DrawLine(point, point2, false);
+                        point = point2;
+                    }
+
+
                 }
-
-
-            }
+            
 
         }
 

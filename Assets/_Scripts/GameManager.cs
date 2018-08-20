@@ -191,10 +191,10 @@ namespace Chart
                             GoToNextFluctuation += () => {
                                 UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
                             };
-                            chartDrawer.CalculateMovingAverage(0, 10);
-                            chartDrawer.CalculateMovingAverage(1, 25);
-                            chartDataManager.WorkFlowChanged += () => { chartDrawer.CalculateMovingAverage(0, 10); };
-                            chartDataManager.WorkFlowChanged += () => { chartDrawer.CalculateMovingAverage(1, 25); };
+                            chartDrawer.UpdateMovingAverage(0, 10);
+                            chartDrawer.UpdateMovingAverage(1, 25);
+                            chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(0, 10); };
+                            chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(1, 25); };
                         }
                         break;
                     default: {
