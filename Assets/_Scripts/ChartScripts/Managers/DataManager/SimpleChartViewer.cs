@@ -253,8 +253,4 @@ public class SimpleChartDataManager : IChartDataManager
 
     }
 
-    public ExtraData GetDataByPoint(DateTime dateTime)
-    {
-        throw new NotImplementedException();
-    }
 }

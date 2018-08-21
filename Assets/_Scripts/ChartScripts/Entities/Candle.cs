@@ -10,13 +10,13 @@ namespace Chart
     {
         public class Candle : MonoBehaviour
         {
-
+#pragma warning disable 0649
             [SerializeField] SpriteRenderer body, shadow, borders;
             [SerializeField] static float borderWidth = 0.15f;
             [SerializeField] private Color downColor;
             [SerializeField] private Color upColor;
             [SerializeField] private Color shadowColor;
-
+#pragma warning restore 0649
 
             public Color DownColor { get { return downColor; } set { downColor = value; } }
             public Color UpColor { get { return upColor; } set { upColor = value; } }

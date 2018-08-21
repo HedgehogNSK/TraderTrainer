@@ -9,16 +9,21 @@ namespace Chart
     {
         Camera cam;
         Vector2 leftDownPixel, rightUpPixel;
+        ChartGame.GamePreferences gamePrefs;
         private void Awake()
         {
             cam = GetComponent<Camera>();
 
         }
+        private void Start()
+        {
+            gamePrefs = ChartGame.GamePreferences.Instance;   
+        }
 
         private void OnPostRender()
         {
-            ChartDrawer.Instance.DrawPointArray(0, Color.blue);
-            ChartDrawer.Instance.DrawPointArray(1, Color.cyan);
+            ChartDrawer.Instance.DrawPointArray(0, gamePrefs.Fast_ma_color);
+            ChartDrawer.Instance.DrawPointArray(1, gamePrefs.Slow_ma_color);
         }
     }
 }

@@ -90,7 +90,10 @@ namespace Chart
                 Real
             }
             public Mode gameMode;
-            
+
+           ChartGame.GamePreferences gamePrefs;
+
+#pragma warning disable 0649
             [SerializeField] Candle candleDummy;
             [SerializeField] Transform candlesParent;
             [SerializeField] ChartDrawer chartDrawer;
@@ -99,6 +102,8 @@ namespace Chart
             [SerializeField] AdvancedButton ExtraButton;
             [SerializeField] Button ExitButton;
             [SerializeField] Color colorLongExit, colorShortExit;
+#pragma warning restore 0649
+
 
             public Text txtBalance;
             public Text txtPosition;
@@ -132,6 +137,7 @@ namespace Chart
             
             void Start()
             {
+                gamePrefs = ChartGame.GamePreferences.Instance;
                 LoadGame();
 
                 SellButton.onClick.AddListener(Sell);     
@@ -188,13 +194,21 @@ namespace Chart
                             GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
 
                             UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
-                            GoToNextFluctuation += () => {
+                            GoToNextFluctuation += () =>
+                            {
                                 UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
                             };
-                            chartDrawer.UpdateMovingAverage(0, 10);
-                            chartDrawer.UpdateMovingAverage(1, 25);
-                            chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(0, 10); };
-                            chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(1, 25); };
+
+                            chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length);
+                            chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length);
+                            chartDataManager.WorkFlowChanged += () =>
+                            {
+                                chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length);
+                            };
+                            chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length); };
+
+                            gamePrefs.FastMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(0, x); };
+                            gamePrefs.SlowMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(1, x); };
                         }
                         break;
                     default: {

@@ -256,9 +256,5 @@ ORDER BY date ASC;"
         return pricesFluct;
     }
 
-    public ExtraData GetDataByPoint(DateTime dateTime)
-    {
-        throw new NotImplementedException();
-    }
 }
 

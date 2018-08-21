@@ -50,7 +50,7 @@ namespace Chart
         }
 
         public IGrid CoordGrid { get; set; }
-        public Color baseColor;
+        public Color gridColor;
         public Color crossColor;
         public Color volumeUpColor;
         public Color volumeDownColor;
@@ -186,7 +186,7 @@ namespace Chart
             if (!IsSettingsSet) return;
 
 
-            DrawTools.LineColor = baseColor;
+            DrawTools.LineColor = gridColor;
             DrawTools.dashLength = 0.05f;
             DrawTools.gap = 0.07f;
 
@@ -448,7 +448,6 @@ namespace Chart
             }
 
             IEnumerable<PriceFluctuation> fluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(chartDataManager.DataBeginTime, chartDataManager.WorkEndTime);
-            List<double> ma_values = new List<double>();
             PriceFluctuation startFluct = fluctuations.OrderBy(f => f.PeriodBegin).ElementAtOrDefault(length - 1);
             if (startFluct != null)
             {
