@@ -115,7 +115,7 @@ namespace Chart
             SimpleChartDataManager db;
             SQLChartDataManager sqlDB;
             IScalableDataManager chartDataManager;
-            IGrid grid;
+            IGrid coordGrid;
             public event Action GoToNextFluctuation;
             public int fluctuation1ID = 200;
             public int fluctuationsCountToLoad = 100;
@@ -149,7 +149,8 @@ namespace Chart
                 ExitButton.gameObject.SetActive(false);
                 PlayerManager.Instance.PositionSizeIsChanged += ActivateButtons;
                 PlayerManager.Instance.CurrentBalanceChanged += (x) => { txtBalance.text = x.ToString("F4"); };
-                
+
+
             }
 
             public void ActivateButtons(decimal positionSize)
@@ -182,11 +183,11 @@ namespace Chart
                             
                             chartDataManager.SetWorkDataRange(fluctuation1ID, fluctuationsCountToLoad);
 
-                            grid = new CoordinateGrid(chartDataManager.WorkBeginTime, chartDataManager.TFrame);
+                            coordGrid = new CoordinateGrid(chartDataManager.WorkBeginTime, chartDataManager.TFrame);
                             chartDrawer.ChartDataManager = chartDataManager;
-                            chartDrawer.CoordGrid = grid;
+                            chartDrawer.CoordGrid = coordGrid;
                             NavigationController.Instance.ChartDataManager = chartDataManager;
-                            NavigationController.Instance.CoordGrid = grid;
+                            NavigationController.Instance.CoordGrid = coordGrid;
                             GoToNextFluctuation += NavigationController.Instance.GoToLastPoint;
 
                             PlayerManager.Instance.InitializeData(chartDataManager);
@@ -198,7 +199,8 @@ namespace Chart
                             {
                                 UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
                             };
-
+                            GoToNextFluctuation += chartDrawer.UpdateInNextFrame;
+                            
                             chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length);
                             chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length);
                             chartDataManager.WorkFlowChanged += () =>
@@ -209,6 +211,8 @@ namespace Chart
 
                             gamePrefs.FastMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(0, x); };
                             gamePrefs.SlowMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(1, x); };
+
+                            coordGrid.OnScaleChange += chartDrawer.UpdateInNextFrame;
                         }
                         break;
                     default: {
@@ -278,12 +282,12 @@ namespace Chart
             {
                 if(Input.GetKey(KeyCode.UpArrow))
                 {
-                    grid.Scale *= 1.1f;
+                    coordGrid.Scale *= 1.1f;
                     
                 }
                 if (Input.GetKey(KeyCode.DownArrow))
                 {
-                    grid.Scale /= 1.1f;                  
+                    coordGrid.Scale /= 1.1f;                  
                 }
 
                 if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))

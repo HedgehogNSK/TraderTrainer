@@ -62,20 +62,20 @@ namespace Chart
 
         Vector3 worldPointInLeftDownCorner;
         Vector3 worldPointInRightUpCorner;
-        Vector3 camPreviousPosition;
-        float previousScale =0;
+        Vector3 camPrevPosition;
+        float camPrevOrthoSize;
         Vector3 cachedZero = Vector3.zero;
         Vector3 cachedOne = Vector3.one;
         bool autoscale = false;
-        bool autoscaleSwitched = true;
         public bool Autoscale
         {
             get { return autoscale; }
             set {
                 if(autoscaleToggle!=null && autoscaleToggle.isOn!=value)
                     autoscaleToggle.isOn = value;
-                autoscale = value;             
-                autoscaleSwitched = true;
+                autoscale = value;
+
+                if(value) UpdateInNextFrame();
             }
         }
 
@@ -89,13 +89,16 @@ namespace Chart
         }
         void Start()
         {
-            GameManager.Instance.GoToNextFluctuation += UpdateInNextFrame;
             Autoscale = true;          
         }
 
-        private void UpdateInNextFrame()
+        public void UpdateInNextFrame()
         {
             needToBeUpdated = true;
+        }
+        public void UpdateInNextFrame<T>(T x)
+        {
+            UpdateInNextFrame();
         }
         DateTime visibleStartDate, cachedStart;
         DateTime visibleEndDate, cachedEnd;
@@ -115,50 +118,40 @@ namespace Chart
             if (visibleStartDate!= cachedStart || visibleEndDate !=cachedEnd)
             visibleFluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
 
+            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))
+            {
+                autoscaleToggle.isOn = false;
+            }
+
             if (NeedToBeUpdated)//Оптимизация
             {
-
-                
+                Debug.Log("Update");
                 if (Autoscale) ScaleChart();
                 DrawChart();
+                
 
             }
             cachedStart = visibleStartDate;
             cachedEnd = visibleEndDate;
         }
 
-        void LateUpdate()
-        {
-            camPreviousPosition = cam.transform.position;
-            
-        }
-
         bool needToBeUpdated =false;
         bool NeedToBeUpdated {
             get
-            {              
-                if (autoscaleSwitched)
+            {
+                if (needToBeUpdated)
                 {
-                    autoscaleSwitched = false;
-                    return true;
-                }
-                if(Mathf.Abs(CoordGrid.Scale/previousScale-1) >0.0001f)
-                {
-                    previousScale = CoordGrid.Scale;
-                    if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))
-                    {
-                       
-                        autoscaleToggle.isOn = false;
-                    }
-                    return true;
-                }
-
-                if (needToBeUpdated) {
                     needToBeUpdated = false;
                     return true;
                 }
 
-                return camPreviousPosition != cam.transform.position;
+
+                bool camViewChanged = cam.orthographicSize != camPrevOrthoSize || camPrevPosition != cam.transform.position;
+
+                camPrevOrthoSize = cam.orthographicSize;
+                camPrevPosition = cam.transform.position;
+
+                return camViewChanged;
             }
         }
         // Update is called once per frame
@@ -373,40 +366,38 @@ namespace Chart
 
             float worldRealToScreen = (CoordGrid.FromDateToXAxis(visibleEndDate) - CoordGrid.FromDateToXAxis(visibleStartDate)) / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
 
-            if (visibleStartDate <= visibleEndDate)
+
+            int count = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, visibleEndDate, TimeSpan.Zero);
+            float pixelLenghtFrame = camRect.width * worldRealToScreen / count;
+            float maxVolume = (float)visibleFluctuations.Max(x => x.Volume);
+
+            //Если свечка видна только частично, то необходимо смещать отрисовку объёма на равную долю видимости
+            float diff = (worldPointInLeftDownCorner.x - CoordGrid.FromDateToXAxis(visibleStartDate)) * camRect.width / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
+            Vector2 barLeftDownCorner = camRect.min - new Vector2(diff + pixelLenghtFrame / 2, 0);
+            Vector2 barRightUpCorner;
+            Vector2 bordersOffset = new Vector2((20 / count < 1 ? 1 : 20 / count), 0);
+
+            if (chartDataManager.WorkBeginTime > visibleStartDate)
             {
-
-                int count = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, visibleEndDate,TimeSpan.Zero);
-                float pixelLenghtFrame = camRect.width * worldRealToScreen / count;
-                float maxVolume = (float)visibleFluctuations.Max(x => x.Volume);
-
-                //Если свечка видна только частично, то необходимо смещать отрисовку объёма на равную долю видимости
-                float diff = (worldPointInLeftDownCorner.x - CoordGrid.FromDateToXAxis(visibleStartDate)) * camRect.width / (worldPointInRightUpCorner.x - worldPointInLeftDownCorner.x);
-                Vector2 barLeftDownCorner = camRect.min - new Vector2 (diff + pixelLenghtFrame / 2, 0) ;
-                Vector2 barRightUpCorner;
-                Vector2 bordersOffset = new Vector2((20/count<1? 1: 20/count), 0);
-
-                if (chartDataManager.WorkBeginTime > visibleStartDate)
-                {
-                    int shift = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, chartDataManager.WorkBeginTime, TimeSpan.Zero);
-                    barLeftDownCorner += new Vector2(shift* pixelLenghtFrame, 0);
-                }
-
-                foreach (var fluctuation in visibleFluctuations)
-                {
-                    float pixelHeightFrame = (float)fluctuation.Volume / maxVolume * camRect.height;
-                    barRightUpCorner = barLeftDownCorner + new Vector2(pixelLenghtFrame, pixelHeightFrame);
-
-                    DrawTools.DrawRectangle(barLeftDownCorner+ bordersOffset, barRightUpCorner- bordersOffset, fluctuation.Close - fluctuation.Open>0? volumeUpColor: volumeDownColor);
-
-                    barLeftDownCorner = new Vector2(barRightUpCorner.x,camRect.min.y);
-
-                }
+                int shift = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, visibleStartDate, chartDataManager.WorkBeginTime, TimeSpan.Zero);
+                barLeftDownCorner += new Vector2(shift * pixelLenghtFrame, 0);
             }
-         
+
+            foreach (var fluctuation in visibleFluctuations)
+            {
+                float pixelHeightFrame = (float)fluctuation.Volume / maxVolume * camRect.height;
+                barRightUpCorner = barLeftDownCorner + new Vector2(pixelLenghtFrame, pixelHeightFrame);
+
+                DrawTools.DrawRectangle(barLeftDownCorner + bordersOffset, barRightUpCorner - bordersOffset, fluctuation.Close - fluctuation.Open > 0 ? volumeUpColor : volumeDownColor);
+
+                barLeftDownCorner = new Vector2(barRightUpCorner.x, camRect.min.y);
+
+            }
+
+
         }
 
-        public void UpdateMovingAverage(int id,int length)
+        public void UpdateMovingAverage(int id, int length)
         {
             if (length <= 0)
             {
@@ -498,12 +489,6 @@ namespace Chart
                 }
             
 
-        }
-
-        private void OnDestroy()
-        {
-            if(GameManager.Instance)
-                GameManager.Instance.GoToNextFluctuation -= UpdateInNextFrame;
         }
 
     }

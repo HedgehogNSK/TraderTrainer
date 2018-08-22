@@ -30,6 +30,7 @@ namespace Chart
             [SerializeField] float scrollMaxLimit = 25;
             [SerializeField] float scrollMinLimit = 2;
             [SerializeField] float defaultOrthoSize = 10;
+            [SerializeField] float camShift = 0.1f;
 
             Transform cameraTransform;
             //float xBounds = 0.0f;
@@ -113,6 +114,7 @@ namespace Chart
                 objCamera.orthographicSize = cam.orthographicSize;
 
                 shift -= (Vector2)cam.ScreenToWorldPoint(eventData.pointerCurrentRaycast.screenPosition);
+                
                 cameraTransform.position += (Vector3)shift;
             }
 
@@ -151,7 +153,7 @@ namespace Chart
             {
                 cameraTransform.position = GetLastPoint()  + Vector3.forward*cameraTransform.position.z;
                 //Смещение фокуса, искомая свеча была не по центру
-                cameraTransform.position -= Vector3.right *cam.orthographicSize * cam.aspect * 0.4f;
+                cameraTransform.position -= Vector3.right *cam.orthographicSize * cam.aspect * camShift;
             }
             public void ShiftCamera(float mult)
             {
