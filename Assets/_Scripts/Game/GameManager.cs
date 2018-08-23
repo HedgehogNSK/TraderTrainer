@@ -96,6 +96,7 @@ namespace Chart
 #pragma warning disable 0649
             [SerializeField] Candle candleDummy;
             [SerializeField] Transform candlesParent;
+            [SerializeField] GameObject resultWindow;
             [SerializeField] ChartDrawer chartDrawer;
             [SerializeField] Button SellButton;
             [SerializeField] Button BuyButton;
@@ -117,6 +118,7 @@ namespace Chart
             IScalableDataManager chartDataManager;
             IGrid coordGrid;
             public event Action GoToNextFluctuation;
+            public event Action EndOfTheGame;
             public int fluctuation1ID = 200;
             public int fluctuationsCountToLoad = 100;
 
@@ -131,7 +133,7 @@ namespace Chart
                     Debug.LogError("[GameObject]"+name +": Не задана одна из кнопок контроля");
                     return;
                 }
-               
+                resultWindow.SetActive(false);
 
             }
             
@@ -149,7 +151,7 @@ namespace Chart
                 ExitButton.gameObject.SetActive(false);
                 PlayerManager.Instance.PositionSizeIsChanged += ActivateButtons;
                 PlayerManager.Instance.CurrentBalanceChanged += (x) => { txtBalance.text = x.ToString("F4"); };
-
+                EndOfTheGame += CalculateResults;
 
             }
 
@@ -306,6 +308,7 @@ namespace Chart
 
                 if (!chartDataManager.AddTimeStep())
                 {
+                    if(EndOfTheGame!=null) EndOfTheGame();
                     Debug.Log(" Невозможно загрузить следующее колебание. Достигнут край рабочей области");
                     return false;
                 }
@@ -350,6 +353,12 @@ namespace Chart
             {
                 PlayerManager.Instance.CreateOrder(Order.Type.Market, -PlayerManager.Instance.PositionSize);
                 TryLoadNextFluctuation();
+            }
+
+            public void CalculateResults()
+            {
+                Exit();
+                resultWindow.SetActive(true);
             }
         }
 

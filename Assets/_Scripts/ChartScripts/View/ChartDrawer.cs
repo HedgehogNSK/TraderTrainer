@@ -118,6 +118,9 @@ namespace Chart
             if (visibleStartDate!= cachedStart || visibleEndDate !=cachedEnd)
             visibleFluctuations = chartDataManager.GetPriceFluctuationsByTimeFrame(visibleStartDate, visibleEndDate);
 
+            cachedStart = visibleStartDate;
+            cachedEnd = visibleEndDate;
+
             if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))
             {
                 autoscaleToggle.isOn = false;
@@ -125,14 +128,10 @@ namespace Chart
 
             if (NeedToBeUpdated)//Оптимизация
             {
-                Debug.Log("Update");
                 if (Autoscale) ScaleChart();
                 DrawChart();
-                
-
             }
-            cachedStart = visibleStartDate;
-            cachedEnd = visibleEndDate;
+            
         }
 
         bool needToBeUpdated =false;
