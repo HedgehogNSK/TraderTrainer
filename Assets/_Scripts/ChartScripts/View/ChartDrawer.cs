@@ -9,7 +9,6 @@ using Chart.Entity;
 
 namespace Chart
 {
-    using Managers;
     public class ChartDrawer : MonoBehaviour, IChartDrawer
     {
         #region SINGLETON
@@ -80,7 +79,7 @@ namespace Chart
         }
 
         List<Candle> candles = new List<Candle>();
-
+  
         void Awake()
         {
             cam = GetComponent<Camera>();
@@ -489,6 +488,15 @@ namespace Chart
             
 
         }
-
+        public void ReloadData()
+        {
+            foreach (var candle in candles)
+            {
+               
+                Destroy(candle.gameObject);
+                
+            }
+            candles = new List<Candle>();
+        }
     }
 }

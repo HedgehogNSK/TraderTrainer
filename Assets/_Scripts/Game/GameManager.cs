@@ -7,14 +7,13 @@ using Hedge.Tools;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using Hedge.Tools.UnityUI;
+using Chart;
+using Chart.Entity;
+using Chart.Controllers;
 
-namespace Chart
+namespace ChartGame
 {
-    using Entity;
-    using Controllers;
 
-    namespace Managers
-    {
         public class GameManager : MonoBehaviour
         {
             #region INSTANCE
@@ -34,11 +33,11 @@ namespace Chart
                     }
                     return _instance;
                 }
-                
+
             }
             #endregion
 
-            
+
             const int MIN_HISTORICAL_FLUCTUATIONS_AMOUNT = 25;
             const int MAX_HISTORICAL_FLUCTUATIONS_AMOUNT = 50;
             const int MIN_FLUCTUATIONS_AMOUNT_TOPLAY = 50;
@@ -91,7 +90,7 @@ namespace Chart
             }
             public Mode gameMode;
 
-           ChartGame.GamePreferences gamePrefs;
+            ChartGame.GamePreferences gamePrefs;
 
 #pragma warning disable 0649
             [SerializeField] Candle candleDummy;
@@ -100,6 +99,7 @@ namespace Chart
             [SerializeField] ChartDrawer chartDrawer;
             [SerializeField] Button SellButton;
             [SerializeField] Button BuyButton;
+            [SerializeField] Button NextChartButton;
             [SerializeField] AdvancedButton ExtraButton;
             [SerializeField] Button ExitButton;
             [SerializeField] Color colorLongExit, colorShortExit;
@@ -127,31 +127,44 @@ namespace Chart
             private void Awake()
             {
                 if (!candleDummy || !candlesParent)
-                    Debug.LogError("[GameObject]"+name + ": Задай все параметры");
-                if(!SellButton || !BuyButton || !ExtraButton)
+                    Debug.LogError("[GameObject]" + name + ": Задай все параметры");
+                if (!SellButton || !BuyButton || !ExtraButton)
                 {
-                    Debug.LogError("[GameObject]"+name +": Не задана одна из кнопок контроля");
+                    Debug.LogError("[GameObject]" + name + ": Не задана одна из кнопок контроля");
                     return;
                 }
                 resultWindow.SetActive(false);
 
             }
-            
+
             void Start()
             {
+                Debug.Log("Start");
                 gamePrefs = ChartGame.GamePreferences.Instance;
                 LoadGame();
 
-                SellButton.onClick.AddListener(Sell);     
+                //Задаём назначение кнопок игрового интерфейса
+                SellButton.onClick.AddListener(Sell);
                 BuyButton.onClick.AddListener(Buy);
                 ExitButton.onClick.AddListener(Exit);
                 exitButtonImage = ExitButton.GetComponent<Image>();
+                NextChartButton.onClick.AddListener(chartDrawer.ReloadData);
+                NextChartButton.onClick.AddListener(() => { LoadGame(); });
 
                 ExtraButton.onPressHold += TryLoadNextFluctuation;
                 ExitButton.gameObject.SetActive(false);
                 PlayerManager.Instance.PositionSizeIsChanged += ActivateButtons;
                 PlayerManager.Instance.CurrentBalanceChanged += (x) => { txtBalance.text = x.ToString("F4"); };
                 EndOfTheGame += CalculateResults;
+                EndOfTheGame += UnsubscribeGameButtons;
+
+                
+                //Задаём реакции на добавление свечи, обновление настроек и пр.
+                GoToNextFluctuation += NavigationController.Instance.GoToLastPoint;
+                GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
+                GoToNextFluctuation += () => { UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close); };
+                GoToNextFluctuation += chartDrawer.UpdateInNextFrame;
+                
 
             }
 
@@ -172,57 +185,55 @@ namespace Chart
                 txtPrice.text = PlayerManager.Instance.OpenPositionPrice.ToString("F2");
             }
 
-            internal void LoadGame(Mode mode = Mode.Simple)
+            public void LoadGame(Mode mode = Mode.Simple)
             {
                 gameMode = mode;
-                switch(gameMode)
+                switch (gameMode)
                 {
                     case Mode.Simple:
                         {
+                            //Создаём отрисовщик графика
                             chartDataManager = CreateRandomDataManager();
+                            //Задаём рандомную временнУю область игры. Некоторое количество свечей предыстории, некоторое количество свечей на игру
                             int fluctuationCount = DateTimeTools.CountFramesInPeriod(chartDataManager.TFrame, chartDataManager.DataBeginTime, chartDataManager.DataEndTime, TimeSpan.Zero);
                             SetRandomGameTime(fluctuationCount);
-                            
                             chartDataManager.SetWorkDataRange(fluctuation1ID, fluctuationsCountToLoad);
-
-                            coordGrid = new CoordinateGrid(chartDataManager.WorkBeginTime, chartDataManager.TFrame);
-                            chartDrawer.ChartDataManager = chartDataManager;
-                            chartDrawer.CoordGrid = coordGrid;
-                            NavigationController.Instance.ChartDataManager = chartDataManager;
-                            NavigationController.Instance.CoordGrid = coordGrid;
-                            GoToNextFluctuation += NavigationController.Instance.GoToLastPoint;
-
-                            PlayerManager.Instance.InitializeData(chartDataManager);
-
-                            GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
-
-                            UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
-                            GoToNextFluctuation += () =>
-                            {
-                                UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
-                            };
-                            GoToNextFluctuation += chartDrawer.UpdateInNextFrame;
-                            
-                            chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length);
-                            chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length);
-                            chartDataManager.WorkFlowChanged += () =>
-                            {
-                                chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length);
-                            };
-                            chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length); };
-
-                            gamePrefs.FastMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(0, x); };
-                            gamePrefs.SlowMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(1, x); };
-
-                            coordGrid.OnScaleChange += chartDrawer.UpdateInNextFrame;
                         }
                         break;
-                    default: {
+                    default:
+                        {
                             Debug.LogError("Не создан сценарий для данного мода");
-                        } break;
+                        }
+                        break;
                 }
-                
-                
+
+                //задаём систему координат
+                coordGrid = new CoordinateGrid(chartDataManager.WorkBeginTime, chartDataManager.TFrame);
+
+                chartDrawer.ReloadData();
+                chartDrawer.ChartDataManager = chartDataManager;
+                chartDrawer.CoordGrid = coordGrid;
+                chartDrawer.CalculateMovingAverage(0, gamePrefs.Fast_ma_length);
+                chartDrawer.CalculateMovingAverage(1, gamePrefs.Slow_ma_length);
+
+                coordGrid.OnScaleChange += chartDrawer.UpdateInNextFrame;
+
+                //Передаём ссылки на необходимые классы контроллеру навигации на графике
+                NavigationController.Instance.ChartDataManager = chartDataManager;
+                NavigationController.Instance.CoordGrid = coordGrid;
+                NavigationController.Instance.Initialize();
+                PlayerManager.Instance.InitializeData(chartDataManager);
+
+
+                UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
+
+                chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length); };
+                chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length); };
+
+                gamePrefs.FastMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(0, x); };
+                gamePrefs.SlowMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(1, x); };
+
+
             }
             void SetRandomGameTime(int fluctuationCount)
             {
@@ -230,11 +241,11 @@ namespace Chart
                 {
                     throw new ArgumentOutOfRangeException("Количество свечей должно быть больше " + MIN_FLUCTUATIONS_AMOUNT + " Выбирите другой инструмент и попытайтесь снова");
                 }
-                
-                int fluctuations2play = UnityEngine.Random.Range(MIN_FLUCTUATIONS_AMOUNT_TOPLAY, fluctuationCount -  MIN_HISTORICAL_FLUCTUATIONS_AMOUNT);
-                int fluctuations4preload = fluctuationCount - fluctuations2play;  
-                fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, fluctuations4preload < MAX_HISTORICAL_FLUCTUATIONS_AMOUNT? fluctuations4preload: MAX_HISTORICAL_FLUCTUATIONS_AMOUNT);
-                fluctuation1ID = UnityEngine.Random.Range(0, fluctuations4preload- fluctuationsCountToLoad);
+
+                int fluctuations2play = UnityEngine.Random.Range(MIN_FLUCTUATIONS_AMOUNT_TOPLAY, fluctuationCount - MIN_HISTORICAL_FLUCTUATIONS_AMOUNT);
+                int fluctuations4preload = fluctuationCount - fluctuations2play;
+                fluctuationsCountToLoad = UnityEngine.Random.Range(MIN_HISTORICAL_FLUCTUATIONS_AMOUNT, fluctuations4preload < MAX_HISTORICAL_FLUCTUATIONS_AMOUNT ? fluctuations4preload : MAX_HISTORICAL_FLUCTUATIONS_AMOUNT);
+                fluctuation1ID = UnityEngine.Random.Range(0, fluctuations4preload - fluctuationsCountToLoad);
             }
             IScalableDataManager CreateRandomDataManager()
             {
@@ -243,13 +254,13 @@ namespace Chart
                 Period randomValue = values[UnityEngine.Random.Range(0, values.Length)];
 
                 int[] availablePeriodSizes;
-                switch(randomValue)
+                switch (randomValue)
                 {
                     case Period.Minute:
                         {
                             availablePeriodSizes = new int[] { 1, 5 }; // { 1, 5 ,10,15,20,30};
                         }
-                            break;
+                        break;
                     case Period.Hour:
                         {
                             availablePeriodSizes = new int[] { 1, 3, 4 };//{ 1, 3, 4, 6, 12 };
@@ -257,11 +268,12 @@ namespace Chart
                         break;
                     case Period.Day:
                         {
-                            availablePeriodSizes = new int[] { 1,3 };
-                        } break;
+                            availablePeriodSizes = new int[] { 1, 3 };
+                        }
+                        break;
                     default: { throw new ArgumentOutOfRangeException("Enum присвоено не верное значение"); }
                 }
-                
+
                 int periodSize = availablePeriodSizes[UnityEngine.Random.Range(0, availablePeriodSizes.Length)];
                 int randAssetId = UnityEngine.Random.Range(0, assets.Length);
                 /*////////////////////////////
@@ -271,25 +283,25 @@ namespace Chart
                 periodSize = 3;
                 //*/
                 TimeFrame timeFrame = new TimeFrame(randomValue, periodSize);
-                
-               
+
+
                 //TODO: Здесь должен быть случайный выбор из любых доступных менеджеров
                 IScalableDataManager dm = new CryptoCompareDataManager(timeFrame, assets[randAssetId].base_currency, assets[randAssetId].reciprocal_currency, assets[randAssetId].exchange);
-                
+
                 return dm;
             }
 
             // Update is called once per frame
             void Update()
             {
-                if(Input.GetKey(KeyCode.UpArrow))
+                if (Input.GetKey(KeyCode.UpArrow))
                 {
                     coordGrid.Scale *= 1.1f;
-                    
+
                 }
                 if (Input.GetKey(KeyCode.DownArrow))
                 {
-                    coordGrid.Scale /= 1.1f;                  
+                    coordGrid.Scale /= 1.1f;
                 }
 
                 if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.RightArrow))
@@ -308,7 +320,7 @@ namespace Chart
 
                 if (!chartDataManager.AddTimeStep())
                 {
-                    if(EndOfTheGame!=null) EndOfTheGame();
+                    if (EndOfTheGame != null) EndOfTheGame();
                     Debug.Log(" Невозможно загрузить следующее колебание. Достигнут край рабочей области");
                     return false;
                 }
@@ -351,20 +363,35 @@ namespace Chart
 
             public void Exit()
             {
-                PlayerManager.Instance.CreateOrder(Order.Type.Market, -PlayerManager.Instance.PositionSize);
+                PlayerManager.Instance.CloseByMarket();
                 TryLoadNextFluctuation();
             }
 
             public void CalculateResults()
             {
-                Exit();
+                ActivateGameButtons(false);
                 resultWindow.SetActive(true);
+
+            }
+            public void ActivateGameButtons(bool isOn)
+            {
+                SellButton.interactable = isOn;
+                BuyButton.interactable = isOn;
+                ExitButton.interactable = isOn;
+                ExtraButton.interactable = isOn;
+            }
+            public void UnsubscribeGameButtons()
+            {
+                SellButton.onClick.RemoveAllListeners();
+                BuyButton.onClick.RemoveAllListeners();
+                ExitButton.onClick.RemoveAllListeners();
+                ExtraButton.onPressHold -= TryLoadNextFluctuation;
             }
         }
 
         struct AssetId
         {
-            public AssetId(string base_currency, string reciprocal_currency,string exchange)
+            public AssetId(string base_currency, string reciprocal_currency, string exchange)
             {
                 this.base_currency = base_currency;
                 this.reciprocal_currency = reciprocal_currency;
@@ -375,5 +402,5 @@ namespace Chart
             public string exchange;
         }
 
-    }
+    
 }

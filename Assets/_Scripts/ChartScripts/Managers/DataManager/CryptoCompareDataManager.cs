@@ -269,20 +269,6 @@ namespace Chart
             if (WorkFlowChanged != null) WorkFlowChanged();
         }
 
-        //TODO: Прикутить ограничение
-        /*
-        DateTime dateLimit; 
-        public DateTime DateLimit {
-            get { return dateLimit; }
-            set
-            {
-                DateTime tmp = candles.Last().PeriodBegin.UpToNextFrame(TFrame);
-                dateLimit = value > tmp ? tmp: value ;
-                if (value > tmp) Debug.Log("Значение DateLimit превышает дату закрытия последнего колебания, поэтому ему была присвоена дата закрытия");
-            }
-        }
-        public int MaxCountFluctuationToShow { set { DateLimit = DataBeginTime + value * TFrame; } }
-        //*/
 
         public bool AddTimeStep()
         {

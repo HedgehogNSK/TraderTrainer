@@ -40,6 +40,7 @@ namespace Hedge
 
                 IEnumerator PressCoroutine(PointerEventData eventData)
                 {
+                    if (onPressHold == null)  yield break;
                     while (onPressHold(eventData))
                     {
                         yield return new WaitForSeconds(Delay);

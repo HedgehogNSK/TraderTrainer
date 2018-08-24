@@ -6,9 +6,9 @@ using System;
 using System.Linq;
 using Hedge.Tools;
 using Chart.Entity;
+using ChartGame;
 namespace Chart
 {
-    using Managers;
     namespace Controllers
     {
       
@@ -78,10 +78,7 @@ namespace Chart
                 cam = Camera.main;
                 cameraTransform = cam.transform;
             }
-            private void Start()
-            {               
-                Initialize();
-            }
+
             public void OnDrag(PointerEventData eventData)
             {
                 //Это сработает только для камеры параллельной оси Х
