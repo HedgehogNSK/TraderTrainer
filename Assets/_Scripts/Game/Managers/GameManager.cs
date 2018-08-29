@@ -99,7 +99,6 @@ namespace ChartGame
             [SerializeField] ChartDrawer chartDrawer;
             [SerializeField] Button SellButton;
             [SerializeField] Button BuyButton;
-            [SerializeField] Button NextChartButton;
             [SerializeField] AdvancedButton ExtraButton;
             [SerializeField] Button ExitButton;
             [SerializeField] Color colorLongExit, colorShortExit;
@@ -110,7 +109,7 @@ namespace ChartGame
             public Text txtPosition;
             public Text txtTotal;
             public Text txtProfit;
-            public Text txtPrice;
+            public Text txtCurrentProfit;
 
             Image exitButtonImage;
             SimpleChartDataManager db;
@@ -133,7 +132,7 @@ namespace ChartGame
                     Debug.LogError("[GameObject]" + name + ": Не задана одна из кнопок контроля");
                     return;
                 }
-                resultWindow.SetActive(false);
+                
 
             }
 
@@ -148,13 +147,12 @@ namespace ChartGame
                 BuyButton.onClick.AddListener(Buy);
                 ExitButton.onClick.AddListener(Exit);
                 exitButtonImage = ExitButton.GetComponent<Image>();
-                NextChartButton.onClick.AddListener(chartDrawer.ReloadData);
-                NextChartButton.onClick.AddListener(() => { LoadGame(); });
+                
 
                 ExtraButton.onPressHold += TryLoadNextFluctuation;
                 ExitButton.gameObject.SetActive(false);
                 PlayerManager.Instance.PositionSizeIsChanged += ActivateButtons;
-                PlayerManager.Instance.CurrentBalanceChanged += (x) => { txtBalance.text = x.ToString("F4"); };
+                PlayerManager.Instance.CurrentBalanceChanged += (x) => { txtBalance.text = x.ToString("F2"); };
                 EndOfTheGame += CalculateResults;
                 EndOfTheGame += UnsubscribeGameButtons;
 
@@ -162,7 +160,7 @@ namespace ChartGame
                 //Задаём реакции на добавление свечи, обновление настроек и пр.
                 GoToNextFluctuation += NavigationController.Instance.GoToLastPoint;
                 GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
-                GoToNextFluctuation += () => { UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close); };
+                GoToNextFluctuation += UpdatePlayersInfoFields;
                 GoToNextFluctuation += chartDrawer.UpdateInNextFrame;
                 
 
@@ -178,15 +176,16 @@ namespace ChartGame
                 txtPosition.text = positionSize.ToString("F4");
             }
 
-            public void UpdatePlayersInfoFields(decimal price)
+            public void UpdatePlayersInfoFields()
             {
-                txtTotal.text = PlayerManager.Instance.Total(price).ToString("F2");
-                txtProfit.text = PlayerManager.Instance.TotalProfit(price).ToString("F2");
-                txtPrice.text = PlayerManager.Instance.OpenPositionPrice.ToString("F2");
+                txtTotal.text = PlayerManager.Instance.Total(PlayerManager.Instance.CurrentPrice).ToString("F2");
+                txtProfit.text = (PlayerManager.Instance.TotalProfit+PlayerManager.Instance.CurrentProfit(PlayerManager.Instance.CurrentPrice)).ToString("F2");
+                txtCurrentProfit.text = PlayerManager.Instance.CurrentProfit(PlayerManager.Instance.CurrentPrice).ToString("F2");
             }
 
             public void LoadGame(Mode mode = Mode.Simple)
             {
+                
                 gameMode = mode;
                 switch (gameMode)
                 {
@@ -225,13 +224,15 @@ namespace ChartGame
                 PlayerManager.Instance.InitializeData(chartDataManager);
 
 
-                UpdatePlayersInfoFields((decimal)chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close);
+                UpdatePlayersInfoFields();
 
                 chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(0, gamePrefs.Fast_ma_length); };
                 chartDataManager.WorkFlowChanged += () => { chartDrawer.UpdateMovingAverage(1, gamePrefs.Slow_ma_length); };
 
                 gamePrefs.FastMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(0, x); };
                 gamePrefs.SlowMALengthChanged += (x) => { chartDrawer.CalculateMovingAverage(1, x); };
+
+                ActivateGameButtons(true);
 
 
             }

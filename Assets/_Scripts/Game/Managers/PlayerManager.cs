@@ -59,13 +59,53 @@ namespace ChartGame
             get { return positionSize; }
             set
             {
-                positionSize = value;
-                if (PositionSizeIsChanged != null) PositionSizeIsChanged(value);
+                if (PositionSize != value)
+                {                    
+                    positionSize = value;
+                    if (PositionSizeIsChanged != null) PositionSizeIsChanged(value);
+                }
             }
         }
 
         public decimal OpenPositionPrice { get; private set; }
+        public decimal CurrentPrice { get; private set; }
 
+        public float WinRate
+        {
+            get
+            {
+                return
+                  ((float)posTradesCount) / (posTradesCount + negTradesCount)*100;
+            }
+        }
+        
+        enum Fluct
+        {
+            Open,
+            High,
+            Low,
+            Close           
+        }
+        public PriceFluctuation CurrentFluctuation
+        {
+            get;private set;
+        }
+        public decimal CurrentProfit(decimal price)
+        {
+            {
+                if (PositionSize == 0)
+                {                    
+                    return 0;
+                }
+
+                return (price - OpenPositionPrice) * PositionSize;
+            }
+        }
+        public decimal TotalProfit { get; private set; }
+        public decimal BestTrade { get; private set; }
+        public decimal WorstTrade { get; private set; }
+
+        private int posTradesCount, negTradesCount;
 
         public decimal Total(decimal price)
         {
@@ -80,16 +120,7 @@ namespace ChartGame
             else return 0;
 
         }
-
-        public decimal TotalProfit(decimal price)
-        {
-
-            if (chartData != null)
-            {
-                return Total(price) - initialCap;
-            }
-            else return 0;
-        }
+        
 
         public void CreateOrder(Order.Type type, decimal amount, decimal price = 0)
         {
@@ -99,7 +130,7 @@ namespace ChartGame
 
         public void CloseByMarket()
         {
-            PlayerManager.Instance.CreateOrder(Order.Type.Market, -PositionSize);
+           CreateOrder(Order.Type.Market, -PositionSize);
         }
 
         //Проверка количества
@@ -132,13 +163,15 @@ namespace ChartGame
             this.chartData = chartData;
             tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
             PositionSize = 0;
+            CurrentPrice = (decimal)chartData.GetPriceFluctuation(chartData.WorkEndTime).Close;
             playerOrders = new List<Order>();
         }
 
         //Данный метод не учитывает объём 
         public void UpdatePosition()
         {
-            PriceFluctuation fluct = chartData.GetPriceFluctuation(chartData.WorkEndTime);
+            CurrentFluctuation = chartData.GetPriceFluctuation(chartData.WorkEndTime);
+            CurrentPrice = (decimal)CurrentFluctuation.Close;
             var orders = playerOrders.Where(order => order.state == Order.State.Waiting);
             decimal price;
 
@@ -151,24 +184,24 @@ namespace ChartGame
                             price = 0;
                             if (order.Amount > 0)
                             {
-                                if (order.Price >= (decimal)fluct.Open)
+                                if (order.Price >= (decimal)CurrentFluctuation.Open)
                                 {
-                                    price = (decimal)fluct.Open;
+                                    price = (decimal)CurrentFluctuation.Open;
 
                                 }
-                                else if (order.Price >= (decimal)fluct.Low)
+                                else if (order.Price >= (decimal)CurrentFluctuation.Low)
                                 {
                                     price = order.Price;
                                 }
                             }
                             else
                             {
-                                if (order.Price <= (decimal)fluct.Open)
+                                if (order.Price <= (decimal)CurrentFluctuation.Open)
                                 {
-                                    price = (decimal)fluct.Open;
+                                    price = (decimal)CurrentFluctuation.Open;
 
                                 }
-                                else if (order.Price <= (decimal)fluct.High)
+                                else if (order.Price <= (decimal)CurrentFluctuation.High)
                                 {
                                     price = order.Price;
                                 }
@@ -180,7 +213,7 @@ namespace ChartGame
                         break;
                     case Order.Type.Market:
                         {
-                            price = (decimal)fluct.Open;
+                            price = (decimal)CurrentFluctuation.Open;
                             order.Amount = AmountFilter(order.Amount, price);
                         }
                         break;
@@ -200,6 +233,18 @@ namespace ChartGame
         {
             if (IsAmountCorrect(order.Amount, price))
             {
+                if (PositionSize!=0 && Math.Abs(order.Amount) >= Math.Abs(PositionSize) && Math.Sign(order.Amount) != Math.Sign(PositionSize))
+                {
+                    decimal curProfit = CurrentProfit(price);
+                    TotalProfit += curProfit;
+                    if (BestTrade < curProfit) BestTrade = curProfit;
+                    if (WorstTrade > curProfit) WorstTrade = curProfit;
+
+                    if (curProfit > 0)
+                        posTradesCount++;
+                    else
+                        negTradesCount++;
+                }
                 if (order.Amount > 0)
                 {
                     if (PositionSize >= 0)
@@ -241,6 +286,7 @@ namespace ChartGame
 
                 }
                 PositionSize += order.Amount;
+               
 
                 if (Math.Sign(PositionSize) != Math.Sign(PositionSize - order.Amount))
                 {

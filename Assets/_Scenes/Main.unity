@@ -264,7 +264,7 @@ GameObject:
   - component: {fileID: 37672655}
   - component: {fileID: 37672654}
   m_Layer: 0
-  m_Name: PositionPriceValue
+  m_Name: TradeProfitValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -302,7 +302,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Position Price
+  m_Text: Trade Profit
 --- !u!222 &37672655
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -651,8 +651,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 225.13022, y: -50}
-  m_SizeDelta: {x: 151.10852, y: 80}
+  m_AnchoredPosition: {x: 225.09464, y: -50}
+  m_SizeDelta: {x: 151.15152, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &223569902
 MonoBehaviour:
@@ -879,8 +879,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 523.7457, y: -50}
-  m_SizeDelta: {x: 151.10852, y: 80}
+  m_AnchoredPosition: {x: 523.72424, y: -50}
+  m_SizeDelta: {x: 151.15152, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &252571796
 MonoBehaviour:
@@ -1010,8 +1010,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 374.438, y: -50}
-  m_SizeDelta: {x: 107.50699, y: 100}
+  m_AnchoredPosition: {x: 374.40942, y: -50}
+  m_SizeDelta: {x: 107.47806, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &283491201
 MonoBehaviour:
@@ -2377,8 +2377,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 64.78798, y: -50}
-  m_SizeDelta: {x: 129.57596, y: 67.6}
+  m_AnchoredPosition: {x: 64.75944, y: -50}
+  m_SizeDelta: {x: 129.51888, y: 67.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &669989883
 MonoBehaviour:
@@ -3608,8 +3608,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 374.438, y: -50}
-  m_SizeDelta: {x: 107.50699, y: 100}
+  m_AnchoredPosition: {x: 374.40942, y: -50}
+  m_SizeDelta: {x: 107.47806, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &874411810
 MonoBehaviour:
@@ -4563,7 +4563,7 @@ GameObject:
   - component: {fileID: 1285356914}
   - component: {fileID: 1285356913}
   m_Layer: 0
-  m_Name: PositionPrice
+  m_Name: TradeProfit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4619,7 +4619,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Position Price
+  m_Text: Trade Profit
 --- !u!222 &1285356914
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4883,7 +4883,7 @@ GameObject:
   - component: {fileID: 1339951958}
   - component: {fileID: 1339951957}
   m_Layer: 0
-  m_Name: NextChart
+  m_Name: Results
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4946,7 +4946,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1339951958}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1916865328}
+        m_MethodName: CalculateResults
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &1339951958
@@ -6365,8 +6376,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 225.13022, y: -50}
-  m_SizeDelta: {x: 151.10852, y: 80}
+  m_AnchoredPosition: {x: 225.09464, y: -50}
+  m_SizeDelta: {x: 151.15152, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1611655089
 MonoBehaviour:
@@ -7516,8 +7527,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 64.78798, y: -50}
-  m_SizeDelta: {x: 129.57596, y: 67.6}
+  m_AnchoredPosition: {x: 64.75944, y: -50}
+  m_SizeDelta: {x: 129.51888, y: 67.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1879751600
 MonoBehaviour:
@@ -7843,7 +7854,6 @@ MonoBehaviour:
   chartDrawer: {fileID: 691660900}
   SellButton: {fileID: 647732378}
   BuyButton: {fileID: 2000599912}
-  NextChartButton: {fileID: 1339951957}
   ExtraButton: {fileID: 1674252113}
   ExitButton: {fileID: 1733175058}
   colorLongExit: {r: 0.016197944, g: 0.49056602, b: 0.20513408, a: 0.8117647}
@@ -7852,7 +7862,7 @@ MonoBehaviour:
   txtPosition: {fileID: 900185578}
   txtTotal: {fileID: 1361371625}
   txtProfit: {fileID: 1849978278}
-  txtPrice: {fileID: 37672654}
+  txtCurrentProfit: {fileID: 37672654}
   fluctuation1ID: 200
   fluctuationsCountToLoad: 150
 --- !u!4 &1916865329
@@ -8701,8 +8711,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 523.7457, y: -50}
-  m_SizeDelta: {x: 151.10852, y: 80}
+  m_AnchoredPosition: {x: 523.72424, y: -50}
+  m_SizeDelta: {x: 151.15152, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2121312618
 GameObject:
@@ -8949,7 +8959,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Next Chart
+  m_Text: Results
 --- !u!222 &2138001188
 CanvasRenderer:
   m_ObjectHideFlags: 0
