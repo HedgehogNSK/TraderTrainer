@@ -74,6 +74,10 @@ namespace ChartGame
         {
             get
             {
+                if (CurrentProfit(CurrentPrice) != 0)
+                    return ((float)posTradesCount + (CurrentProfit(CurrentPrice)>0? 1:0)) / (posTradesCount + negTradesCount + 1) * 100;
+
+
                 return
                   ((float)posTradesCount) / (posTradesCount + negTradesCount)*100;
             }
@@ -102,8 +106,24 @@ namespace ChartGame
             }
         }
         public decimal TotalProfit { get; private set; }
-        public decimal BestTrade { get; private set; }
-        public decimal WorstTrade { get; private set; }
+        decimal bestTrade;
+        public decimal BestTrade
+        {
+            get
+            {
+                return CurrentProfit(CurrentPrice) > bestTrade ? CurrentProfit(CurrentPrice) : bestTrade;
+            }
+            private set { bestTrade = value; }
+        }
+        decimal worstTrade;
+        public decimal WorstTrade
+        {
+            get
+            {
+                return CurrentProfit(CurrentPrice) < worstTrade ? CurrentProfit(CurrentPrice) : worstTrade;
+            }
+            private set { worstTrade = value; }
+        }
 
         private int posTradesCount, negTradesCount;
 
@@ -228,6 +248,7 @@ namespace ChartGame
 
         }
 
+
         //Расчёт позиции и баланса
         private void RecalculatePosition(Order order, decimal price)
         {
@@ -244,6 +265,7 @@ namespace ChartGame
                         posTradesCount++;
                     else
                         negTradesCount++;
+                    Debug.Log(posTradesCount + " :" + negTradesCount);
                 }
                 if (order.Amount > 0)
                 {
