@@ -108,7 +108,7 @@ namespace ChartGame
             public Text txtBalance;
             public Text txtPosition;
             public Text txtTotal;
-            public Text txtProfit;
+            public Text txtOpenPrice;
             public Text txtCurrentProfit;
 
             Image exitButtonImage;
@@ -179,8 +179,8 @@ namespace ChartGame
             public void UpdatePlayersInfoFields()
             {
                 txtTotal.text = PlayerManager.Instance.Total(PlayerManager.Instance.CurrentPrice).ToString("F2");
-                txtProfit.text = (PlayerManager.Instance.TotalProfit+PlayerManager.Instance.CurrentProfit(PlayerManager.Instance.CurrentPrice)).ToString("F2");
-                txtCurrentProfit.text = PlayerManager.Instance.CurrentProfit(PlayerManager.Instance.CurrentPrice).ToString("F2");
+            txtOpenPrice.text = PlayerManager.Instance.OpenPositionPrice.ToString("F2");
+            txtCurrentProfit.text = PlayerManager.Instance.CurrentProfit(PlayerManager.Instance.CurrentPrice).ToString("F2");
             }
 
             public void LoadGame(Mode mode = Mode.Simple)

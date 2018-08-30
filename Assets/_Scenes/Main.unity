@@ -321,11 +321,11 @@ RectTransform:
   m_LocalScale: {x: 0.9999999, y: 0.9999999, z: 0.9999999}
   m_Children: []
   m_Father: {fileID: 305453624}
-  m_RootOrder: 9
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 245, y: -315}
+  m_AnchoredPosition: {x: 245, y: -245}
   m_SizeDelta: {x: 150, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &57429254
@@ -510,7 +510,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Profitable '
+  m_Text: Win Rate
 --- !u!222 &218763447
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -651,8 +651,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 225.09464, y: -50}
-  m_SizeDelta: {x: 151.15152, y: 80}
+  m_AnchoredPosition: {x: 222.69717, y: -50}
+  m_SizeDelta: {x: 152.91553, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &223569902
 MonoBehaviour:
@@ -879,8 +879,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 523.72424, y: -50}
-  m_SizeDelta: {x: 151.15152, y: 80}
+  m_AnchoredPosition: {x: 522.8422, y: -50}
+  m_SizeDelta: {x: 152.91553, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &252571796
 MonoBehaviour:
@@ -1010,8 +1010,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 374.40942, y: -50}
-  m_SizeDelta: {x: 107.47806, y: 100}
+  m_AnchoredPosition: {x: 372.7697, y: -50}
+  m_SizeDelta: {x: 107.22952, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &283491201
 MonoBehaviour:
@@ -1085,10 +1085,10 @@ RectTransform:
   - {fileID: 627651530}
   - {fileID: 335563209}
   - {fileID: 900185576}
-  - {fileID: 473990947}
-  - {fileID: 1849978280}
   - {fileID: 1285356912}
   - {fileID: 37672656}
+  - {fileID: 473990947}
+  - {fileID: 1849978280}
   m_Father: {fileID: 10513661}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1614,7 +1614,7 @@ GameObject:
   - component: {fileID: 473990949}
   - component: {fileID: 473990948}
   m_Layer: 0
-  m_Name: TotalProfit
+  m_Name: OpenPrice
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1631,11 +1631,11 @@ RectTransform:
   m_LocalScale: {x: 0.9999896, y: 0.9999896, z: 0.9999896}
   m_Children: []
   m_Father: {fileID: 305453624}
-  m_RootOrder: 6
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 75, y: -245}
+  m_AnchoredPosition: {x: 75, y: -315}
   m_SizeDelta: {x: 150, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &473990948
@@ -1670,7 +1670,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: TotalProfit
+  m_Text: Open Price
 --- !u!222 &473990949
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2377,8 +2377,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 64.75944, y: -50}
-  m_SizeDelta: {x: 129.51888, y: 67.6}
+  m_AnchoredPosition: {x: 63.11971, y: -50}
+  m_SizeDelta: {x: 126.23942, y: 67.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &669989883
 MonoBehaviour:
@@ -3608,8 +3608,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 374.40942, y: -50}
-  m_SizeDelta: {x: 107.47806, y: 100}
+  m_AnchoredPosition: {x: 372.7697, y: -50}
+  m_SizeDelta: {x: 107.22952, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &874411810
 MonoBehaviour:
@@ -4580,11 +4580,11 @@ RectTransform:
   m_LocalScale: {x: 0.9999999, y: 0.9999999, z: 0.9999999}
   m_Children: []
   m_Father: {fileID: 305453624}
-  m_RootOrder: 8
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 75, y: -315}
+  m_AnchoredPosition: {x: 75, y: -245}
   m_SizeDelta: {x: 150, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1285356913
@@ -6376,8 +6376,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 225.09464, y: -50}
-  m_SizeDelta: {x: 151.15152, y: 80}
+  m_AnchoredPosition: {x: 222.69717, y: -50}
+  m_SizeDelta: {x: 152.91553, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1611655089
 MonoBehaviour:
@@ -7242,7 +7242,7 @@ GameObject:
   - component: {fileID: 1849978279}
   - component: {fileID: 1849978278}
   m_Layer: 0
-  m_Name: TotalProfitValue
+  m_Name: OpenPriceValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7280,7 +7280,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: TotalProfit
+  m_Text: Price
 --- !u!222 &1849978279
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7299,11 +7299,11 @@ RectTransform:
   m_LocalScale: {x: 0.9999896, y: 0.9999896, z: 0.9999896}
   m_Children: []
   m_Father: {fileID: 305453624}
-  m_RootOrder: 7
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 245, y: -245}
+  m_AnchoredPosition: {x: 245, y: -315}
   m_SizeDelta: {x: 150, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1867543493
@@ -7527,8 +7527,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 64.75944, y: -50}
-  m_SizeDelta: {x: 129.51888, y: 67.6}
+  m_AnchoredPosition: {x: 63.11971, y: -50}
+  m_SizeDelta: {x: 126.23942, y: 67.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1879751600
 MonoBehaviour:
@@ -7861,7 +7861,7 @@ MonoBehaviour:
   txtBalance: {fileID: 627651532}
   txtPosition: {fileID: 900185578}
   txtTotal: {fileID: 1361371625}
-  txtProfit: {fileID: 1849978278}
+  txtOpenPrice: {fileID: 1849978278}
   txtCurrentProfit: {fileID: 37672654}
   fluctuation1ID: 200
   fluctuationsCountToLoad: 150
@@ -8711,8 +8711,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 523.72424, y: -50}
-  m_SizeDelta: {x: 151.15152, y: 80}
+  m_AnchoredPosition: {x: 522.8422, y: -50}
+  m_SizeDelta: {x: 152.91553, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2121312618
 GameObject:
