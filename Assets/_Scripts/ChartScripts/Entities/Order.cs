@@ -36,7 +36,14 @@ namespace Chart
             {
                 get { return price; }
                 set { price = value; }
-            }           
+            }
+
+            decimal fillPrice;
+            public decimal FillPrice
+            {
+                get { return fillPrice; }
+                set { fillPrice = value; }
+            }
 
             public Order(Type type, decimal amount, decimal price = 0)
             {

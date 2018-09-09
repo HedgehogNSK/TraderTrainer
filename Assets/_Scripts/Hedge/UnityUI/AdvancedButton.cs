@@ -27,15 +27,15 @@ namespace Hedge
                 {
                     base.OnPointerUp(eventData);
 
-                    if (pointerDownCoroutine!=null)
+                    if (pointerDownCoroutine != null)
                         StopCoroutine(pointerDownCoroutine);
                 }
 
                 public override void OnPointerDown(PointerEventData eventData)
                 {
-                    base.OnPointerDown(eventData);
-
+                    base.OnPointerDown(eventData);                
                     pointerDownCoroutine = StartCoroutine(PressCoroutine(eventData));
+                 
                 }
 
                 IEnumerator PressCoroutine(PointerEventData eventData)

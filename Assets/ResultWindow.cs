@@ -25,14 +25,18 @@ namespace ChartGame
         }
         private void OnEnable()
         {
-            decimal curProfit = PlayerManager.Instance.CurrentProfit(PlayerManager.Instance.CurrentPrice);
-            totalProfit.text = (PlayerManager.Instance.TotalProfit + curProfit).ToString("F2");
-            profitPrecentage.text = PlayerManager.Instance.WinRate.ToString("F0")+"%";
+            decimal curProfit = PlayerManager.Instance.PapperProfit(PlayerManager.Instance.LastPrice);
+            totalProfit.text =PlayerManager.Instance.TotalProfit.ToString("F2");
+            profitPrecentage.text = float.IsNaN(PlayerManager.Instance.WinRate) ? "No Trades":PlayerManager.Instance.WinRate.ToString("F0")+"%";
 
-            bestTrade.text =PlayerManager.Instance.BestTrade.ToString("F2");
-            worstTrade.text = PlayerManager.Instance.WorstTrade.ToString("F2");
+            bestTrade.text = (PlayerManager.Instance.BestTrade ==decimal.MinValue)?"No trades": PlayerManager.Instance.BestTrade.ToString("F2");
+            worstTrade.text = (PlayerManager.Instance.WorstTrade == decimal.MaxValue)? "No trades" : PlayerManager.Instance.WorstTrade.ToString("F2");
         }
 
+        private void OnDestroy()
+        {
+            nextGameButton.onClick.RemoveListener(loadNewGame);
+        }
 
     }
 }

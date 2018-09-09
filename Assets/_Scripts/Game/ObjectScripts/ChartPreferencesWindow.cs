@@ -33,11 +33,14 @@ namespace ChartGame
         public void AcceptAndClose()
         {
             //Передаём изменённые настройки GameManager'у
-            gamePrefs.Fast_ma_length = int.Parse(lengthField.text);
-            gamePrefs.Slow_ma_length = int.Parse(lengthField2.text);
-            gamePrefs.Fast_ma_color = colorBtn.image.color;
-            gamePrefs.Slow_ma_color = colorBtn2.image.color;
+            if (gamePrefs != null)
+            {
+                gamePrefs.Fast_ma_length = int.Parse(lengthField.text);
+                gamePrefs.Slow_ma_length = int.Parse(lengthField2.text);
 
+                gamePrefs.Fast_ma_color = colorBtn.image.color;
+                gamePrefs.Slow_ma_color = colorBtn2.image.color;
+            }
             gameObject.SetActive(false);
         }
 

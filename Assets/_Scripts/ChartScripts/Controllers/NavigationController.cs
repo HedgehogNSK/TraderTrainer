@@ -47,6 +47,8 @@ namespace Chart
                     if(CoordGrid!=null)
                         CoordGrid.OnScaleChange -= ShiftCamera;
                     coordGrid = value;
+                    if(coordGrid!=null)
+                        coordGrid.OnScaleChange += ShiftCamera;
 
                 }
             }
@@ -154,6 +156,7 @@ namespace Chart
             }
             public void ShiftCamera(float mult)
             {
+                Debug.Log(cameraTransform.position.y * mult + " mult = " + mult);
                 cameraTransform.position = new Vector3(cameraTransform.position.x, cameraTransform.position.y* mult, cameraTransform.position.z);
             }
 
@@ -174,8 +177,7 @@ namespace Chart
             {
                 
                 cam.orthographicSize = defaultOrthoSize;
-                objCamera.orthographicSize = defaultOrthoSize;
-                CoordGrid.OnScaleChange += ShiftCamera;
+                objCamera.orthographicSize = defaultOrthoSize;              
                 GoToLastPoint();
             }
 

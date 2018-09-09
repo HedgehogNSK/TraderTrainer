@@ -25,7 +25,7 @@ namespace Chart
                     return true;
                 }
 
-                Debug.LogError("Очисти пул, либо добавь ещё объектов");
+                Debug.LogError("Всего текстовых полей: "+textPool.Length+ "Текущее поле"+current_id+ "\n Очисти пул, либо добавь ещё объектов");
                 return false;
 
             }

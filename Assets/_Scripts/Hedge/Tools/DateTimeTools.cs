@@ -382,21 +382,26 @@ namespace Hedge
             static public int[] possibleDayStep = new int[] { 1, 2, 3, 4, 5, 6, 7, 9, 14 };
             static public int[] possibleMinuteStep = new int[] { 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30 };
             //DateTime dt0, dt1;
-            static public IEnumerable<DateTime> DividePeriodByKeyPoints(DateTime first, DateTime second, int divisorsMaxAmount) 
+            static public IEnumerable<DateTime> DividePeriodByKeyPoints(DateTime first, DateTime second, int keyPointsAmount) 
             {
-
                 List<DateTime> keyPoints = new List<DateTime>();
 
 
-                divisorsMaxAmount = divisorsMaxAmount - 1;
+                int divisorsMaxAmount = keyPointsAmount - 1;
 
-                TimeSpan periodLenth = second - first;
+                TimeSpan periodLenth = new TimeSpan();
+
+
+                periodLenth = second - first;
+
                 double yearsStep = periodLenth.TotalDays / 365.25;
                 double monthsStep = periodLenth.TotalDays / 30.4375;
                 double daysStep = periodLenth.TotalDays;
                 double hourStep = periodLenth.TotalHours;
                 double minuteStep = periodLenth.TotalMinutes;
 
+                //Debug.Log("Кол-во ключевых точек:" + keyPointsAmount + " Дата 1:" + first.ToString("d") + " " + first.Hour + ":" + first.Minute + ":" + first.Second + " Дата 2:" + second.ToString("d") + " " + second.Hour + ":" + second.Minute + ":" + second.Second);
+                //Debug.Log("TimeSpan:" + periodLenth);
 
                 yearsStep /= divisorsMaxAmount;
                 monthsStep /= divisorsMaxAmount;
@@ -456,12 +461,12 @@ namespace Hedge
                 if (frame.period != Period.Day)
                 {
                     current_time = first.UpToNextFrame(frame);
-                    keyPoints.Add(current_time);
-                    while (current_time <= second)
-                    {
-                        current_time += frame;
+                    while (current_time < second)
+                    {                        
                         keyPoints.Add(current_time);
+                        current_time += frame;
                     }
+                        keyPoints.Add(current_time);
                 }
                 else
                 {
@@ -490,6 +495,16 @@ namespace Hedge
                         current_time += frame;
 
                     }
+                }
+                if (keyPoints.Count > keyPointsAmount)
+                {
+                    
+                    string s = "";
+                    foreach (var keypoint in keyPoints)
+                    {
+                        s += keypoint + " ";
+                    }
+                    Debug.LogError("Деление прошло не удачно: " + frame.ToString() + " Количество: " + keyPoints.Count+"\n"+s);
                 }
 
                 return keyPoints;

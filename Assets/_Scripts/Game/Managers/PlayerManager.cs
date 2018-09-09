@@ -68,14 +68,19 @@ namespace ChartGame
         }
 
         public decimal OpenPositionPrice { get; private set; }
-        public decimal CurrentPrice { get; private set; }
+        public decimal LastPrice {
+            get
+            {
+                return (decimal)LastFluctuation.Close;
+            }
+        }
 
         public float WinRate
         {
             get
             {
-                if (CurrentProfit(CurrentPrice) != 0)
-                    return ((float)posTradesCount + (CurrentProfit(CurrentPrice)>0? 1:0)) / (posTradesCount + negTradesCount + 1) * 100;
+                if (PapperProfit(LastPrice) != 0)
+                    return ((float)posTradesCount + (PapperProfit(LastPrice)>0? 1:0)) / (posTradesCount + negTradesCount + 1) * 100;
 
 
                 return
@@ -90,11 +95,17 @@ namespace ChartGame
             Low,
             Close           
         }
-        public PriceFluctuation CurrentFluctuation
+        public PriceFluctuation LastFluctuation
         {
-            get;private set;
+            get
+            {
+                if (chartData != null)
+                    return chartData.GetPriceFluctuation(chartData.WorkEndTime);
+                else
+                    return new PriceFluctuation(new DateTime(), 0, 0);
+            }
         }
-        public decimal CurrentProfit(decimal price)
+        public decimal PapperProfit(decimal price)
         {
             {
                 if (PositionSize == 0)
@@ -105,22 +116,39 @@ namespace ChartGame
                 return (price - OpenPositionPrice) * PositionSize;
             }
         }
-        public decimal TotalProfit { get; private set; }
-        decimal bestTrade;
+        public decimal TotalProfit
+        {
+            get
+            {
+                decimal total_profit=0;
+                decimal pos_size = 0;
+                var filledOrders = playerOrders.Where(p_order => p_order.state == Order.State.Filled);
+                foreach (var order in filledOrders)
+                {
+                    pos_size += order.Amount;
+                    total_profit -= order.Amount * order.FillPrice;
+
+                }                
+                total_profit += pos_size * LastPrice;
+                return total_profit;
+            }
+        }
+
+        decimal bestTrade = decimal.MinValue;
         public decimal BestTrade
         {
             get
             {
-                return CurrentProfit(CurrentPrice) > bestTrade ? CurrentProfit(CurrentPrice) : bestTrade;
+                return PapperProfit(LastPrice) > bestTrade ? PapperProfit(LastPrice) : bestTrade;
             }
             private set { bestTrade = value; }
         }
-        decimal worstTrade;
+        decimal worstTrade = decimal.MaxValue;
         public decimal WorstTrade
         {
             get
             {
-                return CurrentProfit(CurrentPrice) < worstTrade ? CurrentProfit(CurrentPrice) : worstTrade;
+                return PapperProfit(LastPrice) < worstTrade ? PapperProfit(LastPrice) : worstTrade;
             }
             private set { worstTrade = value; }
         }
@@ -140,7 +168,6 @@ namespace ChartGame
             else return 0;
 
         }
-        
 
         public void CreateOrder(Order.Type type, decimal amount, decimal price = 0)
         {
@@ -183,15 +210,13 @@ namespace ChartGame
             this.chartData = chartData;
             tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
             PositionSize = 0;
-            CurrentPrice = (decimal)chartData.GetPriceFluctuation(chartData.WorkEndTime).Close;
+            
             playerOrders = new List<Order>();
         }
 
         //Данный метод не учитывает объём 
         public void UpdatePosition()
         {
-            CurrentFluctuation = chartData.GetPriceFluctuation(chartData.WorkEndTime);
-            CurrentPrice = (decimal)CurrentFluctuation.Close;
             var orders = playerOrders.Where(order => order.state == Order.State.Waiting);
             decimal price;
 
@@ -204,24 +229,24 @@ namespace ChartGame
                             price = 0;
                             if (order.Amount > 0)
                             {
-                                if (order.Price >= (decimal)CurrentFluctuation.Open)
+                                if (order.Price >= (decimal)LastFluctuation.Open)
                                 {
-                                    price = (decimal)CurrentFluctuation.Open;
+                                    price = (decimal)LastFluctuation.Open;
 
                                 }
-                                else if (order.Price >= (decimal)CurrentFluctuation.Low)
+                                else if (order.Price >= (decimal)LastFluctuation.Low)
                                 {
                                     price = order.Price;
                                 }
                             }
                             else
                             {
-                                if (order.Price <= (decimal)CurrentFluctuation.Open)
+                                if (order.Price <= (decimal)LastFluctuation.Open)
                                 {
-                                    price = (decimal)CurrentFluctuation.Open;
+                                    price = (decimal)LastFluctuation.Open;
 
                                 }
-                                else if (order.Price <= (decimal)CurrentFluctuation.High)
+                                else if (order.Price <= (decimal)LastFluctuation.High)
                                 {
                                     price = order.Price;
                                 }
@@ -233,7 +258,7 @@ namespace ChartGame
                         break;
                     case Order.Type.Market:
                         {
-                            price = (decimal)CurrentFluctuation.Open;
+                            price = (decimal)LastFluctuation.Open;
                             order.Amount = AmountFilter(order.Amount, price);
                         }
                         break;
@@ -256,12 +281,11 @@ namespace ChartGame
             {
                 if (PositionSize!=0 && Math.Abs(order.Amount) >= Math.Abs(PositionSize) && Math.Sign(order.Amount) != Math.Sign(PositionSize))
                 {
-                    decimal curProfit = CurrentProfit(price);
-                    TotalProfit += curProfit;
-                    if (BestTrade < curProfit) BestTrade = curProfit;
-                    if (WorstTrade > curProfit) WorstTrade = curProfit;
+                    decimal trade_profit = PapperProfit(price);
+                    if (BestTrade < trade_profit) BestTrade = trade_profit;
+                    if (WorstTrade > trade_profit) WorstTrade = trade_profit;
 
-                    if (curProfit > 0)
+                    if (trade_profit > 0)
                         posTradesCount++;
                     else
                         negTradesCount++;
@@ -315,6 +339,7 @@ namespace ChartGame
                     tmpPlayerCap = PlayerCurrentBalance + PositionSize * price;
                     lastTradesProfit.Add(tmpPlayerCap);
                 }
+                order.FillPrice = price;
                 order.state = Order.State.Filled;
             }
             else

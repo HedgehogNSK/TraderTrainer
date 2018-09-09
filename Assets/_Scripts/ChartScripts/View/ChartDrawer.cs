@@ -101,6 +101,8 @@ namespace Chart
         }
         DateTime visibleStartDate, cachedStart;
         DateTime visibleEndDate, cachedEnd;
+        IEnumerable<DateTime> datesList;
+        IEnumerable<decimal> pricesList;
         void Update()
         {
             worldPointInLeftDownCorner = cam.ViewportToWorldPoint(cachedZero);
@@ -128,13 +130,16 @@ namespace Chart
             if (NeedToBeUpdated)//Оптимизация
             {
                 if (Autoscale) ScaleChart();
+
+                datesList = GetVisibleDatesList();
+                pricesList = GetVisiblePricesList();
                 DrawChart();
             }
-            
         }
 
         bool needToBeUpdated =false;
-        bool NeedToBeUpdated {
+        bool NeedToBeUpdated
+        {
             get
             {
                 if (needToBeUpdated)
@@ -152,10 +157,12 @@ namespace Chart
                 return camViewChanged;
             }
         }
+
         // Update is called once per frame
         void OnPostRender()
         {
-            DrawGrid();
+            DrawGrid(datesList, pricesList);
+
         }
 
         public bool IsSettingsSet
@@ -172,7 +179,28 @@ namespace Chart
             }
         }
 
-        public void DrawGrid()
+        private IEnumerable<DateTime> GetVisibleDatesList()
+        {
+            //Вычисляем точки на временнОй сетке и отрисовываем их
+            DateTime dt0 = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x);
+            DateTime dt1 = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x);
+
+            if (CoordGrid is CoordinateGrid)
+                dt0 = (CoordGrid as CoordinateGrid).DateCorrection(dt0, dt1);
+
+            IEnumerable<DateTime> dateList = DateTimeTools.DividePeriodByKeyPoints(dt0, dt1, dateTextPool.FieldsAmount);
+            return dateList;
+        }
+
+        private IEnumerable<decimal> GetVisiblePricesList()
+        {
+            //Вывод цен на экран
+            decimal lowestPrice = (decimal)CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
+            decimal highestPrice = (decimal)CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
+            List<decimal> pricesList = Ariphmetic.DividePriceRangeByKeyPoints(lowestPrice, highestPrice, priceTextPool.FieldsAmount);
+            return pricesList;
+        }
+        public void DrawGrid(IEnumerable<DateTime>dateList,IEnumerable<decimal>pricesList)
         {
             if (!IsSettingsSet) return;
 
@@ -181,12 +209,7 @@ namespace Chart
             DrawTools.dashLength = 0.05f;
             DrawTools.gap = 0.07f;
 
-
-            //Вывод цен на экран
-            decimal lowestPrice = (decimal)CoordGrid.FromYAxisToPrice(worldPointInLeftDownCorner.y);
-            decimal highestPrice = (decimal)CoordGrid.FromYAxisToPrice(worldPointInRightUpCorner.y);
-            List<decimal> pricesList = Ariphmetic.DividePriceRangeByKeyPoints(lowestPrice, highestPrice, priceTextPool.FieldsAmount);
-            priceTextPool.CleanPool();
+           priceTextPool.CleanPool();
 
             float yPoint;
             foreach (var price in pricesList)
@@ -204,17 +227,7 @@ namespace Chart
                
                 DrawTools.DrawOnePixelLine(pricePoint1, pricePoint2, true);
             }
-
-
-
-            //Вычисляем точки на временнОй сетке и отрисовываем их
-            DateTime dt0 = CoordGrid.FromXAxisToDate(worldPointInLeftDownCorner.x);
-            DateTime dt1 = CoordGrid.FromXAxisToDate(worldPointInRightUpCorner.x);
-
-            if (CoordGrid is CoordinateGrid)
-                dt0 = (CoordGrid as CoordinateGrid).DateCorrection(dt0, dt1);
-
-            var dateList = DateTimeTools.DividePeriodByKeyPoints(dt0, dt1, dateTextPool.FieldsAmount);
+           
             dateTextPool.CleanPool();
             foreach (var date in dateList)
             {
@@ -259,6 +272,7 @@ namespace Chart
             if (Math.Abs(new_y/cam.transform.position.y-1) >1e-4)
             cam.transform.position = new Vector3(cam.transform.position.x, new_y, cam.transform.position.z);
 
+            if(highestPrice!=lowestPrice)
             CoordGrid.Scale *= (1-chartOffsetFromVerticalBorders)* (float)((highestPriceOnScreen - lowestPriceOnScreen) / priceRange);
 
 
