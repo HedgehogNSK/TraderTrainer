@@ -105,6 +105,7 @@ namespace ChartGame
         [SerializeField] AdvancedButton ExtraButton;
         [SerializeField] Button ExitButton;
         [SerializeField] Color colorLongExit, colorShortExit;
+        [SerializeField] VisualEffect visEffect;
 #pragma warning restore 0649
 
 
@@ -158,6 +159,7 @@ namespace ChartGame
             GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
             GoToNextFluctuation += UpdatePlayersInfoFields;
             GoToNextFluctuation += chartDrawer.UpdateInNextFrame;
+            GoToNextFluctuation += Effect;
 
 
         }
@@ -337,6 +339,31 @@ namespace ChartGame
             GoToNextFluctuation();
 
             return true;
+        }
+
+        PriceFluctuation currentFluctuation = new PriceFluctuation(new DateTime(), 0,0);
+        private void Effect()
+        {
+            PriceFluctuation newFluctuation = chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime);
+            if (PlayerManager.Instance.PositionSize>0)
+            {
+               
+                if(newFluctuation.Close > currentFluctuation.Close)
+                    visEffect.ShowEffect(true);
+                if (newFluctuation.Close < currentFluctuation.Close)
+                    visEffect.ShowEffect(false);
+            }
+
+            if (PlayerManager.Instance.PositionSize < 0)
+            {
+               
+                if (newFluctuation.Close < currentFluctuation.Close)
+                    visEffect.ShowEffect(true);
+                if (newFluctuation.Close > currentFluctuation.Close)
+                    visEffect.ShowEffect(false);
+            }
+            currentFluctuation = newFluctuation;
+
         }
 
         public void Buy()

@@ -156,7 +156,7 @@ namespace Chart
             }
             public void ShiftCamera(float mult)
             {
-                Debug.Log(cameraTransform.position.y * mult + " mult = " + mult);
+
                 cameraTransform.position = new Vector3(cameraTransform.position.x, cameraTransform.position.y* mult, cameraTransform.position.z);
             }
 

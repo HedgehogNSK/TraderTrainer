@@ -210,7 +210,10 @@ namespace ChartGame
             this.chartData = chartData;
             tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
             PositionSize = 0;
-            
+            bestTrade = decimal.MinValue;
+            worstTrade = decimal.MaxValue;
+            posTradesCount =negTradesCount = 0;
+
             playerOrders = new List<Order>();
         }
 
