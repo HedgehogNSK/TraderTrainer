@@ -213,7 +213,8 @@ namespace ChartGame
             bestTrade = decimal.MinValue;
             worstTrade = decimal.MaxValue;
             posTradesCount =negTradesCount = 0;
-
+            tradeIsClosed = null;
+            tradeIsOpened = null;
             playerOrders = new List<Order>();
         }
 
@@ -276,7 +277,8 @@ namespace ChartGame
 
         }
 
-
+        public event Action<TradeInfo> tradeIsClosed;
+        public event Action<decimal, decimal> tradeIsOpened;
         //Расчёт позиции и баланса
         private void RecalculatePosition(Order order, decimal price)
         {
@@ -292,8 +294,12 @@ namespace ChartGame
                         posTradesCount++;
                     else
                         negTradesCount++;
+
+                    if(tradeIsClosed!=null)tradeIsClosed(new TradeInfo(OpenPositionPrice, price,PositionSize));
                     Debug.Log(posTradesCount + " :" + negTradesCount);
                 }
+                
+               
                 if (order.Amount > 0)
                 {
                     if (PositionSize >= 0)
@@ -333,6 +339,11 @@ namespace ChartGame
 
                     }
 
+                }
+
+                if (PositionSize == 0 || (Math.Abs(order.Amount) >= Math.Abs(PositionSize) && Math.Sign(order.Amount) != Math.Sign(PositionSize)))
+                {
+                    tradeIsOpened(OpenPositionPrice, order.Amount);
                 }
                 PositionSize += order.Amount;
                

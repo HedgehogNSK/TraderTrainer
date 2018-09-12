@@ -105,7 +105,7 @@ namespace ChartGame
         [SerializeField] AdvancedButton ExtraButton;
         [SerializeField] Button ExitButton;
         [SerializeField] Color colorLongExit, colorShortExit;
-        [SerializeField] VisualEffect visEffect;
+        [SerializeField] EffectManager visEffect;
 #pragma warning restore 0649
 
 
@@ -159,7 +159,7 @@ namespace ChartGame
             GoToNextFluctuation += PlayerManager.Instance.UpdatePosition;
             GoToNextFluctuation += UpdatePlayersInfoFields;
             GoToNextFluctuation += chartDrawer.UpdateInNextFrame;
-            GoToNextFluctuation += Effect;
+          
 
 
         }
@@ -220,7 +220,11 @@ namespace ChartGame
             NavigationController.Instance.CoordGrid = coordGrid;
             NavigationController.Instance.Initialize();
             PlayerManager.Instance.InitializeData(chartDataManager);
-
+            PlayerManager.Instance.tradeIsClosed += closedTradeEffect;
+            PlayerManager.Instance.tradeIsOpened += (price, position)=>
+            {
+                current_price = (double)price;
+            };
 
             UpdatePlayersInfoFields();
 
@@ -232,9 +236,11 @@ namespace ChartGame
 
             GameButtonsSetActive(true);
             chartInterface.InterfaceSetActive(true);
-
+            
 
         }
+
+
         void SetRandomGameTime(int fluctuationCount)
         {
             if (fluctuationCount < MIN_FLUCTUATIONS_AMOUNT)
@@ -337,35 +343,34 @@ namespace ChartGame
             }
 
             GoToNextFluctuation();
-
+            Effect();
             return true;
         }
+        
+        double current_price;
 
-        PriceFluctuation currentFluctuation = new PriceFluctuation(new DateTime(), 0,0);
+        string delta_text;
         private void Effect()
         {
-            PriceFluctuation newFluctuation = chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime);
-            if (PlayerManager.Instance.PositionSize>0)
-            {
-               
-                if(newFluctuation.Close > currentFluctuation.Close)
-                    visEffect.ShowEffect(true);
-                if (newFluctuation.Close < currentFluctuation.Close)
-                    visEffect.ShowEffect(false);
+             double last_price = chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close;
+
+            if(PlayerManager.Instance.PositionSize !=0 && last_price != current_price)
+             {
+                double price_delta = (last_price / current_price-1) * 100;
+                delta_text = (price_delta > 0 ? "+" : "") + price_delta.ToString("F2") + "%";
+                visEffect.ChangeResultEffect(delta_text, (PlayerManager.Instance.PositionSize > 0 && last_price > current_price) ||
+                    PlayerManager.Instance.PositionSize < 0 && last_price < current_price ? true:false);
             }
 
-            if (PlayerManager.Instance.PositionSize < 0)
-            {
-               
-                if (newFluctuation.Close < currentFluctuation.Close)
-                    visEffect.ShowEffect(true);
-                if (newFluctuation.Close > currentFluctuation.Close)
-                    visEffect.ShowEffect(false);
-            }
-            currentFluctuation = newFluctuation;
+            current_price = last_price;
 
         }
 
+        private void closedTradeEffect(TradeInfo tinfo)
+        {
+            if (tinfo.RelativeProfit != 0)
+                visEffect.TradeResultEffect(tinfo.RelativeProfit > 0 ? true : false);
+        }
         public void Buy()
         {
             switch (gameMode)
