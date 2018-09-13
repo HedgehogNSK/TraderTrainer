@@ -73,11 +73,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a1a5ae6eaff8744284d12c45f897cb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  life_time: 0.5
+  life_time: 0.89
   move: 1
   relativeSize: 0.2
-  xSpeedRange: {x: -2, y: 2}
-  ySpeedRange: {x: 1, y: 3}
+  xSpeedRange: {x: -1, y: 1}
+  ySpeedRange: {x: 0.5, y: 1}
   fade: 1
 --- !u!222 &222240499964530298
 CanvasRenderer:

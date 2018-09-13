@@ -20,8 +20,8 @@ namespace ChartGame
             PositionSize = position_size;
             if (position_size != 0)
             {
-                RelativeProfit = position_size>0? close_price / open_price : open_price -close_price/open_price;
-                AbsoluteProfit = RelativeProfit * position_size;
+                RelativeProfit = position_size>0? close_price / open_price -1 : 1 -close_price/open_price;
+                AbsoluteProfit = RelativeProfit * System.Math.Abs(position_size);
             }
             else
             {

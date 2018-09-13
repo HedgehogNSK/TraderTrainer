@@ -40,11 +40,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ff07d672b085a3409752d789bcb0ce3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  life_time: 0.57
+  life_time: 1.04
   move: 1
-  relativeSize: 0.2
-  xSpeedRange: {x: -2, y: 2}
-  ySpeedRange: {x: -3, y: -1}
+  relativeSize: 0.3
+  xSpeedRange: {x: -1, y: 1}
+  ySpeedRange: {x: -0.5, y: -1}
   fade: 1
 --- !u!114 &114946055402363286
 MonoBehaviour:

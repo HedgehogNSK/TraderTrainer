@@ -220,7 +220,7 @@ namespace ChartGame
             NavigationController.Instance.CoordGrid = coordGrid;
             NavigationController.Instance.Initialize();
             PlayerManager.Instance.InitializeData(chartDataManager);
-            PlayerManager.Instance.tradeIsClosed += closedTradeEffect;
+            PlayerManager.Instance.tradeIsClosed += ClosedTradeEffect;
             PlayerManager.Instance.tradeIsOpened += (price, position)=>
             {
                 current_price = (double)price;
@@ -366,7 +366,7 @@ namespace ChartGame
 
         }
 
-        private void closedTradeEffect(TradeInfo tinfo)
+        private void ClosedTradeEffect(TradeInfo tinfo)
         {
             if (tinfo.RelativeProfit != 0)
                 visEffect.TradeResultEffect(tinfo.RelativeProfit > 0 ? true : false);
