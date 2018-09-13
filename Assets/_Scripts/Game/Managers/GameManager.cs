@@ -371,6 +371,7 @@ namespace ChartGame
             if (tinfo.RelativeProfit != 0)
                 visEffect.TradeResultEffect(tinfo.RelativeProfit > 0 ? true : false);
         }
+
         public void Buy()
         {
             switch (gameMode)
