@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-namespace Chart
+namespace ChartGame
 {
     namespace Entity
     {

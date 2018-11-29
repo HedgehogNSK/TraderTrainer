@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Hedge.Tools;
 using Chart;
 using Chart.Entity;
+using ChartGame.Entity;
 using UnityEngine;
 using System.Linq;
 

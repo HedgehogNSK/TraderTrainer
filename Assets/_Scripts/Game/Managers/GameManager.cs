@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 using Hedge.Tools.UnityUI;
 using Chart;
 using Chart.Entity;
+using ChartGame.Entity;
 using Chart.Controllers;
 
 namespace ChartGame

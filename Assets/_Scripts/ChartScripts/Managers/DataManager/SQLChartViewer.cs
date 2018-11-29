@@ -7,6 +7,7 @@ using UnityEngine;
 using Hedge.Tools;
 using Chart;
 using Chart.Entity;
+using ChartGame.Entity;
 using UnityNpgsql;
 using UnityNpgsqlTypes;
 using Microsoft;

@@ -64,6 +64,7 @@ namespace Chart
 
         private string url_base = "https://min-api.cryptocompare.com/data/";
         private string data_frame = "histoday";
+        private const int MaxLimit = 2000;
         private string reciprocal_currency_acronym;
         private string base_currency_acronym;
         private string market_acronym ;
@@ -88,7 +89,7 @@ namespace Chart
 
         public IEnumerator getData(TimeFrame timeFrame)
         {
-            int limit = int.MaxValue;
+            int limit = MaxLimit;
             switch (timeFrame.period)
             {
 
@@ -131,6 +132,7 @@ namespace Chart
                 }
                 else
                 {
+                    Debug.Log(www.text);
                     dc = JsonUtility.FromJson<JsonData>(www.text);
                     dataEndTime = DateTimeTools.TimestampToDate(dc.TimeTo);
                     if (dataEndTime != dataEndTime.FloorToTimeFrame(TFrame))
