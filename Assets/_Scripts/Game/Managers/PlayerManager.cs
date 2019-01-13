@@ -37,6 +37,8 @@ namespace ChartGame
 
         public event Action<decimal> CurrentBalanceChanged;
         public event Action<decimal> PositionSizeIsChanged;
+
+        const decimal marginLevel = 0.1M;
         decimal playerCurrentBalance;
         public decimal PlayerCurrentBalance
         {
@@ -48,8 +50,9 @@ namespace ChartGame
 
             }
         }
+        decimal Margin { get; set; }
+        decimal Leverage { get; set; }
 
-        decimal initialCap;
         decimal tmpPlayerCap = 0;
 
 
@@ -67,7 +70,7 @@ namespace ChartGame
             }
         }
 
-        public decimal OpenPositionPrice { get; private set; }
+        public decimal PositionPrice { get; private set; }
         public decimal LastPrice {
             get
             {
@@ -113,7 +116,7 @@ namespace ChartGame
                     return 0;
                 }
 
-                return (price - OpenPositionPrice) * PositionSize;
+                return (price - PositionPrice) * PositionSize;
             }
         }
         public decimal TotalProfit
@@ -155,6 +158,9 @@ namespace ChartGame
 
         private int posTradesCount, negTradesCount;
 
+        public event Action<TradeInfo> TradeIsClosed;
+        public event Action<decimal, decimal> TradeIsOpened;
+
         public decimal Total(decimal price)
         {
             if (chartData != null)
@@ -163,7 +169,7 @@ namespace ChartGame
                     return
                         (PlayerCurrentBalance + PositionSize * price);
                 else
-                    return PlayerCurrentBalance + PositionSize * (price - 2 * OpenPositionPrice);
+                    return PlayerCurrentBalance + PositionSize * (price - 2 * PositionPrice);
             }
             else return 0;
 
@@ -184,13 +190,13 @@ namespace ChartGame
         public void InitializeData(IScalableDataManager chartData)
         {
             this.chartData = chartData;
-            tmpPlayerCap = initialCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
+            tmpPlayerCap = PlayerCurrentBalance = (decimal)PlayerPrefs.GetFloat("Deposit", 10000);
             PositionSize = 0;
             bestTrade = decimal.MinValue;
             worstTrade = decimal.MaxValue;
             posTradesCount =negTradesCount = 0;
-            tradeIsClosed = null;
-            tradeIsOpened = null;
+            TradeIsClosed = null;
+            TradeIsOpened = null;
             playerOrders = new List<Order>();
         }
 
@@ -211,19 +217,19 @@ namespace ChartGame
                         if (PositionSize >= 0)
                         {
                             PlayerCurrentBalance -= order.Amount * order.ExecutionPrice;
-                            OpenPositionPrice = order.ExecutionPrice;
+                            PositionPrice = order.ExecutionPrice;
                         }
                         else if (PositionSize < 0)
                         {
                             if (order.Amount > PositionSize)
                             {
-                                PlayerCurrentBalance += PositionSize * (order.ExecutionPrice - 2 * OpenPositionPrice) - (order.Amount + PositionSize) * order.ExecutionPrice;
-                                OpenPositionPrice = order.ExecutionPrice;
+                                PlayerCurrentBalance += PositionSize * (order.ExecutionPrice - 2 * PositionPrice) - (order.Amount + PositionSize) * order.ExecutionPrice;
+                                PositionPrice = order.ExecutionPrice;
                             }
                             else
                             {
                                 //PlayerCurrentBalance +=  order.Amount* price;
-                                OpenPositionPrice = (PositionSize * OpenPositionPrice + order.Amount * order.ExecutionPrice) / (PositionSize + order.Amount);
+                                PositionPrice = (PositionSize * PositionPrice + order.Amount * order.ExecutionPrice) / (PositionSize + order.Amount);
 
                             }
                         }
@@ -233,7 +239,7 @@ namespace ChartGame
                         if (PositionSize <= 0)
                         {
                             PlayerCurrentBalance += order.Amount * order.ExecutionPrice;
-                            OpenPositionPrice = (PositionSize * OpenPositionPrice + order.Amount * order.ExecutionPrice) / (PositionSize + order.Amount);
+                            PositionPrice = (PositionSize * PositionPrice + order.Amount * order.ExecutionPrice) / (PositionSize + order.Amount);
 
                         }
                         else if (PositionSize > 0)
@@ -241,7 +247,7 @@ namespace ChartGame
                             PlayerCurrentBalance += -order.Amount > PositionSize ?
                                 PositionSize * order.ExecutionPrice + (order.Amount + PositionSize) * order.ExecutionPrice :
                                 -order.Amount * order.ExecutionPrice;
-                            OpenPositionPrice = order.ExecutionPrice;
+                            PositionPrice = order.ExecutionPrice;
 
                         }
 
@@ -249,7 +255,7 @@ namespace ChartGame
 
                     if (PositionSize == 0 || (Math.Abs(order.Amount) >= Math.Abs(PositionSize) && Math.Sign(order.Amount) != Math.Sign(PositionSize)))
                     {
-                        tradeIsOpened(OpenPositionPrice, order.Amount);
+                        TradeIsOpened(PositionPrice, order.Amount);
                     }
                     PositionSize += order.Amount;
 
@@ -257,7 +263,65 @@ namespace ChartGame
             }
 
         }
+        public void StopOut()
+        {
+            if (Margin != 0 && Total(LastPrice) / Margin < marginLevel) CloseByMarket();
+        }
+        public void UpdatePosition2()
+        {
+            var orders = playerOrders.Where(order => order.state == Order.State.Waiting);
 
+            foreach (Order order in orders)
+            {
+
+                if (order.TryToExecute(LastFluctuation))
+                {
+                    CollectTradeStats(order);
+
+                    if (order.Amount > 0)
+                    {
+                        if (PositionSize >= 0)
+                        {
+                            PlayerCurrentBalance -= order.Amount * order.ExecutionPrice;
+                            PositionPrice = (PositionSize * PositionPrice + order.Amount * order.ExecutionPrice)/(PositionSize+order.Amount);
+                        }
+                        else if (PositionSize < 0)
+                        {
+                            if (order.Amount > PositionSize)
+                            {
+                                PlayerCurrentBalance += PositionSize * (order.ExecutionPrice - 2 * PositionPrice) - (order.Amount + PositionSize) * order.ExecutionPrice;
+                                PositionPrice = order.ExecutionPrice;
+                            }
+                            else
+                            {
+                                //PlayerCurrentBalance +=  order.Amount* price;
+                                PositionPrice = (PositionSize * PositionPrice + order.Amount * order.ExecutionPrice) / (PositionSize + order.Amount);
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (PositionSize <= 0)
+                        {
+                            PlayerCurrentBalance += order.Amount * order.ExecutionPrice;
+                            PositionPrice = (PositionSize * PositionPrice + order.Amount * order.ExecutionPrice) / (PositionSize + order.Amount);
+
+                        }
+                        else if (PositionSize > 0)
+                        {
+                            PlayerCurrentBalance += -order.Amount > PositionSize ?
+                                PositionSize * order.ExecutionPrice + (order.Amount + PositionSize) * order.ExecutionPrice :
+                                -order.Amount * order.ExecutionPrice;
+                            PositionPrice = order.ExecutionPrice;
+
+                        }
+
+                    }
+                }
+                StopOut();
+            }
+        }
         private void CollectTradeStats(Order order)
         {
             //IF trade is going to close
@@ -272,13 +336,10 @@ namespace ChartGame
                 else
                     negTradesCount++;
 
-                if (tradeIsClosed != null) tradeIsClosed(new TradeInfo(OpenPositionPrice, order.ExecutionPrice, PositionSize));
+                if (TradeIsClosed != null) TradeIsClosed(new TradeInfo(PositionPrice, order.ExecutionPrice, PositionSize));
                 //Debug.Log(posTradesCount + " :" + negTradesCount);
             }
         }
-
-        public event Action<TradeInfo> tradeIsClosed;
-        public event Action<decimal, decimal> tradeIsOpened;
 
         private void OnDestroy()
         {

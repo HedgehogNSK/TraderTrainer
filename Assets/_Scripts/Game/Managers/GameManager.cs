@@ -117,8 +117,6 @@ namespace ChartGame
         public Text txtCurrentProfit;
 
         Image exitButtonImage;
-        SimpleChartDataManager db;
-        SQLChartDataManager sqlDB;
         IScalableDataManager chartDataManager;
         IGrid coordGrid;
         public event Action GoToNextFluctuation;
@@ -178,7 +176,7 @@ namespace ChartGame
         public void UpdatePlayersInfoFields()
         {
             txtTotal.text = PlayerManager.Instance.Total(PlayerManager.Instance.LastPrice).ToString("F2");
-            txtOpenPrice.text = PlayerManager.Instance.OpenPositionPrice.ToString("F2");
+            txtOpenPrice.text = PlayerManager.Instance.PositionPrice.ToString("F2");
             txtCurrentProfit.text = PlayerManager.Instance.PapperProfit(PlayerManager.Instance.LastPrice).ToString("F2");
         }
 
@@ -221,8 +219,8 @@ namespace ChartGame
             NavigationController.Instance.CoordGrid = coordGrid;
             NavigationController.Instance.Initialize();
             PlayerManager.Instance.InitializeData(chartDataManager);
-            PlayerManager.Instance.tradeIsClosed += ClosedTradeEffect;
-            PlayerManager.Instance.tradeIsOpened += (price, position)=>
+            PlayerManager.Instance.TradeIsClosed += ClosedTradeEffect;
+            PlayerManager.Instance.TradeIsOpened += (price, position)=>
             {
                 current_price = (double)price;
             };
@@ -351,6 +349,8 @@ namespace ChartGame
         double current_price;
 
         string delta_text;
+        
+        //Visual Effect player position changes
         private void Effect()
         {
              double last_price = chartDataManager.GetPriceFluctuation(chartDataManager.WorkEndTime).Close;
